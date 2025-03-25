@@ -15,4 +15,4 @@
 module load nextflow/24.04.3
 
 #Run the nextflow workflow with custom config
-nextflow run main.nf -c setonix.config 
+nextflow run main.nf -c conf/setonix.config 
