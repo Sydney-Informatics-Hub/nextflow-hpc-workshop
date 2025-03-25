@@ -2,6 +2,12 @@
 #PBS -N nfrnaseq_test
 #PBS -l select=1:ncpus=2:mem=4gb
 #PBS -l walltime=24:00:00
+
+##Data origin
+##Manuscript Antagonizing cholecystokinin A receptor in the lung attenuates obesity-induced airway hyperresponsiveness https://www.nature.com/articles/s41467-022-35739-8
+##RNA-Seq transcriptome profiling identifies CRISPLD2 as a glucocorticoid responsive gene that modulates cytokine function in airway smooth muscle cells https://pubmed.ncbi.nlm.nih.gov/24926665/
+
+
 cd $PBS_O_WORKDIR
 wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR103/008/SRR1039508/SRR1039508_1.fastq.gz
 wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR103/008/SRR1039508/SRR1039508_2.fastq.gz
