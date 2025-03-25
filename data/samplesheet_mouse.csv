@@ -1,0 +1,10 @@
+sample,fastq_1,fastq_2,strandedness
+SRR20622172,/work/training/rnaseq/data/SRR20622172.fastq.gz,,auto
+SRR20622173,/work/training/rnaseq/data/SRR20622173.fastq.gz,,auto
+SRR20622174,/work/training/rnaseq/data/SRR20622174.fastq.gz,,auto
+SRR20622175,/work/training/rnaseq/data/SRR20622175.fastq.gz,,auto
+SRR20622176,/work/training/rnaseq/data/SRR20622176.fastq.gz,,auto
+SRR20622177,/work/training/rnaseq/data/SRR20622177.fastq.gz,,auto
+SRR20622178,/work/training/rnaseq/data/SRR20622178.fastq.gz,,auto
+SRR20622179,/work/training/rnaseq/data/SRR20622179.fastq.gz,,auto
+SRR20622180,/work/training/rnaseq/data/SRR20622180.fastq.gz,,auto
