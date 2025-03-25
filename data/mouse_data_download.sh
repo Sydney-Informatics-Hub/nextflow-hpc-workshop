@@ -2,6 +2,11 @@
 #PBS -N nfrnaseq_test
 #PBS -l select=1:ncpus=2:mem=4gb
 #PBS -l walltime=24:00:00
+
+##Data origin
+##Manuscript: Crotta et al. (2023).  Repair of airway epithelia requires metabolic rewiring towards fatty acid oxidation. Nature Communications. http://doi.org/10.1038/s41467-023-36352-z
+
+
 cd $PBS_O_WORKDIR
 wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR206/044/SRR20630344/SRR20630344.fastq.gz
 wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR206/049/SRR20630349/SRR20630349.fastq.gz
