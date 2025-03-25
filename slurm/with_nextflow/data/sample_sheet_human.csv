@@ -1,0 +1,11 @@
+sample,fastq_1,fastq_2,strandedness
+SRR1039508,data/human/SRR1039508_1.fastq.gz,data/human/SRR1039508_2.fastq.gz,auto
+SRR1039509,data/human/SRR1039509_1.fastq.gz,data/human/SRR1039509_2.fastq.gz,auto
+SRR1039510,data/human/SRR1039510_1.fastq.gz,data/human/SRR1039510_2.fastq.gz,auto
+SRR1039511,data/human/SRR1039511_1.fastq.gz,data/human/SRR1039511_2.fastq.gz,auto
+SRR1039514,data/human/SRR1039514_1.fastq.gz,data/human/SRR1039514_2.fastq.gz,auto
+SRR1039517,data/human/SRR1039517_1.fastq.gz,data/human/SRR1039517_2.fastq.gz,auto
+SRR1039518,data/human/SRR1039518_1.fastq.gz,data/human/SRR1039518_2.fastq.gz,auto
+SRR1039519,data/human/SRR1039519_1.fastq.gz,data/human/SRR1039519_2.fastq.gz,auto
+SRR1039520,data/human/SRR1039520_1.fastq.gz,data/human/SRR1039520_2.fastq.gz,auto
+SRR1039521,data/human/SRR1039521_1.fastq.gz,data/human/SRR1039521_2.fastq.gz,auto
