@@ -1,6 +1,6 @@
 // pipeline input parameters
-params.transcriptome_file = "$projectDir/data/ggal/transcriptome.fa"
-params.reads = "$projectDir/data/samplesheet.csv"
+params.transcriptome_file = "$projectDir/../data/ggal/transcriptome.fa"
+params.reads = "$projectDir/../data/samplesheet_mouse.csv"
 params.outdir = "results"
 
 /*
@@ -31,7 +31,7 @@ process FASTQC {
     publishDir params.outdir, mode: 'copy'
 
     input:
-    tuple val(sample_id), path(reads_1), path(reads_2)
+    tuple val(sample_id), path(reads_1)
 
     output:
     path "fastqc_${sample_id}_logs"
@@ -39,7 +39,7 @@ process FASTQC {
     script:
     """
     mkdir -p "fastqc_${sample_id}_logs"
-    fastqc --outdir "fastqc_${sample_id}_logs" --format fastq $reads_1 $reads_2 -t $task.cpus
+    fastqc --outdir "fastqc_${sample_id}_logs" --format fastq $reads_1 -t $task.cpus
     """
 }
 
@@ -51,14 +51,14 @@ process QUANTIFICATION {
     
     input:
     path salmon_index
-    tuple val(sample_id), path(reads_1), path(reads_2)
+    tuple val(sample_id), path(reads_1)
 
     output:
     path "$sample_id"
 
     script:
     """
-    salmon quant --libType=U -i $salmon_index -1 ${reads_1} -2 ${reads_2} -o $sample_id
+    salmon quant --libType=U -i $salmon_index -r ${reads_1} -o $sample_id
     """
 }
 
@@ -89,7 +89,7 @@ workflow {
   // Define the fastqc input channel
   reads_in = Channel.fromPath(params.reads)
         .splitCsv(header: true)
-        .map { row -> [row.sample, file(row.fastq_1), file(row.fastq_2)] }
+        .map { row -> [row.sample, file(row.fastq_1)] }
 
   // Run the fastqc step with the reads_in channel
   FASTQC(reads_in)
