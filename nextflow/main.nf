@@ -57,8 +57,9 @@ process QUANTIFICATION {
     path "$sample_id"
 
     script:
+    def reads_arg = reads_2 ? "-1 ${reads_1} -2 ${reads_2}" : "-r ${reads_1}"
     """
-    salmon quant --libType=U -i $salmon_index -1 ${reads_1} -2 ${reads_2} -o $sample_id
+    salmon quant --libType=U -i $salmon_index $reads_arg -o $sample_id
     """
 }
 
@@ -89,7 +90,10 @@ workflow {
   // Define the fastqc input channel
   reads_in = Channel.fromPath(params.reads)
         .splitCsv(header: true)
-        .map { row -> [row.sample, file(row.fastq_1), file(row.fastq_2)] }
+        .map { row -> 
+          def fastq_2_file = row.fastq_2 == '' ? [] : file(row.fastq_2)
+          [row.sample, file(row.fastq_1), fastq_2_file] 
+        }
 
   // Run the fastqc step with the reads_in channel
   FASTQC(reads_in)
