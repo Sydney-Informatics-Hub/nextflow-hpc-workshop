@@ -25,11 +25,11 @@ process ALIGNREADS {
     container "quay.io/biocontainers/star:2.7.11b--h5ca1c30_7"
 
     input:
-    tuple val(sample_id), path(fastqs)
     path star_index
+    tuple val(sample_id), path(reads_1), path(reads_2)
 
     output:
-    path "${sample_id}.bam"
+    tuple val(sample_id), path("${sample_id}.bam"), emit: aligned_bam
 
     script:
     """
@@ -38,7 +38,7 @@ process ALIGNREADS {
          --outSAMtype BAM SortedByCoordinate \\
          --outFileNamePrefix aligned_ \\
          --runThreadN $task.cpus \\
-         --readFilesIn $fastqs
+         --readFilesIn $reads_1 $reads_2
     
     # Rename output file to match expected output
     mv aligned_Aligned.sortedByCoord.out.bam ${sample_id}.bam
@@ -49,14 +49,14 @@ process INDEXBAM {
     container "quay.io/biocontainers/samtools:1.22.1--h96c455f_0"
 
     input:
-    tuple val(sample_id), path(bam, stageAs: "${sample_id}.bam")
+    tuple val(sample_id), path(bam, stageAs: "input/*")
 
     output:
-    tuple val(sample_id), path("${sample_id}.bam.bai")
+    tuple val(sample_id), path("${sample_id}.bam.bai"), emit: indexed_bam
 
     script:
     """
-    samtools index $bam
+    samtools index -o ${sample_id}.bam.bai $bam
     """
 }
 
@@ -67,7 +67,7 @@ process SPLITBAM {
     tuple val(sample_id), path(bam, stageAs: "input/*"), path(bai, stageAs: "input/*")
 
     output:
-    path "${sample_id}.*.bam"
+    tuple val(sample_id), path("${sample_id}.*.bam"), emit: split_bams
 
     script:
     """
@@ -81,34 +81,38 @@ process SPLITBAM {
     """
 }
 
+process SPLITGTF {
+    container "quay.io/biocontainers/gawk:5.3.1"
+
+    input:
+    path annotation, stageAs: "input/*"
+
+    output:
+    path "*.gtf", emit: split_gtfs
+
+    script:
+    """
+    # Split GTF by chromosome in a single pass
+    awk '
+    /^chr/ {
+        chr = \$1
+        print \$0 > chr ".gtf"
+    }' $annotation
+    """
+}
+
 process COUNT {
     container "quay.io/biocontainers/subread:2.1.1--h577a1d6_0"
 
     input:
-    tuple val(sample_id), path(sortedBam)
-    path annotation
+    tuple val(sample_id), val(chr), path(sortedBam), path(annotation)
 
     output:
-    path "${sample_id}.gene_counts.txt"
+    tuple val(sample_id), path("${sample_id}.${chr}.gene_counts.txt"), emit: gene_counts
+    tuple val(sample_id), path("${sample_id}.${chr}.gene_counts.txt.summary"), emit: count_summary
 
     script:
     """
-    featureCounts -a $annotation -o ${sample_id}.gene_counts.txt $sortedBam
-    """
-}
-
-process CONCATCOUNTS {
-    container "quay.io/biocontainers/gawk:5.3.1"
-
-    input:
-    tuple val(sample_id), path(countsFiles)
-
-    output:
-    path "${sample_id}.gene_counts.txt"
-
-    script:
-    """
-    # Merge count files
-    awk 'BEGIN { print "gene", "count" } $0 !~ /^(#|Geneid)/ { print $1, $7 }' ${countsFiles.join(" ")} > ${sample_id}.gene_counts.txt
+    featureCounts -a $annotation -p --countReadPairs -o ${sample_id}.${chr}.gene_counts.txt $sortedBam
     """
 }

@@ -1,5 +1,12 @@
+// import processes to be run in the workflow
+include { FETCHSRAFASTQS; DOWNLOADFASTQS } from './modules/download'
+include { STARINDEX; ALIGNREADS; INDEXBAM; SPLITBAM; SPLITGTF; COUNT } from './modules/count'
+
 // pipeline input parameters
 params.transcriptome_file = "$projectDir/data/ggal/transcriptome.fa"
+params.gtf_file = "$projectDir/data/ggal/transcriptome.gtf"
+params.ref_name = params.transcriptome_file.baseName
+params.star_index = ""
 params.reads = "$projectDir/data/samplesheet.csv"
 params.outdir = "results"
 
@@ -84,33 +91,77 @@ process MULTIQC {
 // Define the workflow
 workflow {
 
-  // Run the index step with the transcriptome parameter
-  INDEX(params.transcriptome_file)
+    // Get the STAR index
+    if (params.star_index == "") {
+        // Run the index step with the transcriptome parameter
+        ref_data = Channel.of([ params.ref_name, file(params.transcriptome_file), file(params.gtf_file) ])
+        STARINDEX(ref_data)
+        ref_index = STARINDEX.out.star_index
+    } else {
+        // Get the user-supplied STAR index instead
+        ref_index = Channel.fromPath(params.star_index)
+            .first()  // Ensure we have a dataflow value (value channel) rather than a channel (queue channel)
+    }
 
-  // Define the fastqc input channel
-  reads_in = Channel.fromPath(params.reads)
+    // Define the fastqc input channel
+    reads_in = Channel.fromPath(params.reads)
         .splitCsv(header: true)
-        .map { row -> 
-          def fastq_2_file = row.fastq_2 == '' ? [] : file(row.fastq_2)
-          [row.sample, file(row.fastq_1), fastq_2_file] 
-        }
+        .map { row -> {
+            def fastq_2_file = row.fastq_2 == '' ? [] : file(row.fastq_2)
+            [row.sample, file(row.fastq_1), fastq_2_file] 
+        }}
 
-  // Run the fastqc step with the reads_in channel
-  FASTQC(reads_in)
+    // Run the fastqc step with the reads_in channel
+    FASTQC(reads_in)
 
-  // Run the quantification step with the index and reads_in channels
-  transcriptome_index_in = INDEX.out[0]
-  QUANTIFICATION(transcriptome_index_in, reads_in)
+    // Run the quantification step with the index and reads_in channels
+    ALIGNREADS(ref_index, reads_in)
 
-  // Define the multiqc input channel
-  multiqc_in = FASTQC.out[0]
-    .mix(QUANTIFICATION.out[0])
-    .collect()
+    // Index the BAM file
+    aligned_reads = ALIGNREADS.out.aligned_bam
+    INDEXBAM(aligned_reads)
 
-  /*
-   * Generate the analysis report with the 
-   * outputs from FASTQC and QUANTIFICATION
-   */ 
-  MULTIQC(multiqc_in)
+    // Split the BAM file into one BAM per chromosome
+    indexed_reads = aligned_reads.join(INDEXBAM.out.indexed_bam)
+    SPLITBAM(indexed_reads)
+
+    // Split the GTF into per-chromosome files
+    gtf_file = Channel.fromPath(params.gtf_file)
+    SPLITGTF(gtf_file)
+
+    // Prepare the input channel for COUNT
+    split_gtfs = SPLITGTF.out.split_gtfs
+        .flatten()
+        .map { gtf -> {
+            def chrom = gtf.baseName
+            [ gtf, chrom ]
+        }}
+    
+    split_reads = SPLITBAM.out.split_bams
+        .transpose()
+        .map { sample_id, bam_file -> {
+            def chrom = bam_file.baseName.tokenize('.')[-1]
+            [ sample_id, chrom, bam_file ]
+        }}
+        .combine(split_gtfs, by: 1)
+        .map { chrom, sample_id, bam_file, gtf -> {
+            [ sample_id, chrom, bam_file, gtf ]
+        }}
+
+    // Perform counting
+    COUNT(split_reads)
+
+    // Define the multiqc input channel
+    count_summaries = COUNT.out.count_summary
+        .map { it[1] }
+    multiqc_in = FASTQC.out[0]
+        .mix(count_summaries)
+        .collect()
+
+    /*
+    * Generate the analysis report with the 
+    * outputs from FASTQC and QUANTIFICATION
+    */ 
+    MULTIQC(multiqc_in)
 
 }
