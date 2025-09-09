@@ -1,12 +1,10 @@
 // import processes to be run in the workflow
-include { FETCHSRAFASTQS; DOWNLOADFASTQS } from './modules/download'
-include { STARINDEX; ALIGNREADS; INDEXBAM; SPLITBAM; SPLITGTF; COUNT } from './modules/count'
+include { DOWNLOADGTF } from './modules/download'
+include { ALIGNREADS; INDEXBAM; SPLITBAM; SPLITGTF; COUNT } from './modules/count'
 
 // pipeline input parameters
-params.transcriptome_file = "$projectDir/data/ggal/transcriptome.fa"
 params.gtf_file = "$projectDir/data/ggal/transcriptome.gtf"
 params.star_index = ""
-params.ref_name = params.star_index ? file(params.star_index).baseName : file(params.transcriptome_file).baseName
 params.reads = "$projectDir/data/samplesheet.csv"
 params.outdir = "results"
 
@@ -91,24 +89,24 @@ process MULTIQC {
 // Define the workflow
 workflow {
 
-    // Get the STAR index
-    if (params.star_index == "") {
-        // Run the index step with the transcriptome parameter
-        ref_data = Channel.of([ params.ref_name, file(params.transcriptome_file), file(params.gtf_file) ])
-        STARINDEX(ref_data)
-        ref_index = STARINDEX.out.star_index
+    // Get the user-supplied STAR index
+    ref_index = Channel.fromPath(params.star_index)
+        .first()  // Ensure we have a dataflow value (value channel) rather than a channel (queue channel)
+
+    // Download GTF file if necessary
+    if (params.gtf_file.startsWith('http')) {
+        DOWNLOADGTF(params.gtf_file)
+        gtf_file = DOWNLOADGTF.out.gtf_file
     } else {
-        // Get the user-supplied STAR index instead
-        ref_index = Channel.fromPath(params.star_index)
-            .first()  // Ensure we have a dataflow value (value channel) rather than a channel (queue channel)
+        gtf_file = Channel.fromPath(params.gtf_file)
     }
 
     // Define the fastqc input channel
     reads_in = Channel.fromPath(params.reads)
         .splitCsv(header: true)
         .map { row -> {
-            def fastq_2_file = row.fastq_2 == '' ? [] : file(row.fastq_2)
-            [row.sample, file(row.fastq_1), fastq_2_file] 
+            // def strandedness = row.strandedness ? row.strandedness : 'auto'
+            [ row.sample, row.fastq_1, row.fastq_2 ] 
         }}
 
     // Run the fastqc step with the reads_in channel
@@ -126,7 +124,6 @@ workflow {
     SPLITBAM(indexed_reads)
 
     // Split the GTF into per-chromosome files
-    gtf_file = Channel.fromPath(params.gtf_file)
     SPLITGTF(gtf_file)
 
     // Prepare the input channel for COUNT

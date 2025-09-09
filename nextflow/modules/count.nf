@@ -1,26 +1,3 @@
-process STARINDEX {
-    container "quay.io/biocontainers/star:2.7.11b--h5ca1c30_7"
-
-    input:
-    tuple val(ref_name), path(reference), path(annotation)
-
-    output:
-    path "${ref_name}", emit: star_index
-
-    script:
-    """
-    # Create STAR index directory
-    mkdir -p ${ref_name}
-    
-    # Generate STAR genome index
-    STAR --runMode genomeGenerate \\
-         --genomeDir ${ref_name} \\
-         --genomeFastaFiles $reference \\
-         --runThreadN $task.cpus \\
-         --sjdbGTFfile $annotation
-    """
-}
-
 process ALIGNREADS {
     container "quay.io/biocontainers/star:2.7.11b--h5ca1c30_7"
 
