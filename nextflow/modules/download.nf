@@ -29,13 +29,13 @@ process DOWNLOADFASTQS {
 
     script:
     """
-    wget -O $(basename $url) $url
+    wget -O \$(basename $url) $url
 
-    GZIPPED=\$(file $(basename $url) | grep gzip | wc -l)
+    GZIPPED=\$(file \$(basename $url) | grep gzip | wc -l)
     if [ \$GZIPPED -eq 0 ]; then
-        gzip -c $(basename $url) > ${sample_id}.fastq.gz
+        gzip -c \$(basename $url) > ${sample_id}.fastq.gz
     else
-        mv $(basename $url) ${sample_id}.fastq.gz
+        mv \$(basename $url) ${sample_id}.fastq.gz
     fi
     """
 }

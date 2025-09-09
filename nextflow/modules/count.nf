@@ -113,6 +113,6 @@ process COUNT {
 
     script:
     """
-    featureCounts -a $annotation -p --countReadPairs -o ${sample_id}.${chr}.gene_counts.txt $sortedBam
+    featureCounts -a $annotation -p --countReadPairs -T $task.cpus -o ${sample_id}.${chr}.gene_counts.txt $sortedBam
     """
 }

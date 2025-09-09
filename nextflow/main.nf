@@ -5,8 +5,8 @@ include { STARINDEX; ALIGNREADS; INDEXBAM; SPLITBAM; SPLITGTF; COUNT } from './m
 // pipeline input parameters
 params.transcriptome_file = "$projectDir/data/ggal/transcriptome.fa"
 params.gtf_file = "$projectDir/data/ggal/transcriptome.gtf"
-params.ref_name = params.transcriptome_file.baseName
 params.star_index = ""
+params.ref_name = params.star_index ? file(params.star_index).baseName : file(params.transcriptome_file).baseName
 params.reads = "$projectDir/data/samplesheet.csv"
 params.outdir = "results"
 
