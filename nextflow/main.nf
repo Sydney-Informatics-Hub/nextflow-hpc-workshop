@@ -1,6 +1,7 @@
 // import processes to be run in the workflow
 include { DOWNLOADGTF } from './modules/download'
-include { ALIGNREADS; INDEXBAM; SPLITBAM; SPLITGTF; COUNT } from './modules/count'
+include { ALIGNREADS; INDEXBAM } from './modules/align'
+include { SPLITBAM; SPLITGTF; COUNT } from './modules/count'
 
 // pipeline input parameters
 params.gtf_file = "$projectDir/data/ggal/transcriptome.gtf"
