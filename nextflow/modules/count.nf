@@ -56,3 +56,24 @@ process COUNT {
     featureCounts -a $annotation -p --countReadPairs -T $task.cpus -o ${sample_id}.${chr}.gene_counts.txt $sortedBam
     """
 }
+
+process COMBINECHROMCOUNTS {
+    container "quay.io/biocontainers/pandas:2.2.1"
+
+    input:
+    tuple val(sample_id), path(count_files, stageAs: 'counts/*'), path(summary_files, stageAs: 'summaries/*')
+
+    output:
+    tuple val(sample_id), path("${sample_id}.gene_counts.txt"), emit: gene_counts
+    tuple val(sample_id), path("${sample_id}.gene_counts.txt.summary"), emit: count_summary
+
+    script:
+    """
+    combine_featurecounts.py \\
+        --sample ${sample_id} \\
+        --counts counts/* \\
+        --summaries summaries/* \\
+        --output-counts ${sample_id}.gene_counts.txt.summary \\
+        --output-sumary ${sample_id}.gene_counts.txt.summary
+    """
+}

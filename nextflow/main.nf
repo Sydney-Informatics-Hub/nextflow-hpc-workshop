@@ -1,7 +1,7 @@
 // import processes to be run in the workflow
 include { DOWNLOADGTF } from './modules/download'
 include { ALIGNREADS; INDEXBAM } from './modules/align'
-include { SPLITBAM; SPLITGTF; COUNT } from './modules/count'
+include { SPLITBAM; SPLITGTF; COUNT; COMBINECHROMCOUNTS } from './modules/count'
 
 // pipeline input parameters
 params.gtf_file = "$projectDir/data/ggal/transcriptome.gtf"
@@ -149,8 +149,17 @@ workflow {
     // Perform counting
     COUNT(split_reads)
 
+    // Combine the counts from each sample back together
+    summary_results = COUNT.out.count_summary
+        .groupTuple()
+    count_results = COUNT.out.gene_counts
+        .groupTuple()
+        .join(summary_results)
+    COMBINECHROMCOUNTS(count_results)
+
     // Define the multiqc input channel
-    count_summaries = COUNT.out.count_summary
+    // count_summaries = COUNT.out.count_summary  // one plot per chromosome per sample
+    count_summaries = COMBINECHROMCOUNTS.out.count_summary  // one plot per sample
         .map { it[1] }
     multiqc_in = FASTQC.out[0]
         .mix(count_summaries)
