@@ -1,4 +1,4 @@
-# nextflow-hpc-workshop
+# Nextflow for HPC
 
 This workshop is designed for researchers and technical users (bioinformaticians, life scientists, and data scientists) who:
   -  Have access to HPC systems (e.g., institutional, national, or cloud-based clusters)
