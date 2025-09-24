@@ -37,7 +37,7 @@ process FASTQC {
     publishDir params.outdir, mode: 'copy'
 
     input:
-    tuple val(sample_id), path(reads_1), path(reads_2)
+    tuple val(sample_id), path(reads_1)
 
     output:
     path "fastqc_${sample_id}_logs"
@@ -45,7 +45,7 @@ process FASTQC {
     script:
     """
     mkdir -p "fastqc_${sample_id}_logs"
-    fastqc --outdir "fastqc_${sample_id}_logs" --format fastq $reads_1 $reads_2 -t $task.cpus
+    fastqc --outdir "fastqc_${sample_id}_logs" --format fastq $reads_1 -t $task.cpus
     """
 }
 
@@ -57,7 +57,7 @@ process QUANTIFICATION {
     
     input:
     path salmon_index
-    tuple val(sample_id), path(reads_1), path(reads_2)
+    tuple val(sample_id), path(reads_1)
 
     output:
     path "$sample_id"

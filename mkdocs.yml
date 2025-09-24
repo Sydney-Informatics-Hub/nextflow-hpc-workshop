@@ -1,0 +1,44 @@
+site_name: Nextflow and HPC
+repo_url: https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop
+repo_name: Sydney-Informatics-Hub/nextlow-hpc-workshop
+
+nav:
+  - Home: index.md
+
+theme:
+  name: material
+  logo: assets/usyd-logo.png
+  features:
+    - navigation.footer
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+extra_css:
+  - extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      preserve_tabs: true
+  - attr_list
+  - md_in_html
+  - pymdownx.superfences
+
+extra:
+  analytics:
+    provider: google
+    property: G-TNWWV3HK57
