@@ -1,0 +1,10 @@
+patient,sample,lane,fastq_1,fastq_2
+SRR5055381_Tamborine,SRR5055381,1,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376189_SRR5055381_1.fastq.gz,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376189_SRR5055381_2.fastq.gz
+SRR5055388_Isabella,SRR5055388,1,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376196_SRR5055388_1.fastq.gz,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376196_SRR5055388_2.fastq.gz
+SRR5055389_Cinnamon,SRR5055389,1,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376197_SRR5055389_1.fastq.gz,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376197_SRR5055389_2.fastq.gz
+SRR5055393_Kooki,SRR5055393,1,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376201_SRR5055393_1.fastq.gz,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376201_SRR5055393_2.fastq.gz
+SRR5055397_Tamborine,SRR5055397,1,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376205_SRR5055397_1.fastq.gz,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376205_SRR5055397_2.fastq.gz
+SRR5055400_Kooki,SRR5055400,1,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376208_SRR5055400_1.fastq.gz,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376208_SRR5055400_2.fastq.gz
+SRR5055401_Pudge,SRR5055401,1,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376209_SRR5055401_1.fastq.gz,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376209_SRR5055401_2.fastq.gz
+SRR5055402_Pudge,SRR5055402,1,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376210_SRR5055402_1.fastq.gz,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376210_SRR5055402_2.fastq.gz
+SRR5055405_Isabella,SRR5055405,1,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376213_SRR5055405_1.fastq.gz,/scratch/er01/gs5517/nxf-hpc/nextflow-hpc-workshop/data/fastq/SRX2376213_SRR5055405_2.fastq.gz
