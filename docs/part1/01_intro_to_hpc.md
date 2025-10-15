@@ -20,9 +20,13 @@ It is important to optimise the resources for your jobs as best as you can. It i
 2. Second, requesting too much can actually slow down your work! Suppose, as an extreme example, you have a job that requires 1 CPU and will run in approximately 10 minutes; but instead, you request 8 CPUs and 12 hours! Now, the scheduler needs to find a node that has 8 CPUs available for a 12 hour stretch. With lots of users using the system simultaneously, you might be waiting several hours for a suitable slot to open up. On the other hand, if you had requested just 1 CPU and 10 minutes, the scheduler may have been able to find a spot for your job immediately!
 3. Third, each node has a finite amount of resources available. By requesting too many resources, you reduce the amounts available to other users on the system.
 
+It is also important to submit your job to an appropriate **queue**. HPCs typically have different queues for tasks with different resource requirements. Some queues have lots of resources available for large, long-running tasks, while others are optimised for smaller, regular tasks.
+
 ![HPC scheduling](/docs/assets/scheduler.png)
 
-Of course, it is also problematic if you don't request enough resources for your job. If you request too few CPUs, too little memory, or not enought time, your job may fail or stop prematurely. As such, benchmarking of your jobs is typically required to tune the resources needed carefully.
+Of course, it is also problematic if you don't request enough resources for your job. If you request too few CPUs, too little memory, or not enought time, your job may fail or stop prematurely. As such, benchmarking of your jobs is typically required to tune the resources needed carefully. This is typically done by first running small-scale tests of your workflow and extrapolating the resources required for larger, full-scale datasets.
+
+Remember, HPCs are a **shared resource**, and operate on a **fair share** policy. We as users request a certain amount of resources for our jobs and the scheduler attempts to fairly distribute those resources to all users. By requesting appropriate amounts of resources for your tasks, and by submitting your jobs to the appropriate queues, you can ensure that they move as quickly as possible through the queue, while maintaining fair use of the system as a whole by all users.
 
 ## 1.1.3 The do's and do not do's of HPCs
 
