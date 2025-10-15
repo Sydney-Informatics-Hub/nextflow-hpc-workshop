@@ -261,7 +261,7 @@ Go ahead and run the command for your system!
 
 ## 1.2.3 Monitoring a job's progress
 
-When running jobs on an HPC, especially long-running jobs, it's useful to be able to monitor its progress and check whether it is queued, running, or complete. All HPC systems will have a way to do exactly this. On the command line, run the following command for your system:
+When running jobs on an HPC, especially long-running jobs, it's useful to be able to monitor its progress and check whether it is queued, running, or complete. All HPC systems will have a way to do exactly this. On the command line, run the following command for your system to see your queue list:
 
 === "Gadi"
 
@@ -290,4 +290,157 @@ When running jobs on an HPC, especially long-running jobs, it's useful to be abl
     ```console title="Output"
     JOBID        USER ACCOUNT                   NAME   EXEC_HOST ST     REASON START_TIME       END_TIME  TIME_LEFT NODES   PRIORITY       QOS
     12345678 username pawsey1234                fastqc       n/a PD       None N/A                   N/A      10:00     1      75423    normal
+    ```
+
+At first, the job will be in a **queued** stage, waiting to start. Once there is a suitable slot for the job to run, it will move into a **running** stage, and will continue until it finishes, or (hopefully not) fails. The above script will take only a minute or so to complete, at which point the job will move into a **completed** stage, during which the scheduler will wrap things up, including writing final outputs to the log files. After that, the job will disappear from the queue list.
+
+## 1.2.4 Inspecting the output
+
+Once the FASTQC job has completed, you should see a few new files. First, there will be a new `results/` folder containing the outputs of the `fastqc` command:
+
+```bash
+tree results
+```
+
+```console title="Output"
+results
+└── fastqc_gut_logs
+    ├── gut_1_fastqc.html
+    ├── gut_1_fastqc.zip
+    ├── gut_2_fastqc.html
+    └── gut_2_fastqc.zip
+```
+
+You will also see one or two new files that contain the standard output and standard error streams from the `fastqc` command. This differs slightly between systems:
+
+=== "Gadi"
+
+    On Gadi, the standard output and error streams are split across two files, typically named as `<job name>.[o|e]<job id>`. Note that the error file doesn't necessarily only contain error messages; it can also contain less urgent warning messages and other messages that might otherwise clutter up the main output file. The standard error file looks like this:
+
+    ```bash
+    cat fastqc.e123456789
+    ```
+
+    ```console title="Output"
+    Started analysis of gut_1.fq
+    Approx 30% complete for gut_1.fq
+    Approx 65% complete for gut_1.fq
+    Started analysis of gut_2.fq
+    Approx 30% complete for gut_2.fq
+    Approx 65% complete for gut_2.fq
+    ```
+
+    The standard output file looks like this:
+
+    ```bash
+    cat fastqc.o123456789
+    ```
+
+    ```console title="Output"
+    Analysis complete for gut_1.fq
+    Analysis complete for gut_2.fq
+
+    ======================================================================================
+                    Resource Usage on 2025-11-18 12:00:00:
+    Job Id:             123456789.gadi-pbs
+    Project:            ab01
+    Exit Status:        0
+    Service Units:      0.00
+    NCPUs Requested:    1                      NCPUs Used: 1               
+                                            CPU Time Used: 00:00:04        
+    Memory Requested:   1.0GB                 Memory Used: 144.06MB        
+    Walltime requested: 00:10:00            Walltime Used: 00:00:05        
+    JobFS requested:    100.0MB                JobFS used: 0B              
+    ======================================================================================
+    ```
+
+    Note that on Gadi, the standard output file also contains a helpful final summary of the job and its resource usage. This can be very useful for benchmarking purposes and determining the optimal resources to request. Note that the `Exit Status` line shows `0`, which indicates a successful run; if there were errors, a non-zero number will usually show here.
+
+=== "Setonix"
+
+    On Setonix, the standard output and error streams are combined into a single file, much like how you would see both streams print to your terminal if running interactively. The file will be typically named as `slurm-<job id>.out`:
+
+    ```bash
+    cat slurm-12345678.out
+    ```
+
+    ```console title="Output"
+    Started analysis of gut_1.fq
+    Approx 30% complete for gut_1.fq
+    Approx 65% complete for gut_1.fq
+    Analysis complete for gut_1.fq
+    Started analysis of gut_2.fq
+    Approx 30% complete for gut_2.fq
+    Approx 65% complete for gut_2.fq
+    Analysis complete for gut_2.fq
+    ```
+
+## 1.2.5 Simplifying job submission
+
+You might think that it is a bit of a hassle to write the entire job submission command every time with all of those parameters - and you'd be right! Thankfully, many schedulers have a handy trick that lets you insert those parameters into the script itself, allowing you to significantly shorten and simplify the job submission command. This is done by adding special commented lines at the top of the script, like so:
+
+=== "Gadi"
+
+    ```bash title="fastqc.sh" hl_lines="2-9"
+    #!/usr/bin/bash
+    #PBS -P ab01
+    #PBS -N fastqc
+    #PBS -q normal
+    #PBS -l ncpus=1
+    #PBS -l mem=1GB
+    #PBS -l walltime=00:10:00
+    #PBS -l storage=scratch/ab01
+    #PBS -l wd
+
+    module load fastqc/0.12.1
+
+    SAMPLE_ID="gut"
+    READS_1="data/ggal/${SAMPLE_ID}_1.fq"
+    READS_2="data/ggal/${SAMPLE_ID}_2.fq"
+
+    mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
+    fastqc \
+        --outdir "results/fastqc_${SAMPLE_ID}_logs" \
+        --format fastq ${READS_1} ${READS_2}
+    ```
+
+    Note that when specifying your project with `#PBS -P ab01`, you need to explicity write out your project ID, and cannot use the environemnt variable `$PROJECT`. Similarly, you also need to supply the project ID explicity when specifying the storage resource: `#PBS -l storage=scratch/ab01`.
+
+    Now, you can simply run the following command to submit your job:
+
+    ```bash
+    qsub fastqc.sh
+    ```
+
+=== "Setonix"
+
+    ```bash title="fastqc.sh" hl_lines="2-9"
+    #!/usr/bin/bash
+    #SBATCH --account=pawsey1234
+    #SBATCH --job-name=fastqc
+    #SBATCH --partition=work
+    #SBATCH --nodes=1
+    #SBATCH --ntasks=1
+    #SBATCH --cpus-per-task=1
+    #SBATCH --mem=1GB
+    #SBATCH --time=00:10:00
+
+    module load fastqc/0.11.9--hdfd78af_1
+
+    SAMPLE_ID="gut"
+    READS_1="data/ggal/${SAMPLE_ID}_1.fq"
+    READS_2="data/ggal/${SAMPLE_ID}_2.fq"
+
+    mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
+    fastqc \
+        --outdir "results/fastqc_${SAMPLE_ID}_logs" \
+        --format fastq ${READS_1} ${READS_2}
+    ```
+
+    Note that when specifying your account with `#SBATCH --acount=pawsey1234`, you need to explicity write out your project ID, and cannot use the environemnt variable `$PAWSEY_PROJECT`.
+
+    Now, you can simply run the following command to submit your job:
+
+    ```bash
+    sbatch fastqc.sh
     ```
