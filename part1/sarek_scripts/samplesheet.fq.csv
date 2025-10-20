@@ -1,0 +1,2 @@
+patient,sample,lane,fastq_1,fastq_2
+na12878,test_sample,all,/scratch/er01/PIPE-5866-NF4HPC/lesson2/data/NA12878.20-22.R1.fq.gz,/scratch/er01/PIPE-5866-NF4HPC/lesson2/data/NA12878.20-22.R2.fq.gz
