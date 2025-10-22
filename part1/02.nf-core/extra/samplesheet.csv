@@ -1,0 +1,2 @@
+patient,sample,lane,fastq_1,fastq_2
+na12878,test_sample,all,data/NA12878.20-22.R1.fq.gz,data/NA12878.20-22.R2.fq.gz
