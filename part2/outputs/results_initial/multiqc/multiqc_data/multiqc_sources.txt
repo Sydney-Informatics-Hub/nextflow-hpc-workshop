@@ -1,0 +1,4 @@
+Module	Section	Sample Name	Source
+Bcftools	stats	cohort	/scratch/pawsey1227/michaelgeaghan/03.diy_workflow/work/9a/6597f78e315de0ac51509c8a8fa174/bcftools_stats.txt
+FastQC	all_sections	NA12878.20-22.R2	/scratch/pawsey1227/michaelgeaghan/03.diy_workflow/work/9a/6597f78e315de0ac51509c8a8fa174/fastqc_test/NA12878.20-22.R2_fastqc.zip
+FastQC	all_sections	NA12878.20-22.R1	/scratch/pawsey1227/michaelgeaghan/03.diy_workflow/work/9a/6597f78e315de0ac51509c8a8fa174/fastqc_test/NA12878.20-22.R1_fastqc.zip

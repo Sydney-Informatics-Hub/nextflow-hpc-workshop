@@ -1,0 +1,3 @@
+Sample	Bcftools	FastQC
+Bcftools	1.22	
+FastQC		0.12.1

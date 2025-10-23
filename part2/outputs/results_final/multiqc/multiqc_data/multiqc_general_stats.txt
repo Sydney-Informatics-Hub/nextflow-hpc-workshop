@@ -1,0 +1,4 @@
+Sample	Bcftools: Stats_mqc-generalstats-bcftools_stats-number_of_records	Bcftools: Stats_mqc-generalstats-bcftools_stats-number_of_SNPs	Bcftools: Stats_mqc-generalstats-bcftools_stats-number_of_indels	Bcftools: Stats_mqc-generalstats-bcftools_stats-tstv	Bcftools: Stats_mqc-generalstats-bcftools_stats-number_of_MNPs	FastQC_mqc-generalstats-fastqc-percent_duplicates	FastQC_mqc-generalstats-fastqc-percent_gc	FastQC_mqc-generalstats-fastqc-avg_sequence_length	FastQC_mqc-generalstats-fastqc-median_sequence_length	FastQC_mqc-generalstats-fastqc-percent_fails	FastQC_mqc-generalstats-fastqc-total_sequences
+NA12878.20-22.R1						0.27247956403270734	44.0	250.0	250	18.181818181818183	1468.0
+NA12878.20-22.R2						0.0	44.0	250.0	250	18.181818181818183	1468.0
+cohort	71.0	65.0	6.0	2.42	0.0						

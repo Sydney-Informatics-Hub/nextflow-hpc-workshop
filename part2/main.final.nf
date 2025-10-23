@@ -7,6 +7,7 @@ params.ref_dict = "${params.ref_prefix}.dict"
 params.bwa_index = "$projectDir/ref/BWAIndex"
 params.bwa_index_name = "Homo_sapiens_assembly38.20-22.fasta"
 params.cohort_name = "cohort"
+params.split_n = 4
 params.outdir = "results"
 
 process FASTQC {
@@ -126,6 +127,64 @@ process MULTIQC {
 
 }
 
+// Add additional processes for implementing a scatter/gather pattern
+
+process SPLIT_FASTQ {
+
+    tag "split fastqs for ${sample_id}"
+    container "quay.io/biocontainers/fastp:1.0.1--heae3180_0"
+
+    input:
+    tuple val(sample_id), path(reads_1), path(reads_2), val(n)
+
+    output:
+    tuple val(sample_id), path("*.${sample_id}.R1.fq"), path("*.${sample_id}.R2.fq"), emit: split_fq
+
+    script:
+    """
+    fastp -Q -L -A -i $reads_1 -I $reads_2 -o ${sample_id}.R1.fq -O ${sample_id}.R2.fq -s $n
+    """
+
+}
+
+process ALIGN_CHUNK {
+
+    container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
+
+    input:
+    tuple val(sample_id), val(chunk), path(reads_1), path(reads_2)
+    tuple val(ref_name), path(bwa_index)
+
+    output:
+    tuple val(sample_id), val(chunk), path("${sample_id}.${chunk}.bam"), path("${sample_id}.${chunk}.bam.bai"), emit: aligned_bam
+
+    script:
+    """
+    bwa mem -t $task.cpus -R "@RG\\tID:${sample_id}\\tPL:ILLUMINA\\tPU:${sample_id}\\tSM:${sample_id}\\tLB:${sample_id}\\tCN:SEQ_CENTRE" ${bwa_index}/${ref_name} $reads_1 $reads_2 | samtools sort -O bam -o ${sample_id}.${chunk}.bam
+    samtools index ${sample_id}.${chunk}.bam
+    """
+
+}
+
+process MERGE_BAMS {
+
+    container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
+    publishDir "${params.outdir}/alignment"
+
+    input:
+    tuple val(sample_id), path(bams), path(bais)
+
+    output:
+    tuple val(sample_id), path("${sample_id}.bam"), path("${sample_id}.bam.bai"), emit: aligned_bam
+
+    script:
+    """
+    samtools cat ${bams} | samtools sort -O bam -o ${sample_id}.bam
+    samtools index ${sample_id}.bam
+    """
+
+}
+
 // Define the workflow
 workflow {
 
@@ -139,16 +198,47 @@ workflow {
 
     bwa_index = Channel.fromPath(params.bwa_index)
         .map { idx -> [ params.bwa_index_name, idx ] }
+        .first()
     ref = Channel.of( [ file(params.ref_fasta), file(params.ref_fai), file(params.ref_dict) ] )
+        .first()
 
     // Run the fastqc step with the reads_in channel
     FASTQC(reads)
 
-    // Run the align step with the reads_in channel and the genome reference
-    ALIGN(reads, bwa_index)
+    // Perform a scatter/gather workflow by splitting the FASTQs into multiple chunks,
+    // aligning each chunk separately, then merging the BAMs together at the end
+
+    // Split FASTQs for each sample
+    reads_to_split = reads
+        .map { it + [ params.split_n ] }
+    SPLIT_FASTQ(reads_to_split)
+
+    // Extract the chunk ID from the split FASTQs and run ALIGN_CHUNK
+    split_fqs_r1 = SPLIT_FASTQ.out.split_fq
+        .map { sample_id, fqs_1, _fqs_2 -> [ sample_id, fqs_1 ] }
+        .transpose()
+        .map { sample_id, fq1 -> {
+            def chunk_id = fq1.baseName.tokenize(".")[0]
+            [ sample_id, chunk_id, fq1 ]
+        } }
+    split_fqs_r2 = SPLIT_FASTQ.out.split_fq
+        .map { sample_id, _fqs_1, fqs_2 -> [ sample_id, fqs_2 ] }
+        .transpose()
+        .map { sample_id, fq2 -> {
+            def chunk_id = fq2.baseName.tokenize(".")[0]
+            [ sample_id, chunk_id, fq2 ]
+        } }
+    split_fqs = split_fqs_r1.join(split_fqs_r2, by: [0, 1])
+    ALIGN_CHUNK(split_fqs, bwa_index)
+
+    // Gather all BAM chunks for a sample and run MERGE_BAMS
+    gathered_bams = ALIGN_CHUNK.out.aligned_bam
+        .groupTuple()
+        .map { sample_id, _chunks, bams, bais -> [ sample_id, bams, bais ] }
+    MERGE_BAMS(gathered_bams)
 
     // Run genotyping with aligned bam and genome reference
-    GENOTYPE(ALIGN.out.aligned_bam, ref)
+    GENOTYPE(MERGE_BAMS.out.aligned_bam, ref)
 
     // Gather gvcfs and run joint genotyping
     all_gvcfs = GENOTYPE.out.gvcf
