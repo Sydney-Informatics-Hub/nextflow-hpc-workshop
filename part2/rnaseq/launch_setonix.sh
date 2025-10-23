@@ -12,8 +12,9 @@
 #SBATCH --mail-type=END,FAIL
 
 #load the nextflow module
-module load nextflow/24.10.0
-module load singularity/4.1.0-slurm
+module load nextflow/24.04.3
+module load pawseyenv/2023.08
+module load singularity/3.11.4-nompi
 
-# Run the nextflow workflow with custom config
-nextflow run main.nf -c setonix.config -resume
+#Run the nextflow workflow with custom config
+nextflow run main.nf -c conf/setonix.config 

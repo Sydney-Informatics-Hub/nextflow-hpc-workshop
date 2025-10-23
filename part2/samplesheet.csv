@@ -1,0 +1,2 @@
+sample,fastq_1,fastq_2
+test,data/NA12878.20-22.R1.fq.gz,data/NA12878.20-22.R2.fq.gz
