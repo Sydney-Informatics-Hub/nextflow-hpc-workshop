@@ -1,9 +1,13 @@
-site_name: Nextflow and HPC
+site_name: Nextflow on HPC
 repo_url: https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop
 repo_name: Sydney-Informatics-Hub/nextlow-hpc-workshop
 
 nav:
   - Home: index.md
+  - Part 1:
+    - 1.0 HPC for workflows: part1/00_intro.md
+    - 1.1 HPC infrastructure: part1/01_infrastructure.md
+    - 1.2 Submitting Jobs: part1/02_scheduler.md
 
 theme:
   name: material
@@ -11,6 +15,7 @@ theme:
   features:
     - navigation.footer
     - content.code.copy
+    - content.tabs.link
   palette:
     - scheme: default
       primary: custom
@@ -37,6 +42,8 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
 
 extra:
   analytics:
