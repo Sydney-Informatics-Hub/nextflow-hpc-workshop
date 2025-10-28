@@ -21,6 +21,11 @@ But workflows don’t always need HPC. Many can run perfectly well on a laptop o
 
 TODO this is not very good, can come up with some better examples here, can be communicated better. 
 
+Not every workflow needs a supercomputer. Many analyses start on a laptop and stay there—especially during method development, testing small datasets, or when turnaround is more important than throughput. HPC becomes necessary when your workflow starts to hit practical limits of time, memory, storage, reliability, or governance.
+
+A workflow is usually ready for HPC when scale becomes a problem. This might be scale in data size (more gigabytes than your laptop can hold), compute time (weeks of serial runs), memory usage (jobs crash due to insufficient RAM), or workflow complexity (tens of jobs become too painful to run manually).
+
+
 | Challenge | Scenario |
 |-----------|----------|
 | Runtime is too long | A single sample takes >12 hours to process |
@@ -88,11 +93,9 @@ At the centre of everything is the job scheduler. Rather than allowing users to 
 - Scatter/gather vs multithreading
 - **Key takeaway:** Efficiency determines queue time AND cost.
 
+![](figs/00_multithread.png)
+
 ## Conclusion 
 
-This module sets the foundation for configuring Nextflow on HPC:
-- `process.executor`
-- `cpus`, `memory`, `time`
-- containers vs modules
-- storage patterns and `publishDir`
-- profiles and config files
+This module sets the foundation for workflow configuration principles:
+
