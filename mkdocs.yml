@@ -6,7 +6,7 @@ nav:
   - Home: index.md
   - Part 1:
     - 1.0 HPC for workflows: part1/00_intro.md
-    - 1.1 HPC infrastructure: part1/01_infrastructure.md
+    - 1.1 Nextflow on HPC: part1/01_nf_for_hpc.md
     - 1.2 Submitting Jobs: part1/02_scheduler.md
 
 theme:

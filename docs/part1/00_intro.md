@@ -62,24 +62,17 @@ All nodes are connected to a shared parallel filesystem. This is a large, high-s
 ### Job scheduler
 At the centre of everything is the job scheduler. Rather than allowing users to run programs directly, HPCs rely on a scheduling system (e.g. Slurm or PBS Pro) to manage fair access to shared compute resources. When a job is submitted, it enters a queue where the scheduler decides when and where it will run. Jobs are matched to compute nodes based on requested resources like CPU, memory and runtime. Understanding how the scheduler behaves is essential for designing workflows that run efficiently.
 
-!!! warning 
-    No sudo for you! 
-
+TODO come up with an exercise here to explore each of these features
 - Login nodes vs compute nodes
 - Cores, threads, memory, and nodes
 - Shared storage and file system behaviour (scratch vs project)
 - Job schedulers (Slurm / PBS Pro) as resource brokers
-- **Key takeaway:** Workflows must *describe* compute needs to the scheduler.
-
-## What happens when a workflow runs on HPC? 
-
-- Tasks map to jobs
-- Executors: local vs Slurm vs PBS
-- Staging work directories and `.command.sh`
-- Parallelisation through job arrays / process parallelism
-- **Key takeaway:** Nextflow does not run your workflow — the scheduler does!
+- **Key takeaway:** Workflows must describe compute needs to the scheduler.
 
 ## Software installation is different on HPC
+
+!!! warning 
+    No sudo for you! 
 
 - Why you don’t get `sudo`
 - Modules, containers, and conda
