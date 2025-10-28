@@ -71,12 +71,6 @@ At the centre of everything is the job scheduler. Rather than allowing users to 
 !!! example 
     TODO An exercise for understanding the scheduler
 
-- Login nodes vs compute nodes
-- Cores, threads, memory, and nodes
-- Shared storage and file system behaviour (scratch vs project)
-- Job schedulers (Slurm / PBS Pro) as resource brokers
-- **Key takeaway:** Workflows must describe compute needs to the scheduler.
-
 ## Software installation is different on HPC
 
 !!! warning 
