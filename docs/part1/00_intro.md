@@ -61,30 +61,45 @@ When a user connects to an HPC, they first land on a login node. This is a share
 ### Compute nodes
 The real work happens on the compute nodes. These are powerful machines with many CPU cores, large amounts of memory and fast access to storage. Workflows do not run directly on them; instead, the scheduler assigns workflow tasks to available compute nodes based on the resources requested. This separation between the login node and compute nodes allows users to interact with the system while computation is queued and executed elsewhere.
 
-!!! example 
+TODO some clarification re: compute nodes allocated to different queues
+
+!!! example "Exercise" 
     TODO An exercise for understanding the login node vs compute node 
 
 ### Shared storage
 All nodes are connected to a shared parallel filesystem. This is a large, high-speed storage system where input data, reference files and workflow outputs are kept. Because it is shared across all users, it enables collaborative research and scalable workflows. However, it also introduces constraints around file organisation and performance, which is why workflows must be careful about how they read and write data here.
 
-!!! example 
+!!! example "Exercise" 
     TODO An exercise for understanding shared storage 
 
 ### Job scheduler
 At the centre of everything is the job scheduler. Rather than allowing users to run programs directly, HPCs rely on a scheduling system (e.g. Slurm or PBS Pro) to manage fair access to shared compute resources. When a job is submitted, it enters a queue where the scheduler decides when and where it will run. Jobs are matched to compute nodes based on requested resources like CPU, memory and runtime. Understanding how the scheduler behaves is essential for designing workflows that run efficiently.
 
-!!! example 
+TODO some clarification re: queues 
+
+!!! example "Exercise"
     TODO An exercise for understanding the scheduler
 
 ## Software installation is different on HPC
 
-!!! warning 
-    No sudo for you! 
+!!! warning "No sudo for you!" 
+    Unlike your laptop, you do not have administrative (`sudo`) privileges on HPC systems. On a laptop, you can install software however you like. On HPC, thousands of users share the same system, so unrestricted installs would break environments, cause version conflicts, and introduce security risks. That’s why HPC systems block `sudo`.
 
-- Why you don’t get `sudo`
-- Modules, containers, and conda
-- Why containers are the best practice for HPC workflows
-- **Key takeaway:** Reproducibility depends on isolating environments.
+Bioinformatics workflows need software, and often many versions of it. Consider a typical bioinformatics pipeline:
+
+- TODO insert tools and versions we are using for our demo pipeline in day 2
+
+These tools don’t always play nicely together. Installing them globally is impossible. 
+
+You can install and manage software for your own workflows, you just need to use HPC-approved methods. There are three main approaches:
+
+| Approach | Description | Pros | Cons |
+|----------|-------------|------|------|
+| **Environment modules** | Pre-installed software provided by HPC admins, loaded with `module load` | Fast, easy to use, no setup required | Limited versions; may conflict with workflow needs |
+| **Conda/Mamba environments** | User-managed Python/R environments | Flexible, easy for development | Slow installs; dependency conflicts common; not fully reproducible |
+| **Containers** (Apptainer/Singularity) | Portable, isolated software environments | **Best practice** – reproducible, portable, avoids dependency issues | Requires container knowledge |
+
+Containers bundle all the software a workflow needs, including tools, dependencies, libraries, even specific OS layers—into a single portable image. On HPC, that means:
 
 ## Work smarter, not harder  
 
@@ -93,7 +108,17 @@ At the centre of everything is the job scheduler. Rather than allowing users to 
 - Scatter/gather vs multithreading
 - **Key takeaway:** Efficiency determines queue time AND cost.
 
+
+HPC systems give us access to large amounts of compute, but that doesn’t mean we should use resources carelessly. Misusing compute leads to long queue times, wasted allocation, unstable workflows and unhappy HPC administrators. Designing resource-aware workflows is essential for performance and fair use.
+
+At its core, HPC efficiency is about matching the structure of your workflow to the available compute. There are two main ways to increase performance on HPC:
+
+
+### Parallelisation: multithreading 
+
 ![](figs/00_multithread.png)
+
+### Parallelisation: scatter-gather 
 
 ## Conclusion 
 
