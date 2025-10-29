@@ -1,4 +1,4 @@
-# HPC for bioinformatics workflows
+# 1.1 HPC for bioinformatics workflows
 
 !!! info "Learning objectives"
 
@@ -9,7 +9,7 @@
 
 High Performance Computing (HPC) systems are built to run large numbers of computational jobs efficiently. Bioinformatics analysis often involves many steps, many tools, and many samples, making it a perfect match for HPC. However, HPCs expect work to be submitted in a particular way, following specific rules. This means our workflows often need to be designed for HPC, not just moved to HPC.
 
-## When does a workflow need HPC?
+## 1.1.1 When does a workflow need HPC?
 
 In bioinformatics, a workflow is simply a defined series of steps that take data as input and transform that data into processed data and/or analytical results. This is true whether you are doing whole genome variant calling, proteomics quantification, single-cell transcriptomics, or metagenomics assembly. Each step in the pipeline performs one job, and each job depends on some form of computation and storage.
 
@@ -37,7 +37,7 @@ A workflow is usually ready for HPC when scale becomes a problem. This might be 
 | Workflow reliability matters | Need checkpointing and recovery |
 | Data must stay on institutional systems | Governance, ethics, security |
 
-## From your laptop to HPC 
+## 1.1.2 From your laptop to HPC 
 
 Before running a workflow, it is important to understand the system we are running it on. Running workloads on HPC is very different from running them on your laptop or a local workstation. HPCs are not just bigger, they are also: 
 
@@ -49,7 +49,7 @@ This introduces an important trade-off. HPCs give you access to massive computat
 
 ![](figs/00_hpc_use.png){width=70%}
 
-## HPC architecture for workflows 
+## 1.1.3 HPC architecture for workflows 
 
 While HPCs can look intimidating, their architecture follows a simple structure that supports large-scale computation through shared resources. From a workflow perspective, this architecture means there are a few important realities to accept: work is not run interactively, resources must be requested rather than assumed and everything is governed by shared access. 
 
@@ -80,7 +80,7 @@ TODO some clarification re: queues
 !!! example "Exercise"
     TODO An exercise for understanding the scheduler
 
-## Software installation is different on HPC
+## 1.1.4 Software installation is different on HPC
 
 !!! warning "No sudo for you!" 
     Unlike your laptop, you do not have administrative (`sudo`) privileges on HPC systems. On a laptop, you can install software however you like. On HPC, thousands of users share the same system, so unrestricted installs would break environments, cause version conflicts, and introduce security risks. That’s why HPC systems block `sudo`.
@@ -97,11 +97,11 @@ You can install and manage software for your own workflows, you just need to use
 |----------|-------------|------|------|
 | **Environment modules** | Pre-installed software provided by HPC admins, loaded with `module load` | Fast, easy to use, no setup required | Limited versions; may conflict with workflow needs |
 | **Conda/Mamba environments** | User-managed Python/R environments | Flexible, easy for development | Slow installs; dependency conflicts common; not fully reproducible |
-| **Containers** (Apptainer/Singularity) | Portable, isolated software environments | **Best practice** – reproducible, portable, avoids dependency issues | Requires container knowledge |
+| **Containers** (Apptainer/Singularity) | Portable, isolated software environments | Reproducible, portable, avoids dependency issues | Requires container knowledge |
 
 Containers bundle all the software a workflow needs, including tools, dependencies, libraries, even specific OS layers—into a single portable image. On HPC, that means:
 
-## Work smarter, not harder  
+## 1.1.5 Work smarter, not harder  
 
 - Parallelism, threads, memory usage per process
 - Right-size your resources (avoid over-allocation)
@@ -119,6 +119,10 @@ At its core, HPC efficiency is about matching the structure of your workflow to 
 ![](figs/00_multithread.png)
 
 ### Parallelisation: scatter-gather 
+
+## 1.1.6 Our workflow example
+
+TODO add explainer of the high level genomics workflow we are using in the workshop. 
 
 ## Conclusion 
 
