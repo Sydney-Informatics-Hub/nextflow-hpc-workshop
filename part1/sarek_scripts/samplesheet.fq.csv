@@ -1,2 +1,4 @@
 patient,sample,lane,fastq_1,fastq_2
-na12878,test_sample,all,/scratch/er01/PIPE-5866-NF4HPC/lesson2/data/NA12878.20-22.R1.fq.gz,/scratch/er01/PIPE-5866-NF4HPC/lesson2/data/NA12878.20-22.R2.fq.gz
+NA12877,test_sample1,all,../../../nextflow-on-hpc-materials/data/fqs/NA12877_chr20-22.R1.fq.gz,../../../nextflow-on-hpc-materials/data/fqs/NA12877_chr20-22.R2.fq.gz
+NA12878,test_sample2,all,../../../nextflow-on-hpc-materials/data/fqs/NA12878_chr20-22.R1.fq.gz,../../../nextflow-on-hpc-materials/data/fqs/NA12878_chr20-22.R2.fq.gz
+NA12889,test_sample3,all,../../../nextflow-on-hpc-materials/data/fqs/NA12889_chr20-22.R1.fq.gz,../../../nextflow-on-hpc-materials/data/fqs/NA12889_chr20-22.R2.fq.gz
