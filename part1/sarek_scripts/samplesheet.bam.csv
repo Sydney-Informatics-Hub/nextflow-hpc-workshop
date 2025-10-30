@@ -1,2 +1,4 @@
 patient,sample,bam,bai
-na12878,test_sample,/scratch/er01/PIPE-5866-NF4HPC/lesson2/data/NA12878.20-22.bam,/scratch/er01/PIPE-5866-NF4HPC/lesson2/data/NA12878.20-22.bam.bai
+NA12877,test_sample1,../../../nextflow-on-hpc-materials/data/bams/NA12877_chr20-22.bam,../../../nextflow-on-hpc-materials/data/bams/NA12877_chr20-22.bam.bai
+NA12878,test_sample2,../../../nextflow-on-hpc-materials/data/bams/NA12878_chr20-22.bam,../../../nextflow-on-hpc-materials/data/bams/NA12878_chr20-22.bam.bai
+NA12889,test_sample3,../../../nextflow-on-hpc-materials/data/bams/NA12889_chr20-22.bam,../../../nextflow-on-hpc-materials/data/bams/NA12889_chr20-22.bam.bai
