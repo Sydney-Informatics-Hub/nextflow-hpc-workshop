@@ -1,174 +1,254 @@
-// import processes to be run in the workflow
-include { DOWNLOADGTF } from './modules/download'
-include { ALIGNREADS; INDEXBAM } from './modules/align'
-include { SPLITBAM; SPLITGTF; COUNT; COMBINECHROMCOUNTS } from './modules/count'
+#!/usr/bin/env nextflow
+nextflow.enable.dsl=2
 
-// pipeline input parameters
-params.gtf_file = "$projectDir/data/ggal/transcriptome.gtf"
-params.star_index = ""
-params.reads = "$projectDir/data/samplesheet.csv"
+// Parameters
+params.reference = "ref/Homo_sapiens_assembly38.20-22.fasta"
+params.bwa_index = "ref/BWAIndex/Homo_sapiens_assembly38.20-22.fasta"
 params.outdir = "results"
+params.chunks = 4
+params.reads = "data/samplesheet.csv"
 
-/*
- * define the `INDEX` process that creates a binary index
- * given the transcriptome file
- */
-process INDEX {
-
-    container "quay.io/biocontainers/salmon:1.10.1--h7e5ed60_0"
-    publishDir params.outdir, mode: 'copy'
-
-    input:
-    path transcriptome
-
-    output:
-    path 'salmon_index'
-
-    script:
-    """
-    salmon index -t $transcriptome -i salmon_index
-    """
-}
-
-process FASTQC {
-
-    tag "fastqc on ${sample_id}"
-    container "quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0"
-    publishDir params.outdir, mode: 'copy'
-
-    input:
-    tuple val(sample_id), path(reads_1)
-
-    output:
-    path "fastqc_${sample_id}_logs"
-
-    script:
-    """
-    mkdir -p "fastqc_${sample_id}_logs"
-    fastqc --outdir "fastqc_${sample_id}_logs" --format fastq $reads_1 -t $task.cpus
-    """
-}
-
-process QUANTIFICATION {
-
-    tag "salmon on ${sample_id}"
-    container "quay.io/biocontainers/salmon:1.10.1--h7e5ed60_0"
-    publishDir params.outdir, mode: 'copy'
+process SPLIT_FASTQ {
+    tag "$sample_id"
+    publishDir "${params.outdir}/fastq_split_${sample_id}", mode: 'copy'
+    
+    cpus 1
+    memory '1 GB'
+    time '2m'
     
     input:
-    path salmon_index
-    tuple val(sample_id), path(reads_1)
-
+    tuple val(sample_id), path(fq1), path(fq2)
+    
     output:
-    path "$sample_id"
-
+    tuple val(sample_id), path("*.R1.fq"), path("*.R2.fq")
+    
     script:
-    def reads_arg = reads_2 ? "-1 ${reads_1} -2 ${reads_2}" : "-r ${reads_1}"
     """
-    salmon quant --libType=U -i $salmon_index $reads_arg -o $sample_id
+    N_LINES=\$(awk -v chunks="${params.chunks}" \\
+        'NR % 4 == 1 { nreads += 1 } \\
+         END { \\
+           if (nreads % chunks == 0) { \\
+             chunkreads = nreads / chunks \\
+           } else { \\
+             chunkreads = (nreads + chunks - (nreads % chunks)) / chunks \\
+           }; \\
+           printf("%0.f\\n", chunkreads * 4) \\
+         }' ${fq1})
+    
+    split -l \${N_LINES} -d --additional-suffix=.R1.fq ${fq1} ${sample_id}.split_
+    split -l \${N_LINES} -d --additional-suffix=.R2.fq ${fq2} ${sample_id}.split_
+    """
+}
+
+// Process 3: BWA alignment
+process ALIGN {
+    tag "${sample_id}_${split_id}"
+    
+    cpus 1
+    memory '1 GB'
+    time '5m'
+    
+    input:
+    tuple val(sample_id), val(split_id), path(fq1), path(fq2), path(reference), path(bwa_index)
+    
+    output:
+    tuple val(sample_id), path("${split_id}.bam")
+    
+    script:
+    """
+    bwa mem -t ${task.cpus} \\
+        -R "@RG\\tID:${sample_id}\\tPL:ILLUMINA\\tPU:${sample_id}\\tSM:${sample_id}\\tLB:${sample_id}\\tCN:SEQ_CENTRE" \\
+        ${reference} ${fq1} ${fq2} | \\
+        samtools view -b -o ${split_id}.bam
+    """
+}
+
+process MERGE_BAM {
+    tag "$sample_id"
+    publishDir "${params.outdir}/merge_${sample_id}", mode: 'copy'
+    
+    cpus 1
+    memory '1 GB'
+    time '5m'
+    
+    input:
+    tuple val(sample_id), path(bams)
+    
+    output:
+    tuple val(sample_id), path("${sample_id}.bam"), path("${sample_id}.bam.bai")
+    
+    script:
+    """
+    samtools cat ${bams} | samtools sort -O bam -o ${sample_id}.bam
+    samtools index ${sample_id}.bam
+    """
+}
+
+process GENOTYPE {
+    tag "$sample_id"
+    publishDir "${params.outdir}/geno_${sample_id}", mode: 'copy'
+    
+    cpus 4
+    memory '4 GB'
+    time '10m'
+    
+    input:
+    tuple val(sample_id), path(bam), path(bai), path(reference), path(ref_index), path(ref_dict)
+    
+    output:
+    tuple val(sample_id), path("${sample_id}.g.vcf.gz"), path("${sample_id}.g.vcf.gz.tbi")
+    
+    script:
+    """
+    gatk --java-options "-Xmx4g" HaplotypeCaller \\
+        -R ${reference} \\
+        -I ${bam} \\
+        -O ${sample_id}.g.vcf.gz \\
+        -ERC GVCF
+    """
+}
+
+process JOINT_GENOTYPE {
+    publishDir "${params.outdir}/joint_geno", mode: 'copy'
+    
+    cpus 4
+    memory '4 GB'
+    time '10m'
+    
+    input:
+    path(gvcfs)
+    path(gvcf_indices)
+    path(reference)
+    path(ref_index)
+    path(ref_dict)
+    
+    output:
+    tuple path("cohort.vcf.gz"), path("cohort.vcf.gz.tbi")
+    
+    script:
+    def gvcf_args = gvcfs.collect { "--variant $it" }.join(' ')
+    """
+    gatk --java-options "-Xmx4g" CombineGVCFs \\
+        -R ${reference} \\
+        ${gvcf_args} \\
+        -O cohort.g.vcf.gz
+    
+    gatk --java-options "-Xmx4g" GenotypeGVCFs \\
+        -R ${reference} \\
+        -V cohort.g.vcf.gz \\
+        -O cohort.vcf.gz
+    """
+}
+
+process VCF_STATS {
+    publishDir "${params.outdir}/vcf_stats", mode: 'copy'
+    
+    cpus 1
+    memory '1 GB'
+    time '5m'
+    
+    input:
+    tuple path(vcf), path(vcf_index)
+    
+    output:
+    path "bcftools_stats.txt"
+    
+    script:
+    """
+    bcftools stats ${vcf} > bcftools_stats.txt
     """
 }
 
 process MULTIQC {
-
-    container "quay.io/biocontainers/multiqc:1.19--pyhdfd78af_0"
-    publishDir params.outdir, mode: 'copy'
-
+    publishDir "${params.outdir}/multiqc", mode: 'copy'
+    
+    cpus 1
+    memory '1 GB'
+    time '5m'
+    
     input:
-    path "*"
-
+    path(fastqc_files)
+    path(stats_file)
+    
     output:
     path "multiqc_report.html"
     path "multiqc_data"
-
+    
     script:
     """
     multiqc .
     """
 }
 
-// Define the workflow
 workflow {
 
-    // Get the user-supplied STAR index
-    ref_index = Channel.fromPath(params.star_index)
-        .first()  // Ensure we have a dataflow value (value channel) rather than a channel (queue channel)
-
-    // Download GTF file if necessary
-    if (params.gtf_file.startsWith('http')) {
-        DOWNLOADGTF(params.gtf_file)
-        gtf_file = DOWNLOADGTF.out.gtf_file
-    } else {
-        gtf_file = Channel.fromPath(params.gtf_file)
-    }
-
-    // Define the fastqc input channel
+    // read in fastq reads from samplesheet
     reads_in = Channel.fromPath(params.reads)
         .splitCsv(header: true)
-        .map { row -> {
-            // def strandedness = row.strandedness ? row.strandedness : 'auto'
-            [ row.sample, row.fastq_1, row.fastq_2 ] 
-        }}
-
-    // Run the fastqc step with the reads_in channel
-    FASTQC(reads_in)
-
-    // Run the quantification step with the index and reads_in channels
-    ALIGNREADS(ref_index, reads_in)
-
-    // Index the BAM file
-    aligned_reads = ALIGNREADS.out.aligned_bam
-    INDEXBAM(aligned_reads)
-
-    // Split the BAM file into one BAM per chromosome
-    indexed_reads = aligned_reads.join(INDEXBAM.out.indexed_bam)
-    SPLITBAM(indexed_reads)
-
-    // Split the GTF into per-chromosome files
-    SPLITGTF(gtf_file)
-
-    // Prepare the input channel for COUNT
-    split_gtfs = SPLITGTF.out.split_gtfs
-        .flatten()
-        .map { gtf -> {
-            def chrom = gtf.baseName
-            [ gtf, chrom ]
-        }}
+        .map {
+            row -> [row.sample, file(row.fastq_1), file(row.fastq_2)]
+        }
     
-    split_reads = SPLITBAM.out.split_bams
+    // Reference files
+    reference = Channel.fromPath(params.reference)
+    ref_index = Channel.fromPath("${params.reference}.fai")
+    ref_dict = Channel.fromPath(params.reference.replaceAll(/\.fasta$/, '.dict'))
+    bwa_index = Channel.fromPath("${params.bwa_index}*").collect()
+   
+    //FASTQC(reads_in)
+    
+    // Split FASTQ files
+    SPLIT_FASTQ(reads_in)
+    
+    // Prepare alignment inputs by splitting read pairs
+    split_pairs = SPLIT_FASTQ.out
         .transpose()
-        .map { sample_id, bam_file -> {
-            def chrom = bam_file.baseName.tokenize('.')[-1]
-            [ sample_id, chrom, bam_file ]
-        }}
-        .combine(split_gtfs, by: 1)
-        .map { chrom, sample_id, bam_file, gtf -> {
-            [ sample_id, chrom, bam_file, gtf ]
-        }}
-
-    // Perform counting
-    COUNT(split_reads)
-
-    // Combine the counts from each sample back together
-    summary_results = COUNT.out.count_summary
+        .map { sample_id, fq1s, fq2s -> tuple(sample_id, fq1s, fq2s) }
+        .transpose()
+        .map { sample_id, fq1, fq2 -> 
+            def split_id = fq1.baseName.replaceAll(/\.R1$/, '')
+            tuple(sample_id, split_id, fq1, fq2)
+        }
+        .combine(Channel.of(reference))
+        .combine(bwa_index)
+    
+    // Align reads
+    ALIGN(split_pairs)
+    
+    // Merge BAM files per sample
+    merged_bams = ALIGN.out
         .groupTuple()
-    count_results = COUNT.out.gene_counts
-        .groupTuple()
-        .join(summary_results)
-    COMBINECHROMCOUNTS(count_results)
-
-    // Define the multiqc input channel
-    // count_summaries = COUNT.out.count_summary  // one plot per chromosome per sample
-    count_summaries = COMBINECHROMCOUNTS.out.count_summary  // one plot per sample
-        .map { it[1] }
-    multiqc_in = FASTQC.out[0]
-        .mix(count_summaries)
-        .collect()
-
-    /*
-    * Generate the analysis report with the 
-    * outputs from FASTQC and QUANTIFICATION
-    */ 
-    MULTIQC(multiqc_in)
-
+        .map { sample_id, bams -> tuple(sample_id, bams) }
+    
+    MERGE_BAM(merged_bams)
+    
+    // Call variants per sample
+    geno_input = MERGE_BAM.out
+        .combine(Channel.of(reference))
+        .combine(Channel.of(ref_index))
+        .combine(Channel.of(ref_dict))
+    
+    GENOTYPE(geno_input)
+    
+    // Collect all GVCFs
+    all_gvcfs = GENOTYPE.out.map { sample_id, gvcf, idx -> gvcf }.collect()
+    all_indices = GENOTYPE.out.map { sample_id, gvcf, idx -> idx }.collect()
+    
+    // Joint genotyping
+    JOINT_GENOTYPE(
+        all_gvcfs,
+        all_indices,
+        reference,
+        ref_index,
+        ref_dict
+    )
+    
+    // Calculate stats
+    VCF_STATS(JOINT_GENOTYPE.out)
+    
+    // Generate MultiQC report
+    MULTIQC(
+        FASTQC.out.collect(),
+        VCF_STATS.out
+    )
 }
