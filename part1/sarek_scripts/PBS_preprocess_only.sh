@@ -1,6 +1,7 @@
 #!/bin/bash
 
 module load nextflow
+module load singularity
 
 nextflow run nf-core/sarek -r 3.6.0 \
     --input samplesheet.fq.csv \
