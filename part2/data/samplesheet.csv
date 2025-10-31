@@ -1,0 +1,4 @@
+sample,fastq_1,fastq_2
+NA12877,data/fqs/NA12877_chr20-22.R1.fq.gz,data/fqs/NA12877_chr20-22.R2.fq.gz
+NA12878,data/fqs/NA12878_chr20-22.R1.fq.gz,data/fqs/NA12878_chr20-22.R2.fq.gz
+NA12889,data/fqs/NA12889_chr20-22.R1.fq.gz,data/fqs/NA12889_chr20-22.R2.fq.gz
