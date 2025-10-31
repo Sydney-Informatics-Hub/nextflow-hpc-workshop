@@ -4,10 +4,10 @@ This workshop is designed for researchers and technical users (bioinformaticians
   -  Have access to HPC systems (e.g., institutional, national, or cloud-based clusters)
   -  Have run simple Nextflow pipelines, typically in a one-sample-per-run or manual scripting context
   -  Are now looking to scale up their workflows, optimise performance, and apply best practices for HPC environments
- 
+
 ## Pre-requisites 
 -  Completed the “Hello Nextflow” workshop, or have equivalent experience (e.g. basic understanding of how to create and run a Nextflow pipeline)
--  Basic command like skills:
+-  Basic command line skills:
     -  Navigating directories and manipulating files
     -  Working knowledge of how to run bash scripts and interpret terminal output
 -  Familiarity with concepts like multi-sample processing and reproducible analysis (e.g. containers)
@@ -20,5 +20,7 @@ This workshop is designed for researchers and technical users (bioinformaticians
 -  Manage software environments for reproducible workflows using tools like singularity, and adapt these to fit within different HPC ecosystem constraints
 -  Monitor and troubleshoot Nextflow workflows on HPC systems, indentifying and resolving errors related to configuration, resource allocation and environment setup
 
-  
+# For developers 
+
+To render docs 
  

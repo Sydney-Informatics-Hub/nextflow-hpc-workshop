@@ -101,29 +101,6 @@ You can install and manage software for your own workflows, you just need to use
 
 Containers bundle all the software a workflow needs, including tools, dependencies, libraries, even specific OS layers—into a single portable image. On HPC, that means:
 
-## 1.1.5 Work smarter, not harder  
-
-- Parallelism, threads, memory usage per process
-- Right-size your resources (avoid over-allocation)
-- Scatter/gather vs multithreading
-- **Key takeaway:** Efficiency determines queue time AND cost.
-
-
-HPC systems give us access to large amounts of compute, but that doesn’t mean we should use resources carelessly. Misusing compute leads to long queue times, wasted allocation, unstable workflows and unhappy HPC administrators. Designing resource-aware workflows is essential for performance and fair use.
-
-At its core, HPC efficiency is about matching the structure of your workflow to the available compute. There are two main ways to increase performance on HPC:
-
-
-### Parallelisation: multithreading 
-
-![](figs/00_multithread.png)
-
-### Parallelisation: scatter-gather 
-
-## 1.1.6 Our workflow example
-
-TODO add explainer of the high level genomics workflow we are using in the workshop. 
-
 ## Conclusion 
 
 This module sets the foundation for workflow configuration principles:
