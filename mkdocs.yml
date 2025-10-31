@@ -4,6 +4,7 @@ repo_name: Sydney-Informatics-Hub/nextlow-hpc-workshop
 
 nav:
   - Home: index.md
+  - Set up: 00_setup.md
   - Part 1: #todo add numbers to lessons when it makes sense 
     - Introduction: part1/01_0_intro.md
     - HPC for workflows: part1/01_1_hpc_for_workflows.md
