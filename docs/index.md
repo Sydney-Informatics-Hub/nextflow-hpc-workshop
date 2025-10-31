@@ -7,9 +7,15 @@
 
 ## Facilitators
 
+TODO add facilitators
+
 ## Prerequisites
 
+TODO add prereqs
+
 ## Set up requirements
+
+TODO see: [set up instructions](./00_setup.md)
 
 ## Code of Conduct
 
@@ -33,4 +39,6 @@ In order to foster a positive and professional learning environment we encourage
 
 This workshop event and accompanying materials were developed by the [Sydney Informatics Hub](https://www.sydney.edu.au/research/facilities/sydney-informatics-hub.html), University of Sydney. The workshop was enabled by Australian BioCommons' [BioCLI Platforms Project](https://www.biocommons.org.au/biocli) (NCRIS via Bioplatforms Australia).
 
-We gratefully acknowledge the contributions of Chris Hakkaart, Ziad Al-Bkhetan, Melissa Burke, Giorgia Mori, Uwe Winter, Georgie Samaha, Cali Willet, Mitchell O'Brien, Matthew Downton, and Wenjing Xue.
+We gratefully acknowledge the contributions of Chris Hakkaart, Ziad Al-Bkhetan, Melissa Burke, Giorgia Mori, Uwe Winter, Georgie Samaha, Cali Willet, Mitchell O'Brien, Matthew Downton, and Wenjing Xue. 
+
+TODO ADD OTHER CONTRIBUTORS. 

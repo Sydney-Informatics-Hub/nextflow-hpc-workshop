@@ -1,9 +1,28 @@
-site_name: Nextflow and HPC
+site_name: Nextflow on HPC
 repo_url: https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop
 repo_name: Sydney-Informatics-Hub/nextlow-hpc-workshop
 
 nav:
   - Home: index.md
+  - Part 1: #todo add numbers to lessons when it makes sense 
+    - Introduction: part1/01_0_intro.md
+    - HPC for workflows: part1/01_1_hpc_for_workflows.md
+    - Work smarter not harder: part1/01_2_smarter.md
+    - Experimental context: part1/01_3_experiment.md
+    - Nextflow on HPC: part1/01_4_nf_hpc.md
+    - Intro to nf-core: part1/02_1_nfcore_intro.md
+    - Running nf-core on HPC: part1/02_2_nfcore_run.md
+    - Configure nf-core: part1/02_3_nfcore_config.md
+    - Layering configs: part1/02_4_nfcore_layer.md
+    - Summary: part1/03_0_outro.md
+  - Part 2:
+    - Introduction: part2/01_0_intro.md
+    - Configure custom pipeline: part2/01_1_custom.md
+    - Reporting: part2/02_1_reporting.md
+    - Optimise: part2/02_2_scatter_gather.md
+    - Scale up: part2/03_1_scale.md
+    - Dynamic resourcing: part2/02_2_dynamic.md
+    - Summary: part2/04_0_outro.md
 
 theme:
   name: material
@@ -11,6 +30,7 @@ theme:
   features:
     - navigation.footer
     - content.code.copy
+    - content.tabs.link
   palette:
     - scheme: default
       primary: custom
@@ -37,6 +57,8 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
 
 extra:
   analytics:
