@@ -36,8 +36,7 @@ process SPLIT_FASTQ {
 process ALIGN {
     tag "${sample_id}_${split_id}"
     publishDir "${params.outdir}/align_${sample_id}", mode: 'copy'
-    container 'community.wave.seqera.io/library/bwa_htslib_samtools:83b50ff84ead50d0'
-    errorStrategy 'ignore'
+    container 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/bf/bf7890f8d4e38a7586581cb7fa13401b7af1582f21d94eef969df4cea852b6da/data' 
 
     cpus 1
     memory '1 GB'
@@ -62,6 +61,7 @@ process ALIGN {
 process MERGE_BAM {
     tag "$sample_id"
     publishDir "${params.outdir}/merge_${sample_id}", mode: 'copy'
+    container 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/bf/bf7890f8d4e38a7586581cb7fa13401b7af1582f21d94eef969df4cea852b6da/data'
     
     cpus 1
     memory '1 GB'
@@ -83,30 +83,36 @@ process MERGE_BAM {
 process GENOTYPE {
     tag "$sample_id"
     publishDir "${params.outdir}/geno_${sample_id}", mode: 'copy'
-    
+    container 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/b2/b28daf5d9bb2f0d129dcad1b7410e0dd8a9b087aaf3ec7ced929b1f57624ad98/data'
+
     cpus 4
     memory '4 GB'
     time '10m'
     
     input:
-    tuple val(sample_id), path(bam), path(bai), path(reference), path(ref_index), path(ref_dict)
+    tuple val(sample_id), path(bam), path(bai)
+    path(refs)
     
     output:
     tuple val(sample_id), path("${sample_id}.g.vcf.gz"), path("${sample_id}.g.vcf.gz.tbi")
     
     script:
     """
+    REF=`find . -name '*.fasta'`
+    mv "*.fasta.dict" "${f/.fasta.dict/.dict}"
+
     gatk --java-options "-Xmx4g" HaplotypeCaller \\
-        -R ${reference} \\
         -I ${bam} \\
         -O ${sample_id}.g.vcf.gz \\
+        -R \$REF \\
         -ERC GVCF
     """
 }
 
 process JOINT_GENOTYPE {
     publishDir "${params.outdir}/joint_geno", mode: 'copy'
-    
+    container 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/b2/b28daf5d9bb2f0d129dcad1b7410e0dd8a9b087aaf3ec7ced929b1f57624ad98/data'
+
     cpus 4
     memory '4 GB'
     time '10m'
@@ -187,7 +193,6 @@ workflow {
     
     // Reference files
     refs = Channel.fromPath("${params.ref_dir}/*").collect()
-    refs.view()
    
     //FASTQC(reads_in)
     
@@ -207,10 +212,19 @@ workflow {
     ALIGN(paired_fq_splits, refs)
     
     // Merge BAM files per sample
-    merged_bams = ALIGN.out
+    aligned_bams = ALIGN.out
         .groupTuple()
         .map { sample_id, bams -> tuple(sample_id, bams) }
     
-    MERGE_BAM(merged_bams)
-    
+    MERGE_BAM(aligned_bams)
+
+    MERGE_BAM.out.view()
+
+    GENOTYPE(MERGE_BAM.out, refs)  
+
+    //GENOTYPE.out.view()
+
+    //JOINT_GENOTYPE()
+
+    //MULTIQC()
 }
