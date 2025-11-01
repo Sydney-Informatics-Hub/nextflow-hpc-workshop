@@ -1,21 +1,40 @@
 # Nextflow and HPC
 
-## Trainers
+This workshop is delivered over 2 3-hour sessions that cover how HPC works, to running and optimising workflows on it using Nextflow and nf-core.
 
-* Fred Jaya, Sydney Informatics Hub, University of Sydney
+We work through a realistic experimental scenario: adapting a whole genome variant calling workflow to run on high performance computing (HPC) infrastructure. Each lesson connects foundational HPC concepts to workflow design and configuration in Nextflow. 
+
+This workshop is delivered concurrently on Australia's Tier-1 HPCs; [NCI's Gadi HPC]() and [Pawsey's Setonix HPC](). 
+
+## Developers
+
 * Michael Geaghan, Sydney Informatics Hub, University of Sydney
+* Fred Jaya, Sydney Informatics Hub, University of Sydney
+* Mitchell O'Brien, Sydney Informatics Hub, University of Sydney 
+* Georgie Samaha, Sydney Informatics Hub, University of Sydney 
 
 ## Facilitators
 
-TODO add facilitators
+* Giorgia Mori, Australian BioCommons 
+* Sarah Beecroft, Pawsey Supercomputing Research Centre 
+* Kisaru Liyanage, National Computational Infrastructure 
+* Cali Willet, Sydney Informatics Hub, University of Sydney
+* Kristina Gagalova, Curtin University 
+* Gayatri Aniruddha, University of Western Australia
 
 ## Prerequisites
 
-TODO add prereqs
+This is an intermediate-advanced workshop for people developing reproducible bioinformatics workflows to run on HPC. It assumes experience with the following: 
+
+- Running and developing Nextflow workflows 
+- Working in a Linux environment using basic scripting (e.g. Bash)
+- Working on a HPC cluster.  
+
+Attendees would benefit from having previously completed our [Nextflow for the Life Sciences workshop](https://sydney-informatics-hub.github.io/hello-nextflow-2025/). 
 
 ## Set up requirements
 
-TODO see: [set up instructions](./00_setup.md)
+Please see our [set up instructions](./00_setup.md) to set up your laptop for this workshop.
 
 ## Code of Conduct
 
@@ -24,21 +43,18 @@ In order to foster a positive and professional learning environment we encourage
 * Use welcoming and inclusive language
 * Be respectful of different viewpoints and experiences * Gracefully accept constructive criticism
 * Focus on what is best for the community
-* Show courtesy and respect towards other community members
-* Our full code of conduct, with incident reporting guidelines, is available here.
+* Show courtesy and respect towards other community members.
 
 ## Workshop schedule
 
-### Day 1
-
-### Day 2
+TODO add schedules. 
 
 ## Course survey
 
 ## Credits and acknowledgements
 
-This workshop event and accompanying materials were developed by the [Sydney Informatics Hub](https://www.sydney.edu.au/research/facilities/sydney-informatics-hub.html), University of Sydney. The workshop was enabled by Australian BioCommons' [BioCLI Platforms Project](https://www.biocommons.org.au/biocli) (NCRIS via Bioplatforms Australia).
+We gratefully acknowledge the contributions of Abdullah Shaikh, Ludovic Capelli, Ziad Al-Bkhetan, Melissa Burke, Magda Antczak, Wenjing Xue, and Matthew Downton. 
 
-We gratefully acknowledge the contributions of Chris Hakkaart, Ziad Al-Bkhetan, Melissa Burke, Giorgia Mori, Uwe Winter, Georgie Samaha, Cali Willet, Mitchell O'Brien, Matthew Downton, and Wenjing Xue. 
+This workshop event and accompanying materials were developed by the [Sydney Informatics Hub](https://www.sydney.edu.au/research/facilities/sydney-informatics-hub.html), University of Sydney in collaboration. The workshop was enabled by Australian BioCommons' [BioCLI Platforms Project](https://www.biocommons.org.au/biocli) (NCRIS via Bioplatforms Australia).
 
-TODO ADD OTHER CONTRIBUTORS. 
+![](./img/logos.png)
