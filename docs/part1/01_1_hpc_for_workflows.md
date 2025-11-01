@@ -1,6 +1,7 @@
 # 1.1 HPC for bioinformatics workflows
 
 !!! info "Learning objectives"
+    TODO revise these
 
     - Describe the HPC system components that workflows interact with.
     - Identify why containerisation and resource-aware design are essential for scalable workflows.
@@ -14,8 +15,6 @@ High Performance Computing (HPC) systems are built to run large numbers of compu
 In bioinformatics, a workflow is simply a defined series of steps that take data as input and transform that data into processed data and/or analytical results. This is true whether you are doing whole genome variant calling, proteomics quantification, single-cell transcriptomics, or metagenomics assembly. Each step in the pipeline performs one job, and each job depends on some form of computation and storage.
 
 ![](figs/00_workflow.png)
-
-But workflows don’t always need HPC. Many can run perfectly well on a laptop or a small workstation during development or for small datasets. 
 
 ### Signs your workflow is ready for HPC
 
@@ -49,59 +48,32 @@ This introduces an important trade-off. HPCs give you access to massive computat
 
 ![](figs/00_hpc_use.png){width=70%}
 
-## 1.1.3 HPC architecture for workflows 
+## 1.1.3 Our experiment: WGS short variant calling
+ 
+!!! warning "Don't worry if you don't have prior knowledge of this workflow"
+    The focus of this workflow is on learning Nextflow, the experimental context we are using is just a practical example to help you understand workflow design principles for HPC and how Nextflow works. 
 
-While HPCs can look intimidating, their architecture follows a simple structure that supports large-scale computation through shared resources. From a workflow perspective, this architecture means there are a few important realities to accept: work is not run interactively, resources must be requested rather than assumed and everything is governed by shared access. 
+We are going to implement a common pipeline used in genomics to identify genetic variants (SNPs and indels) from short-read whole genome sequencing data. Through the workshop we will implement this workflow in slightly different ways. It involves multiple processes and tools and is computationally intensive. At a high level, it does the following: 
 
-![](figs/00_hpc_architecture.png)
+TODO add fig 
 
-### Login nodes 
-When a user connects to an HPC, they first land on a login node. This is a shared access point used to prepare work, not perform computations. From here, users submit jobs to the scheduler, monitor their progress and organise their project directories. The login node exists only to coordinate access to the system, and because it is shared by many people at once, it must not be overloaded with computational tasks.
+1. Quality control of raw sequences 
+2. Alignment of reads to ref genome 
+3. Post alignment processing: sorting, marking duplicates, indexing 
+4. Variant calling: call SNVs and indels for each sample against reference 
+5. Joint genotyping: combining samples for a cohort into a single callset 
+6. Quality filtering and annotation 
 
-### Compute nodes
-The real work happens on the compute nodes. These are powerful machines with many CPU cores, large amounts of memory and fast access to storage. Workflows do not run directly on them; instead, the scheduler assigns workflow tasks to available compute nodes based on the resources requested. This separation between the login node and compute nodes allows users to interact with the system while computation is queued and executed elsewhere.
+Running this workflow end-to-end captures many challenges that running on HPC using Nextflow can solve: 
 
-TODO some clarification re: compute nodes allocated to different queues
+- Many independent jobs: each sample can be processed separately for many steps 
+- Resource diversity: tools used at each step require different amounts of CPU, memory, and walltime  
+- Large IO demands: reading and writing of multi-gigabyte files benefits from parallel filesystems 
 
-!!! example "Exercise" 
-    TODO An exercise for understanding the login node vs compute node 
+!!! exercise "Discussion: why does this workflow need HPC?"
+    Consider the workflow described above: 
 
-### Shared storage
-All nodes are connected to a shared parallel filesystem. This is a large, high-speed storage system where input data, reference files and workflow outputs are kept. Because it is shared across all users, it enables collaborative research and scalable workflows. However, it also introduces constraints around file organisation and performance, which is why workflows must be careful about how they read and write data here.
-
-!!! example "Exercise" 
-    TODO An exercise for understanding shared storage 
-
-### Job scheduler
-At the centre of everything is the job scheduler. Rather than allowing users to run programs directly, HPCs rely on a scheduling system (e.g. Slurm or PBS Pro) to manage fair access to shared compute resources. When a job is submitted, it enters a queue where the scheduler decides when and where it will run. Jobs are matched to compute nodes based on requested resources like CPU, memory and runtime. Understanding how the scheduler behaves is essential for designing workflows that run efficiently.
-
-TODO some clarification re: queues 
-
-!!! example "Exercise"
-    TODO An exercise for understanding the scheduler
-
-## 1.1.4 Software installation is different on HPC
-
-!!! warning "No sudo for you!" 
-    Unlike your laptop, you do not have administrative (`sudo`) privileges on HPC systems. On a laptop, you can install software however you like. On HPC, thousands of users share the same system, so unrestricted installs would break environments, cause version conflicts, and introduce security risks. That’s why HPC systems block `sudo`.
-
-Bioinformatics workflows need software, and often many versions of it. Consider a typical bioinformatics pipeline:
-
-- TODO insert tools and versions we are using for our demo pipeline in day 2
-
-These tools don’t always play nicely together. Installing them globally is impossible. 
-
-You can install and manage software for your own workflows, you just need to use HPC-approved methods. There are three main approaches:
-
-| Approach | Description | Pros | Cons |
-|----------|-------------|------|------|
-| **Environment modules** | Pre-installed software provided by HPC admins, loaded with `module load` | Fast, easy to use, no setup required | Limited versions; may conflict with workflow needs |
-| **Conda/Mamba environments** | User-managed Python/R environments | Flexible, easy for development | Slow installs; dependency conflicts common; not fully reproducible |
-| **Containers** (Apptainer/Singularity) | Portable, isolated software environments | Reproducible, portable, avoids dependency issues | Requires container knowledge |
-
-Containers bundle all the software a workflow needs, including tools, dependencies, libraries, even specific OS layers—into a single portable image. On HPC, that means:
+    1. Which parts of the workflow are the most computationally expensive? 
+    2. What would happen if we tried to run this workflow on a personal computer?  
 
 ## Conclusion 
-
-This module sets the foundation for workflow configuration principles:
-

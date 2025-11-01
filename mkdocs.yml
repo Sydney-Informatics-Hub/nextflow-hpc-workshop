@@ -8,9 +8,10 @@ nav:
   - Part 1: #todo add numbers to lessons when it makes sense 
     - Introduction: part1/01_0_intro.md
     - HPC for workflows: part1/01_1_hpc_for_workflows.md
-    - Work smarter not harder: part1/01_2_smarter.md
-    - Experimental context: part1/01_3_experiment.md
-    - Nextflow on HPC: part1/01_4_nf_hpc.md
+    - Software is different on HPC: part1/01_2_hpc_software.md
+    - HPC architecture: part1/01_3_hpc_architecture.md
+    - Work smarter not harder: part1/01_4_smarter.md
+    - Nextflow on HPC: part1/01_5_nf_hpc.md
     - Intro to nf-core: part1/02_1_nfcore_intro.md
     - Running nf-core on HPC: part1/02_2_nfcore_run.md
     - Configure nf-core: part1/02_3_nfcore_config.md
