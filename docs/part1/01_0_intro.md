@@ -1,4 +1,4 @@
-# Part 1 Introduction 
+# 1.0 Part 1 Introduction 
 
 In the first part of this workshop, we will familarise ourselves with some foundational concepts required to effectively run bioinformatics workflows on HPC clusters. We will first apply these concepts to the configuration of a popular nf-core pipeline, Sarek. In part 2, we will further apply these concepts to a custom Nextflow workflow. 
 
@@ -27,7 +27,7 @@ In the first part of this workshop, we will familarise ourselves with some found
         An example command to run on Setonix
         ```
 
-## Log in to your assigned HPC
+## 1.0.1 Log in to your assigned HPC
 
 Log in to your assigned HPC with the user account and password provided to you:
 
@@ -89,7 +89,7 @@ ls
 03.diy_workflow
 ```
 
-## Setup the project space 
+## 1.0.2 Setup the project space 
 
 For this section, we will be working in `01.hpc_fundamentals/`. Navigate to this directory and inspect its contents; you will find some pre-loaded scripts and data for this section:
 
