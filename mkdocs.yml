@@ -8,6 +8,7 @@ nav:
   - Part 1: #todo add numbers to lessons when it makes sense 
     - Introduction: part1/01_0_intro.md
     - HPC for workflows: part1/01_1_hpc_for_workflows.md
+    - Software is different on HPC: part1/01_2_hpc_software.md
     - Work smarter not harder: part1/01_2_smarter.md
     - Experimental context: part1/01_3_experiment.md
     - Nextflow on HPC: part1/01_4_nf_hpc.md
