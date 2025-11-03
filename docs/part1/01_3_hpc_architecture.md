@@ -19,9 +19,27 @@ When a user connects to an HPC, they first land on a login node. This is a share
 
 The real work happens on the compute nodes. These are powerful machines with many CPU cores, large amounts of memory and fast access to storage. Workflows do not run directly on them; instead, the scheduler assigns workflow tasks to available compute nodes based on the resources requested. This separation between the login node and compute nodes allows users to interact with the system while computation is queued and executed elsewhere.
 
-TODO some clarification re: compute nodes allocated to different queues
+HPC systems divide compute resources into queues (sometimes called partitions in Slurm). Each queue represents a group of compute nodes with specific hardware characteristics, limits, and intended usage.
 
-!!! example "Exercise 1.4.1: "
+Queues help balance the system between different types of work, for example, short interactive tasks, long-running simulations, or large parallel jobs. Each queue enforces policies on maximum runtime (walltime), maximum cores or memory per job, job priority and eligible users or projects.
+
+Because queues are mapped to distinct sets of compute nodes, requesting the right queue for your job is important for both performance and fairness.
+
+Queue names and limits differ across infrastructure providers but some common examples include:
+
+| Queue type        | Description                           | Typical limits                                         |
+| ----------------- | ------------------------------------- | ------------------------------------------------------ |
+| Normal/work       | Default queue for most batch jobs     | Moderate walltime (e.g. 24–48 h), general-purpose CPUs |
+| Express/short     | Prioritised for rapid turnaround      | Small jobs, short walltime                             |
+| Large/high memory | For jobs requiring many CPUs or nodes | Long walltime, higher resource requests                |
+| GPU               | Access to GPU-enabled nodes           | GPU-specific workloads only                            |
+
+For details about queue limits and scheduling policies on systems used today, see:
+
+- [Setonix (Slurm) – Running Jobs on Setonix (Pawsey)](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix)
+- [Gadi (PBS Pro) – Queue Limits (NCI)](https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits)
+
+!!! example "Exercise 1.4.1: Wheres my Jobs running ? - Login vs compute nodes"
 
     First, run the `hostname` command where you're working from, this is the **login node**, and its name varies depending on the infrastructure provider.
 
@@ -111,7 +129,7 @@ TODO some clarification re: compute nodes allocated to different queues
 
 All nodes are connected to a shared parallel filesystem. This is a large, high-speed storage system where input data, reference files and workflow outputs are kept. Because it is shared across all users, it enables collaborative research and scalable workflows. However, it also introduces constraints around file organisation and performance, which is why workflows must be careful about how they read and write data here.
 
-!!! example "Exercise 1.4.2"
+!!! example "Exercise 1.4.2: Hello from the other side - shared filesystems"
 
     Both login and compute nodes share the same file systems (e.g., `/scratch`).
     You can demonstrate this by writing to a file from the login node and then appending to it from a compute node.
@@ -185,21 +203,35 @@ All nodes are connected to a shared parallel filesystem. This is a large, high-s
 
 At the centre of everything is the job scheduler. Rather than allowing users to run programs directly, HPCs rely on a scheduling system (e.g. Slurm or PBS Pro) to manage fair access to shared compute resources. When a job is submitted, it enters a queue where the scheduler decides when and where it will run. Jobs are matched to compute nodes based on requested resources like CPU, memory and runtime. Understanding how the scheduler behaves is essential for designing workflows that run efficiently.
 
-TODO some clarification re: queues - draw up figures for tetris style hpc scheuling system
+Schedulers like PBS Pro and Slurm use queues to group jobs that share similar resource and policy constraints. When you submit a job, it’s placed in the appropriate queue, and the scheduler continuously evaluates all queued jobs to decide which can start next.
 
+System load — high demand increases queue wait time
 ![](figs/00_HPC_scheduler_tetris.png)
 
 !!! note "Understanding Job Scheduling with Tetris"
 
-    When you submit a batch job, you describe its “shape” the resources it needs. The scheduler uses this information to decide when and where your job can run. This shape is defined by three key factors:
+    Think of the scheduler like a giant game of **Tetris**, where every job you submit has its own unique “shape.”
+    When you submit a batch job, you describe the resources it needs — this defines the shape of your job piece.
+    The scheduler’s task is to fit all these different pieces together as efficiently as possible across the available compute nodes.
 
-    - CPU – how many processor cores the job needs.
-    - Memory – the amount of RAM required for execution.
-    - Walltime – the maximum runtime for the job.
+    Each job’s shape is determined by three key factors:
 
-    Getting these requests wrong can reduce overall system efficiency. Common issues include:
+    - **CPU** – how many processor cores it needs
+    - **Memory** – how much RAM it requires
+    - **Walltime** – how long it is allowed to run
 
-    - Longer queue times — jobs wait because they’re hard to fit into available resources.
-    - Underused resources — wasted capacity that could have run other jobs.
+    Once submitted, your job enters a **queue**, much like a waiting line for compute resources. But unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together — like sliding Tetris blocks — to maximise system usage.
 
-    Large jobs with long walltimes are especially challenging to schedule and may sit idle for a long time, while smaller jobs often fill gaps quickly through backfilling.
+    The order in which jobs run depends on several factors:
+
+    - **Job priority** — determined by project, queue, and fair-share usage
+    - **Requested resources** — smaller jobs can often “slot in” sooner
+    - **Queue limits** — different queues prioritise short, long, or interactive jobs
+
+    Getting the shape right matters. Overestimating your needs makes your job harder to fit, while underestimating can cause it to fail. Common outcomes include:
+
+    - **Longer queue times** – large, awkwardly shaped jobs wait for space
+    - **Wasted capacity** – unused cores or memory that could have run other jobs
+
+    Just like in Tetris, the scheduler aims to **fill every gap** and keep the system running smoothly.
+    Small, well-shaped jobs often fall neatly into open spaces, while larger ones wait for the perfect fit.
