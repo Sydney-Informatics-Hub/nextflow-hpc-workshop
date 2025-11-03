@@ -1,5 +1,9 @@
 # 1.2 Software installation is different on HPC
 
+!!! info "Learning objectives"
+
+    - Blah blah 
+    
 As soon as we start using HPC, we’re working in a shared environment where we can’t control everything and that includes software installation.  
 
 !!! warning "No sudo for you!" 
@@ -77,7 +81,7 @@ tiny.R1.fq  tiny.R2.fq
 
 Modules are the standard way to access centrally installed software on HPC systems. There are lots of modules pre-installed on HPCs like Gadi and Setonix that allow you to use many common tools, including lots of bioinformatics tools. `fastqc` is one such tool that is pre-installed on both of these HPC systems.
 
-!!! example "Exercise 1.2.2.1: Finding `fastqc` module"
+!!! example "Exercise 1.2.2: Finding `fastqc` module"
 
     You can list available modules on your system with:
 
