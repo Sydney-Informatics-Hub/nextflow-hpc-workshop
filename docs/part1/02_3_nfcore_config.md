@@ -42,6 +42,7 @@ TODO: Either explain that this won't run yet, or have participants try to run ag
     - Add the `singularity {}` scope with `enabled = true`
         - Optional? Add `autoMounts = true` and `autoCleanUp = true`
             - Need to test if these are necessary. autoCleanUp isn't documented.
+        - Set up cachedir
     - Add `module = 'singularity/<version>'` to process scope
 
 ## 2.3.3 Configuring HPC resources
@@ -57,10 +58,12 @@ TODO: Either explain that this won't run yet, or have participants try to run ag
         - Gadi: `storage = "scratch/${System.getenv('PROJECT')}"`: Tell gadi to mount the scratch space for your project
             - Need to note that this is Gadi-specific and won't work on generic PBSPro systems
         - Setonix: `process.clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"`: Tell Setonix to submit the job using your project
+            - Add similar option to gadi config!
     - Add dynamic queue specification:
         - Gadi: `queue = { task.memory < 128.GB ? 'normalbw' : 'hugemembw' }`: Use the `normalbw` queue unless you have large memory requirements
             - Simplified from institutional config for readibility, simplicity, and to keep it similar to setonix config
         - Setonix: `queue = { task.memory <= 230.GB ? 'work' : 'highmem' }`: Use the `work` queue unless you have large memory requirements
+            - Revise for setonix training queue
     - Add `params.trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss)`
     - Add the trace config for benchmarking purposes
         - `trace.enabled = true`: Enable the trace file

@@ -101,3 +101,8 @@ ls
 ```console title="Output"
 TODO outputs that reflect directory set up
 ```
+
+TODO: Run a script to:
+
+- Clone the github materials
+- Download all the containers we need for the session
