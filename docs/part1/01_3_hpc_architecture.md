@@ -111,7 +111,7 @@ TODO some clarification re: compute nodes allocated to different queues
 
 All nodes are connected to a shared parallel filesystem. This is a large, high-speed storage system where input data, reference files and workflow outputs are kept. Because it is shared across all users, it enables collaborative research and scalable workflows. However, it also introduces constraints around file organisation and performance, which is why workflows must be careful about how they read and write data here.
 
-!!! example "Exercise"
+!!! example "Exercise 1.4.2"
 
     Both login and compute nodes share the same file systems (e.g., `/scratch`).
     You can demonstrate this by writing to a file from the login node and then appending to it from a compute node.
@@ -186,6 +186,8 @@ All nodes are connected to a shared parallel filesystem. This is a large, high-s
 At the centre of everything is the job scheduler. Rather than allowing users to run programs directly, HPCs rely on a scheduling system (e.g. Slurm or PBS Pro) to manage fair access to shared compute resources. When a job is submitted, it enters a queue where the scheduler decides when and where it will run. Jobs are matched to compute nodes based on requested resources like CPU, memory and runtime. Understanding how the scheduler behaves is essential for designing workflows that run efficiently.
 
 TODO some clarification re: queues - draw up figures for tetris style hpc scheuling system
+
+![](figs/00_HPC_scheduler_tetris.png)
 
 !!! note "Understanding Job Scheduling with Tetris"
 
