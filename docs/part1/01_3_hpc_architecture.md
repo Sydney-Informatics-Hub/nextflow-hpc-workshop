@@ -1,6 +1,10 @@
 
 # 1.4 HPC architecture for workflows 
 
+!!! info "Learning objectives"
+
+    - Blah blah
+
 While HPCs can look intimidating, their architecture follows a simple structure that supports large-scale computation through shared resources. From a workflow perspective, this architecture means there are a few important realities to accept: work is not run interactively, resources must be requested rather than assumed and everything is governed by shared access. 
 
 ![](figs/00_hpc_architecture.png)
