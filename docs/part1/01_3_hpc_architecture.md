@@ -187,6 +187,8 @@ At the centre of everything is the job scheduler. Rather than allowing users to 
 
 TODO some clarification re: queues - draw up figures for tetris style hpc scheuling system
 
+![](figs/00_HPC_scheduler_tetris.png)
+
 !!! note "Understanding Job Scheduling with Tetris"
 
     When you submit a batch job, you describe its “shape” the resources it needs. The scheduler uses this information to decide when and where your job can run. This shape is defined by three key factors:
