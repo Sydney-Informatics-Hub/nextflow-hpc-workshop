@@ -86,20 +86,142 @@ As you can imagine, this is a very complex pipeline with lots of options and par
 
 ## 2.1.3 nf-core pipeline structure
 
+At the [start of today](./01_0_intro.md#102-setup-the-project-space), we ran some setup scripts that downloaded the `nf-core/sarek` pipeline. You should see the `sarek/` folder in your current directory:
+
+```bash
+ls -1
+```
+
+```console title="Output" hl_lines="3"
+config/
+README.md
+sarek/
+scripts/
+singularity/
+```
+
+Let's take a few minutes to explore the `sarek/` directory and understand the strucutre of a typical nf-core pipeline.
+
 !!! example "Exercise: review the `nf-core/sarek` pipeline structure"
 
-    TODO: Have participants inspect the folders and files that make up the pipeline. Important parts are:
+    First, let's list the directory structure of the `sarek` pipeline:
 
-    - main.nf: Entry point to workflow
-    - workflows/: Main sarek workflow defined in here
-    - subworkflows/: Smaller, modular workflows that are called within sarek live here
-    - modules/: Individual processes that make up the workflow live here
-    - nextflow.config: Main configuration file
-    - conf/: Configuration files for modules, labels, etc.
-    - bin/: Pre-made scripts and executables that can be called by the workflow
+    ```bash
+    cd sarek/
+    ls -1
+    ```
 
-TODO: Make a point that nf-core pipelines can be quite complex and somewhat over-engineered due to the attempt to heavily standardise and modularise them. It has benefits, i.e. gives everyone a common template to work from and helps to break down the workflows into smaller chunks, but can also make it difficult to analyse and troubleshoot the code when developing them. When writing your own pipelines, you don't need to be so convoluted.
+    ```console title="Output"
+    assets/
+    bin/
+    CHANGELOG.md
+    CITATIONS.md
+    CODE_OF_CONDUCT.md
+    conf/
+    docs/
+    LICENSE
+    main.nf
+    modules/
+    modules.json
+    nextflow_schema.json
+    nextflow.config
+    nf-test.config
+    README.md
+    singularity/
+    subworkflows/
+    tests/
+    tower.yml
+    workflows/
+    ```
+
+    First, note that the `singularity/` directory isn't part of the `sarek` pipeline, but is instead something we created at the start of the day in our setup script. This holds the singularity images that we will be using later on.
+
+    Next, you'll see that there are quite a lot of files and folders. Some of these are simply housekeeping like the `LICENCE`, `CHANGELOG.md`, `CITATIONS.md`, and `CODE_OF_CONDUCT.md` files. The most important files and folders that we are interested in are described below:
+
+    | File/folder | Description |
+    | ----------- | ----------- |
+    | main.nf | This is the entry point to workflow and the actual script that needs to be run to execute the pipeline |
+    | workflows/ | This folder houses the main `sarek` workflow |
+    | subworkflows/ | This folder houses smaller, self-contained, modular workflows that are called within the greater `sarek` pipeline |
+    | modules/ | This houses Nextflow files that define individual processes. Breaking up your processes into modules like this is considered best practice. |
+    | conf/ | This houses configuration files specific to various modules in the pipeline |
+    | nextflow.config | This is the default configuration file and defines default parameters and profiles, and imports the module-specific configuration files defined in `conf/` |
+    | bin/ | The `bin/` folder can house executable scripts that can be called directly from your Nextflow processes. In `sarek`, the only executable script in here is a python script to generate licence messages. |
+
+    Diving a little deeper, you will see that the `modules/` and `subworkflows/` directories both contain two sub-folders: `local/` and `nf-core/`:
+
+    ```bash
+    ls modules subworkflows
+    ```
+    
+    ```console title="Output"
+    modules:
+    local   nf-core
+
+    subworkflows:
+    local   nf-core
+    ```
+
+    Any modules and sub-workflows that originated from the [nf-core GitHub repository](https://github.com/nf-core/modules) will be placed in the `nf-core` sub-folder, and typically represent common tools and workflows that are useful in many pipelines. The `local` sub-folders, on the other hand, are for processes that were developed specificially for the current pipeline.
+
+As you can see, nf-core pipelines can be quite complex. This is due to the attempt to heavily standardise and modularise these workflows. There are significant benefits to this, primarily in that it gives everyone a common template to work from and helps to break down the workflows into smaller, more manageable and maintainable chunks. However, it can also make it difficult to analyse and troubleshoot the code when developing them.
 
 !!! example "Exercise: review the configuration files"
 
-    TODO: Explore configuration a bit deeper: withName and withLabel, resource requirements, different profiles that are supported, e.g. cloud, docker, singularity
+    Let's next have a look at the default configuration file: `nextflow.config`. Open it up in VSCode. You will see that it is quite long: 481 lines!
+
+    ![sarek nextflow.config preview](./figs/02_01_nextflow_config.png)
+
+    At line 9, you will see a `params` section with numerous parameters being defined, along with default settings for each one.
+
+    Further down, at line 142, there is a `profiles` section. Profiles are a convenient way for setting groups of related parameters and options for running a pipeline at once, and are selected at the command line with the `nextflow run -profile <profile_name> ...` syntax. For example, lines 182-191 define the `singularity` profile, which enables singularity and disables other, mutually-exclusive backends like docker and conda.
+
+    ![sarek profile definitions](./figs/02_01_sarek_profiles.png)
+
+    Most of the rest of the `nextflow.config` file is dedicated to importing additional configuration files from the `conf/` folder; in this way, configurations are modularised like the pipeline itself, and help to break up the large set of parameters and options into more easily readable and maintainable chunks. We'll quickly take a look at one of these imported configuration files: on line 140, the `conf/base.config` file is imported, which defines a lot of the default resource requirements for the pipeline. In VSCode, open up `conf/base.config`:
+
+    ![sarek base config](./figs/02_01_sarek_base_config.png)
+
+    At the top, the file defines the default number of CPUs, amount of RAM, and wall time required by each process:
+
+    ```groovy linenums="11"
+    process {
+
+        // TODO nf-core: Check the defaults for all processes
+        cpus   = { 1      * task.attempt }
+        memory = { 6.GB   * task.attempt }
+        time   = { 4.h    * task.attempt }
+    ```
+
+    Note the use of the curly braces and the `* task.attempt` in each line. This is an example of a **dynamically calculated resource**. Nextflow keeps track of how many times a given task has been attempted; this can be used in case of a failure to increase the required resources on the next try. In this case, by default, jobs will be given 1 CPU, 6GB of memory, and 4h of walltime on the first try; on the second try, they will get 2 CPUs, 12GB of memory, and 8h of time. Line 20 sets `maxRetries = 1`, so this will only happen the one time, and failures won't cause an infinite loop of retries.
+
+    Further down in the file, we see examples of overriding the default resources based on process names and labels. Nextflow processes can be specifically configured based on their name by using the `process.withName` scope. For example:
+
+    ```groovy linenums="66"
+    withName: 'FASTP'{
+        cpus   = { 12   * task.attempt }
+        memory = { 4.GB * task.attempt }
+    }
+    ```
+
+    This chunk of code specifies that the `FASTQC` process will get 12 CPUs and 4GB of memory (multiplied by the attempt number). This overrides the defaults defined at the top of the file. Since `time` isn't specified here, the default run time of 4 hours is kept the same.
+
+    The `process.withLabel` scope similarly lets us override parameters for any process that has a given label assigned to it. Labels are a Nextflow directive that can be applied to any process, and multiple labels can be applied to a single process. This is very useful for tasks that have very similar resource requirements: instead of individually specifying their resources with the `process.withName` scope, we can simply assign each process the same label, and then define the resources for that label. For example, any process that was labelled as `process_medium` will get 6 CPUs, 36GB memory, and 8h walltime:
+
+    ```groovy linenums="42"
+    withLabel:process_medium {
+        cpus   = { 6     * task.attempt }
+        memory = { 36.GB * task.attempt }
+        time   = { 8.h   * task.attempt }
+    }
+    ```
+
+Now we have seen what a typical nf-core pipeline looks like, in the next section we will write a script to try and run it!
+
+!!! note "Move back to the parent directory"
+
+    Before we move on, be sure to move back to the partent directory (`part1/`):
+
+    ```bash
+    cd ../
+    ```
