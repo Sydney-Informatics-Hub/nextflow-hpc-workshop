@@ -7,9 +7,8 @@ The requirements for this workshop are a personal computer with:
 - Visual Studio Code (VSCode)
 - A web browser
 
-Below, you will find instructions on how to set up VSCode and connect to the HPC system to which you've been assigned
+Below, you will find instructions on how to set up VSCode and connect to the HPC system to which you've been assigned.
 
-.
 Each participant will be provided with their training account and password prior to the workshop.
 Before the workshop, you must have the following:
 
@@ -19,7 +18,7 @@ Before the workshop, you must have the following:
 
 !!! info
 
-    If you require assistance with the setup, please write in the discussion board on the Google document.
+    If you require assistance with the setup, please write in the discussion board on the [Google document]().
 
 ## Installing Visual Studio Code
 
@@ -37,25 +36,54 @@ edit, view and download files.
 Specific VSCode extensions are required to connect to the VM and make working with Nextflow files easier (i.e. syntax highlighting).
 
 1. In the VSCode sidebar on the left, click on the extensions button (four blocks)
+
+![](img/vscode_extensions.png)
+
 2. In the Extensions Marketplace search bar, search for `remote ssh`. Select **"Remote - SSH"**
 
-![](img/vscode_1.png)
-3. Click on the blue `Install` button
+![](img/vscode_ssh_extension.png)
 
-![](img/vscode_2.png)
-4. Search for `nextflow` and install the **"Nextflow"** extension
+3. Click on the blue `Install` button.
 
-![](img/vscode_3.png)
+![](img/vscode_ssh_install.png)
+
+4. Once installed, you should see a blue bar in the bottom left corner of the screen. This means that the SSH extension was successfully installed.
+
+![](img/vscode_ssh_installed.png)
+
 5. Close the Extensions tab and sidebar
 
-## Connecting to the HPCs
+### Connecting to the HPCs
 
 Ensure you have your training details of your assigned system. 
 
-### Connect to Gadi TODO 
-### Connect to Setonix TODO 
+### Connect to Gadi
 
-## Configuring VSCode for the workshop
+TODO
+
+### Connect to Setonix
+
+TODO
+
+### Installing the Nextflow extension
+
+Once you have connected to your assigned HPC, you should also install the Nextflow extension, which provides syntax highlighting and can help identify any potential errors in your code. **Note** that this needs to be done **after** you have connected, as you are installing the extension on the **remote** computer, not your local computer or laptop.
+
+1. Ensure you have connected to your assigned HPC as above. You should see the blue bar in the bottom left corner of the window with the text `SSH: <HPC hostname>`.
+
+![](img/vscode_connected.png)
+
+2. Once again, click on the extensions button in the left sidebar (the icon with four blocks)
+
+![](img/vscode_remote_extensions.png)
+
+3. In the Extensions Marketplace search bar, search for `nextflow` and install the **"nextflow"** estension.
+
+![](img/vscode_nextflow_extension.png)
+
+4. You should see a new icon in the left sidebar that looks like a curvy X shape. This means that the Nextflow extension has been installed correctly. You can now close the extensions tab.
+
+![](img/vscode_nextflow_installed.png)
 
 !!! success
 

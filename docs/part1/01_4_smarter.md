@@ -3,6 +3,7 @@
 !!! info "Learning objectives"
 
     - Understand how HPC resources affect job scheduling and performance  
+    - Describe how HPC scheduling and resource limitations shape pipeline configuration.
     - Differentiate between multithreading and scatter–gather approaches to parallelisation  
     - Identify how to size resource requests appropriately for each process in a workflow  
     - Apply resource-aware design principles to improve job efficiency and reproducibility  
