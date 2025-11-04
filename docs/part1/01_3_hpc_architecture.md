@@ -213,7 +213,7 @@ All nodes are connected to a shared parallel filesystem. This is a large, high-s
 
 !!! warning "Overwriting Files in Shared Filesystems"
 
-    Because the filesystem is shared, multiple jobs or users writing to the same file, especially if it has a common name, can accidentally overwrite each other’s data or cause race conditions.
+    Because the filesystem is shared, multiple jobs or users writing to the same file, especially if it has a common name, can accidentally overwrite each other’s data or cause [race conditions](https://en.wikipedia.org/wiki/Race_condition).
 
     In the example above, we safely added a line to a file using a method that appends without deleting what's already there.
 
