@@ -112,7 +112,7 @@ cd data/ref/
 ls
 ```
 
-```console tilte="Output"
+```console title="Output"
 Hg38.subsetchr20-22.tar.gz
 ```
 
