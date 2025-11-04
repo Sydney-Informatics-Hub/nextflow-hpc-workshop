@@ -20,13 +20,14 @@ withLabel
 
 !!! example "Exercises"
 
-    TODO 
+    TODO View trace, configure resources for each process in nextflow.config
 
 
 ## Configuring java heap sizes
 
+!!! example "Exercises"
 
-
+    TODO Update GENOTYPE and JOINT_GENOTYPE processes with -Xmx${tasks.memory}
 
 Other things to consider - when writing custom R or Python scripts, writing
 them efficiently. Utilising things like vectorisation, libraries such as numpy
