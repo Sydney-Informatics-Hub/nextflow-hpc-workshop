@@ -4,6 +4,7 @@
 
     - Inspect workflow performance and resource usage utilising Nextflow's
     in-built monitoring features
+    - Compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
 
 Once we get the workflow running without error on the scheduler, where can we optimise. 
 
