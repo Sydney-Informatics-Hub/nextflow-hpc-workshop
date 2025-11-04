@@ -2,9 +2,9 @@
 
 !!! info "Learning objectives"
 
-    - Know what an HPC is
-    - Identify when a workflow requires an HPC
-    - Understand some of the constraints that come with an HPC
+    - Define high performance computing (HPC) and describe its main components
+    - Explain when bioinformatics workflows require HPC resources rather than local execution
+    - Summarise the main constraints imposed by HPC environments. 
 
 ## 1.1.1 What is an HPC?
 
