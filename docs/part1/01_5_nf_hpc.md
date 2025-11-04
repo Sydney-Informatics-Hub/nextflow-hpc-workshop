@@ -6,6 +6,7 @@
     - Learn how executors, queues, and work directories control task execution on HPC
     - Run and inspect a simple workflow using a provided HPC configuration
     - Identify which parts of a Nextflow config correspond to scheduler options
+    - Connect HPC principles to the Nextflow workflow management systems.
 
 ## 1.5.1 From your laptop to the cluster
 

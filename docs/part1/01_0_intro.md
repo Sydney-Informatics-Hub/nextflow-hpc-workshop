@@ -1,6 +1,6 @@
 # 1.0 Part 1 Introduction 
 
-In the first part of this workshop, we will familarise ourselves with some foundational concepts required to effectively run bioinformatics workflows on HPC clusters. We will first apply these concepts to the configuration of a popular nf-core pipeline, Sarek. In part 2, we will further apply these concepts to a custom Nextflow workflow. 
+In the first part of this workshop, we will familarise ourselves with some foundational concepts required to effectively run bioinformatics workflows on HPC clusters. We will then apply these concepts to the configuration of a popular nf-core pipeline, Sarek. In part 2, we will further apply these concepts to a custom Nextflow workflow. 
 
 !!! warning "Note the code blocks!"
 
@@ -43,22 +43,26 @@ Log in to your assigned HPC with the user account and password provided to you:
     ssh username@setonix.pawsey.org.au
     ```
 
-For this workshop, we will be working within the scratch storage system of the HPCs. Navigate to the scratch space for the workshop project. The project ID will be provided to you on the day of the workshop.
+!!! note
+
+    Be sure substitute your assigned user name for `username` in the above code example.
+
+For this workshop, we will be working within the scratch storage system of the HPCs. Navigate to the scratch space for the workshop project:
 
 === "Gadi"
 
-    NCI projects have randomly-assigned IDs with a two letter and two digit pattern, e.g. `ab01`. The scratch space for the project can be found at `/scratch/<PROJECT_ID>`:
+    NCI projects have randomly-assigned IDs with a two letter and two digit pattern. For the purposes of this training session, everyone using Gadi will be a member of the specially-created training project `vp91`. The scratch space for the project can be found at `/scratch/vp91`:
 
     ```bash
-    cd /scratch/ab01
+    cd /scratch/vp91
     ```
 
 === "Setonix"
 
-    Pawsey projects have IDs of the form `pawsey1234`. The scratch space for the project can be found at `/scratch/<PROJECT_ID>`:
+    For the purposes of this training session, everyone using Setonix will be a member of the specially-created Pawsey training project `courses01`. The scratch space for the project can be found at `/scratch/courses01`:
 
     ```bash
-    cd /scratch/pawsey1234
+    cd /scratch/courses01
     ```
 
 Within the scratch space, you will find a folder with your user name. Navigate into this folder:
@@ -66,38 +70,97 @@ Within the scratch space, you will find a folder with your user name. Navigate i
 === "Gadi"
 
     ```bash
-    cd /scratch/ab01/username
+    cd /scratch/vp91/$USER
     ```
 
 === "Setonix"
 
     ```bash
-    cd /scratch/pawsey1234/username
+    cd /scratch/courses01/$USER
     ```
-
-In here, you will find several folders containing pre-loaded materials for this workshop:
-
-TODO change this to match new structure that accommodates materials and demo workflow repos. 
-
-```bash
-ls
-```
-
-```console title="Output"
-01.hpc_fundamentals
-02.nf-core
-03.diy_workflow
-```
 
 ## 1.0.2 Setup the project space 
 
-For this section, we will be working in `01.hpc_fundamentals/`. Navigate to this directory and inspect its contents; you will find some pre-loaded scripts and data for this section:
+When you first log in, your directory in the scratch space will be an empty folder. The first job for the day will be to clone the workshop materials into this space. To do this, run the following commands:
 
 ```bash
-cd 01.hpc_fundamentals
+git clone https://github.com/Sydney-Informatics-Hub/nextflow-on-hpc-materials.git
+cd nextflow-on-hpc-materials
+ls
+```
+
+You should see a few folders and files inside here:
+
+```console title="Output"
+data/      part1/     part2/     README.md
+```
+
+Next, look at the contents of the `data/` folder. You will see a few sub-folders containing the data we will be using for this workshop:
+
+```bash
+ls data/
+```
+
+```console title="Output"
+bams/ fqs/  ref/
+```
+
+If you navigate into the `ref/` subfolder, you will see a file called `Hg38.subsetchr20-22.tar.gz`. This is a compressed archive of our reference genome data that we will need for this workshop:
+
+```bash
+cd data/ref/
+ls
+```
+
+```console tilte="Output"
+Hg38.subsetchr20-22.tar.gz
+```
+
+Run the following command to extract the reference data:
+
+```bash
+tar -xzf Hg38.subsetchr20-22.tar.gz
+```
+
+After a few seconds, the command should complete, and if you list the directory contents again, you will see the full reference data present in the folder:
+
+```bash
 ls
 ```
 
 ```console title="Output"
-TODO outputs that reflect directory set up
+Hg38.subsetchr20-22.dict      Hg38.subsetchr20-22.fasta.ann Hg38.subsetchr20-22.fasta.pac
+Hg38.subsetchr20-22.fasta     Hg38.subsetchr20-22.fasta.bwt Hg38.subsetchr20-22.fasta.sa
+Hg38.subsetchr20-22.fasta.amb Hg38.subsetchr20-22.fasta.fai Hg38.subsetchr20-22.tar.gz
 ```
+
+For the part of this setup procedure, navigate back up and into the `part1/` directory:
+
+```bash
+cd ../../part1/
+ls
+```
+
+```console title="Output"
+config/    README.md scripts/
+```
+
+=== "Gadi"
+
+    Within the `scripts/` directory is an executable file called `pull_sarek.pbs.sh`. Go ahead and run this from the current directory:
+
+    ```bash
+    ./scripts/pull_sarek.pbs.sh
+    ```
+
+=== "Setonix"
+
+    Within the `scripts/` directory is an executable file called `pull_sarek.slurm.sh`. Go ahead and run this from the current directory:
+
+    ```bash
+    ./scripts/pull_sarek.slurm.sh
+    ```
+
+This script will pull the `nf-core/sarek` code from GitHub that we will use in the second half of today's session, and will also pull all of the relevant files required to run it.
+
+Once the script completes, we are fully set up and ready to get started with the workshop!
