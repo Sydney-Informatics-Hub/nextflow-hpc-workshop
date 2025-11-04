@@ -44,7 +44,7 @@ For details about queue limits and scheduling policies on systems used today, se
 
 !!! example "Exercise: Where are my Jobs running? - Login vs compute nodes"
 
-    First, run the `hostname` command where you're working from; this is the **login node**, and its name varies depending on the infrastructure provider.
+    First, run the `hostname` command where you're working from; this is the login node, and its name varies depending on the infrastructure provider.
 
     === "Gadi (PBS)"
 
@@ -74,7 +74,7 @@ For details about queue limits and scheduling policies on systems used today, se
         
         Setonix opts for simpler hostnames, often just setonix-XX.
 
-    Next, we'll submit a simple job to the scheduler to run the same command on a **compute node**. Different HPCs have distinct sets of commands for submitting, monitoring, and managing jobs, so it is important to know the relevant commands for your system:
+    Next, we'll submit a simple job to the scheduler to run the same command on a compute node. Different HPCs have distinct sets of commands for submitting, monitoring, and managing jobs, so it is important to know the relevant commands for your system:
 
     === "Gadi (PBS)"
 
@@ -145,7 +145,7 @@ For details about queue limits and scheduling policies on systems used today, se
         Slurm does not generate a detailed job file by default, only a basic output file unless configured otherwise.
 
 
-    This confirms that compute jobs are executed on separate **compute nodes**, not the **login nodes**.
+    This confirms that compute jobs are executed on separate compute nodes, not the login nodes.
 
 ## Shared storage
 
@@ -233,8 +233,8 @@ Schedulers like PBS Pro and Slurm use queues to group jobs that share similar re
 
 !!! note "Understanding Job Scheduling with Tetris"
 
-    Think of the scheduler like a giant game of **Tetris**, where every job you submit has its own unique “shape.”
-    When you submit a batch job, you describe the resources it needs — this defines the shape of your job piece.
+    Think of the scheduler like a giant game of Tetris, where every job you submit has its own unique “shape.”
+    When you submit a batch job, you describe the resources it needs, this defines the shape of your job piece.
     The scheduler’s task is to fit all these different pieces together as efficiently as possible across the available compute nodes.
 
     ![](figs/00_HPC_scheduler_tetris.png)
@@ -257,9 +257,9 @@ Schedulers like PBS Pro and Slurm use queues to group jobs that share similar re
 
     - **Longer queue times** – large, awkwardly-shaped jobs wait for space
     - **Wasted capacity** – unused cores or memory that could have run other jobs
-    - **Wasted money** - HPC providers will charge you for the CPUs and memory you request - **wasted capacity = wasted money!**
+    - **Wasted money** - HPC providers will charge you for the CPUs and memory you request - **wasted capacity = wasted energy!**
 
-    Just like in Tetris, the scheduler aims to **fill every gap** and keep the system running smoothly.
+    Just like in Tetris, the scheduler aims to fill every gap and keep the system running smoothly.
     Small, well-shaped jobs often fall neatly into open spaces, while larger ones wait for the perfect fit.
 
 ## Submitting scripts to the scheduler
