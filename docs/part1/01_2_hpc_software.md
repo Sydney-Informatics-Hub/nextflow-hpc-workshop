@@ -40,11 +40,13 @@ This might seem like a pretty significant problem, but don't worry! You can stil
 
     - No dependency conflicts: every container runs in its own isolated environment, unaffected by other users or system modules
     - Reproducibility: the same container image can be used across clusters, clouds, or laptops, ensuring identical software behaviour everywhere
-    - Reduced maintenace: you don't need to worry about installing, updating, and debugging complex software stacks
+    - Reduced maintenace: you don't need to worry about installing, updating, and debugging complex software stacks.
+
+    We source prebuilt containers from the [BioContainers](https://biocontainers.pro/) on the [quay.io registry](https://quay.io/) and [Seqera containers](https://seqera.io/containers/). 
 
 !!! note "One container per tool"
 
-    Containers are an ideal way to package up a tool with all of its dependencies, but are still susceptible to version and dependency conflicts if you try to package up too many tools into the one image. As such, the general **best practice** is that **one container is built around one tool**. As a consequence, when writing workflows, we also typically want to aim for **one tool and one container per process**. In fact, nexflow only lets us use one container for a single process. This forces us to break up our workflow into smaller, modular chunks, which helps improve readability and maintainability of our pipelines.
+    Containers are an ideal way to package up a tool with all of its dependencies, but are still susceptible to version and dependency conflicts if you try to package up too many tools into the one image. As such, the general best practice is that **one container is built around one tool**. As a consequence, when writing workflows, we also typically want to aim for **one tool and one container per process**. In fact, nexflow only lets us use one container for a single process. This forces us to break up our workflow into smaller, modular chunks, which helps improve readability and maintainability of our pipelines. 
 
     Note that there are cases where we may package up two very closely related tools into a single container and Nextflow process, either because they are part of a larger suite of software, or they are known to work well together, or it would introduce unnecessary complexity into our pipeline to separate them. However, this is the exception, not the rule.
 
