@@ -2,11 +2,11 @@
 
 !!! info "Learning objectives"
 
-    - Describe the HPC system components that workflows interact with.
-    - Describe the roles of login nodes, compute nodes, and shared storage in HPC systems.
-    - Distinguish between login nodes and compute nodes and know where workflows execute.
-    - Explain how shared filesystems are accessed and managed safely in workflows.
-    - Define job resource requirements (CPU, memory, walltime) and their impact on scheduling.
+    - Describe the HPC system components that workflows interact with
+    - Describe the roles of login nodes, compute nodes, and shared storage in HPC systems
+    - Distinguish between login nodes and compute nodes and know where workflows execute
+    - Explain how shared filesystems are accessed and managed safely in workflows
+    - Define job resource requirements (CPU, memory, walltime) and their impact on scheduling
 
 While HPCs can look intimidating, their architecture follows a simple structure that supports large-scale computation through shared resources. From a workflow perspective, this architecture means there are a few important realities to accept: work is not run interactively, resources must be requested rather than assumed and everything is governed by shared access.
 
