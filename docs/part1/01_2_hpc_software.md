@@ -2,10 +2,10 @@
 
 !!! info "Learning objectives"
 
-    - Understand the software constraints of HPCs
-    - Know how software modules work
-    - Know how containerisation works
-    - Identify why containerisation is ideal and essential for portable and reproducible workflows.
+    - Explain software constraints of HPC systems 
+    - Demonstrate how to load and use software modules on HPC
+    - Describe how containerisation works and understand how containers encapsulate software dependencies 
+    - Justify why constainerisation is essential for building portable and reproducible workflows 
     
 As soon as we start using HPC, we’re working in a shared environment where we can’t control everything and that includes software installation.  
 
