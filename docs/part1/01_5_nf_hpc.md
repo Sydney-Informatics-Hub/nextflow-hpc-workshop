@@ -74,12 +74,21 @@ We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatic
     nextflow run config-demo-nf/main.nf
     ```
     The output of your command should look something like this
-    ```console
-     N E X T F L O W   ~  version 24.10.0
-    Launching `main.nf` [prickly_lovelace] DSL2 - revision: 66bfcf5bb9
-    executor >  local (1)
-    [6b/e8feb6] splitSequences [100%] 1 of 1 ✔
-    ```
+    === "Gadi"
+        ```console
+        N E X T F L O W   ~  version 24.04.5
+        Launching `main.nf` [jovial_lalande] DSL2 - revision: 4e4c91df36
+        executor >  pbspro (1)
+        [c1/104707] splitSequences | 1 of 1 ✔
+        ```
+
+    === "Setonix"
+        ```console
+        N E X T F L O W   ~  version 24.10.0
+        Launching `main.nf` [prickly_lovelace] DSL2 - revision: 66bfcf5bb9
+        executor >  local (1)
+        [6b/e8feb6] splitSequences [100%] 1 of 1 ✔
+        ```
 
     What does each line mean?
 
@@ -88,10 +97,24 @@ We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatic
     3. The executor used (in the above case: local)
     4. The process that was executed once, which means there is one task. The line starts with a unique hexadecimal value, and ends with the task completion information
 
-## Task directories and the `work/` folder
+### Task directories and the `work/` folder
 
 When you run a Nextflow pipeline, it automatically creates a `work/` directory. This is where all computation happens behind the scenes.
 Inside this directory, each process execution (or task) runs in its own isolated subdirectory, identified by a unique hash, in the above example, `work/6b/e8feb6` (NOTE: your unique hash will be different).
+
+!!! note
+
+    You can execute tree `work/` to view the work directory structure.
+
+    ```bash
+    work
+    └── 6b
+    └── e8feb6a83bb78a7a6661ccc1211857
+        ├── seq_1
+        ├── seq_2
+        ├── seq_3
+        └── sequence.fa -> /scratch/PROJECT/USER/nextflow-on-hpc-materials/part1/config-demo-nf/sequence.fa
+    ```
 
 Here’s what happens inside each task directory:
 
@@ -101,7 +124,7 @@ Here’s what happens inside each task directory:
 
 Each directory is independent so tasks don’t share writable space. If one process needs data from another, it’s passed through Nextflow channels, not shared files. This isolation is especially important on HPC systems, where tasks may run on different compute nodes.
 
-## Where did my task actually run?
+### Where did my task actually run?
 
 Our first run used the local executor, which means all computation happened directly on the login node, the same machine where we typed the command.
 This is perfectly fine for quick tests or debugging, but not suitable for real workloads on HPC systems.
@@ -110,7 +133,7 @@ On HPC, heavy computation should be handled by compute nodes managed by a job sc
 
 To make that happen, we’ll use Nextflow configuration files.
 
-### 1.5.3 Configuring for the scheduler
+## 1.5.3 Configuring for the scheduler
 
 A Nextflow configuration file (`nextflow.config` or files inside a `config/` directory) defines how and where your workflow runs without changing the workflow code itself.
 
@@ -135,4 +158,39 @@ Because configs are separate from the workflow logic, you can:
 
 In short, configs are what make Nextflow workflows portable, scalable, and cluster-aware.
 
-TODO Exercise running with config
+!!! example "Running the workflow on the compute nodes"
+
+    Now run the workflow using the executor profiles:
+
+    === "Gadi"
+        ```bash
+         nextflow run config-demo-nf/main.nf -profile pbspro --pbspro_account <provide-account>
+        ```
+    === "Setonix"
+        ```bash
+        nextflow run config-demo-nf/main.nf -profile slurm --slurm_account <provide-account>
+        ```
+
+    The output of your command should now look something like this
+
+    === "Gadi"
+        ```bash
+        N E X T F L O W   ~  version 24.04.5
+
+        Launching `main.nf` [lethal_gilbert] DSL2 - revision: 4e4c91df36
+
+        executor >  pbspro (1)
+        [a8/5345da] splitSequences | 1 of 1 ✔
+        ```
+    === "Setonix"
+        ```bash
+        N E X T F L O W   ~  version 24.10.0
+
+        Launching `main.nf` [nice_boltzmann] DSL2 - revision: 4e4c91df36
+
+        executor >  slurm (1)
+        [67/d497fa] splitSequences [100%] 1 of 1 ✔
+        ```
+    Notice that the executor now matches your HPC’s system, slurm on Setonix or pbspro on Gadi.
+
+[TODO] Add summary or think about an additional task
