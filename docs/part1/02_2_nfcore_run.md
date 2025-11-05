@@ -147,43 +147,43 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
 
     === "Gadi"
 
-    ```bash title="run.sh" linenums="1"
-    #!/bin/bash
+        ```bash title="run.sh" linenums="1"
+        #!/bin/bash
 
-    module load nextflow/24.04.5
-    module load singularity
+        module load nextflow/24.04.5
+        module load singularity
 
-    nextflow run sarek/main.nf \
-        --input ../data/bams/samplesheet.csv \
-        --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
-        --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
-        --step markduplicates \
-        --skip_tools baserecalibrator,mosdepth,samtools \
-        --outdir results \
-        --no_intervals true \
-        --igenomes_ignore true \
-        -resume
-    ```
+        nextflow run sarek/main.nf \
+            --input ../data/bams/samplesheet.csv \
+            --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
+            --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
+            --step markduplicates \
+            --skip_tools baserecalibrator,mosdepth,samtools \
+            --outdir results \
+            --no_intervals true \
+            --igenomes_ignore true \
+            -resume
+        ```
 
     === "Setonix"
 
-    ```bash title="run.sh" linenums="1"
-    #!/bin/bash
+        ```bash title="run.sh" linenums="1"
+        #!/bin/bash
 
-    module load nextflow/24.10.0
-    module load singularity/4.1.0-slurm
+        module load nextflow/24.10.0
+        module load singularity/4.1.0-slurm
 
-    nextflow run sarek/main.nf \
-        --input ../data/bams/samplesheet.csv \
-        --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
-        --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
-        --step markduplicates \
-        --skip_tools baserecalibrator,mosdepth,samtools \
-        --outdir results \
-        --no_intervals true \
-        --igenomes_ignore true \
-        -resume
-    ```
+        nextflow run sarek/main.nf \
+            --input ../data/bams/samplesheet.csv \
+            --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
+            --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
+            --step markduplicates \
+            --skip_tools baserecalibrator,mosdepth,samtools \
+            --outdir results \
+            --no_intervals true \
+            --igenomes_ignore true \
+            -resume
+        ```
 
 ## 2.2.3 Running the pipeline
 
@@ -200,13 +200,63 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
         You should find that the pipeline quickly fails!
 
         ```console title="Output"
-        TODO: error message
+        Execution cancelled -- Finishing pending tasks before exit
+        -[nf-core/sarek] Pipeline completed with errors-
+        ERROR ~ Error executing process > 'NFCORE_SAREK:SAREK:BAM_MARKDUPLICATES:GATK4_MARKDUPLICATES (test_sample2)'
+
+        Caused by:
+        Process `NFCORE_SAREK:SAREK:BAM_MARKDUPLICATES:GATK4_MARKDUPLICATES (test_sample2)` terminated with an error exit status (127)
+
+
+        Command executed:
+
+        gatk --java-options "-Xmx24576M -XX:-UsePerfData" \
+            MarkDuplicates \
+            --INPUT NA12878_chr20-22.bam \
+            --OUTPUT test_sample2.md.bam \
+            --METRICS_FILE test_sample2.md.cram.metrics \
+            --TMP_DIR . \
+            --REFERENCE_SEQUENCE Hg38.subsetchr20-22.fasta \
+            -REMOVE_DUPLICATES false -VALIDATION_STRINGENCY LENIENT
+        
+        # If cram files are wished as output, the run samtools for conversion
+        if [[ test_sample2.md.cram == *.cram ]]; then
+            samtools view -Ch -T Hg38.subsetchr20-22.fasta -o test_sample2.md.cram test_sample2.md.bam
+            rm test_sample2.md.bam
+            samtools index test_sample2.md.cram
+        fi
+        
+        cat <<-END_VERSIONS > versions.yml
+        "NFCORE_SAREK:SAREK:BAM_MARKDUPLICATES:GATK4_MARKDUPLICATES":
+            gatk4: $(echo $(gatk --version 2>&1) | sed 's/^.*(GATK) v//; s/ .*$//')
+            samtools: $(echo $(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*$//')
+        END_VERSIONS
+
+        Command exit status:
+        127
+
+        Command output:
+        (empty)
+
+        Command error:
+        .command.sh: line 8: gatk: command not found
+
+        Work dir:
+        /scratch/pawsey1227/michaelgeaghan/nextflow-on-hpc-materials/part1/work/60/7651bb1e0034589dc27b50b829d53b
+
+        Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
+
+        -- Check '.nextflow.log' file for details
+        ERROR ~ Pipeline failed. Please refer to troubleshooting docs: https://nf-co.re/docs/usage/troubleshooting
+
+        -- Check '.nextflow.log' file for details
         ```
         
         But why did this happen? You should see in the error output a message that one or more tools couldn't be found:
         
         ```console title="Output"
-        TODO: error message
+        Command error:
+        .command.sh: line 8: gatk: command not found
         ```
         
         It's failing because we haven't yet told Nextflow to use Singularity, and each task that runs is trying to find the software installed on the system and is failing to do so.
