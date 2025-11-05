@@ -4,7 +4,7 @@ This workshop is delivered over 2 3-hour sessions that cover how HPC works, to r
 
 We work through a realistic experimental scenario: adapting a whole genome variant calling workflow to run on high performance computing (HPC) infrastructure. Each lesson connects foundational HPC concepts to workflow design and configuration in Nextflow. 
 
-This workshop is delivered concurrently on Australia's Tier-1 HPCs; [NCI's Gadi HPC]() and [Pawsey's Setonix HPC](). 
+This workshop is delivered concurrently on Australia's Tier-1 HPCs; [NCI's Gadi HPC](https://nci.org.au/our-systems/hpc-systems) and [Pawsey's Setonix HPC](https://pawsey.org.au/systems/setonix/). 
 
 ## Developers
 
@@ -34,7 +34,7 @@ Attendees would benefit from having previously completed our [Nextflow for the L
 
 ## Set up requirements
 
-Please see our [set up instructions](./00_setup.md) to set up your laptop for this workshop.
+Please see our [set up instructions](./setup.md) to set up your laptop for this workshop.
 
 ## Code of Conduct
 
