@@ -101,13 +101,15 @@ TODO fix this table to make it make sense/honest/relevant.
 |------|-------------------|-------------|
 | **Quality control** | I/O-bound | Reads many small files; CPU idle time high |
 | **Read alignment** | CPU-bound | CPU pegged near 100%; memory stable |
-| **Variant callingr** | CPU + memory | CPU ~90%, high steady memory usage |
+| **Variant calling** | CPU + memory | CPU ~90%, high steady memory usage |
 
 We will observe these constraints in subsequent lessons when we run and optimise our workflows.
 
 !!! note "Where can I find this information?" 
 
-    Most mature bioinformatics tools document their approximate resource usage. Keep in mind, documentation will not reflect the reality of your specific dataset and environment. Look at your own resource usage and scaling behaviour to test this.  
+    Most mature bioinformatics tools document their approximate resource usage. Keep in mind, documentation will not reflect the reality of your specific dataset and environment. Look at your own resource usage and scaling behaviour to test this.
+
+    It's also very helpful to have small-scale datasets to initially test your workflows with. Common practices are to subset FASTQs to a small fraction of the reads, and to subset aligned data to the smaller chromosomes (e.g. chr22 in human data). This will help you quickly (and cheaply!) determine how your workflow behaves at each step and how it will scale with larger datasets.
 
     The more you practice tuning processes for efficiency, the faster you'll develop an intuition for scaling. 
 
@@ -123,7 +125,7 @@ Values near 1 mean your job used all the CPUs efficiently. Values much lower tha
 
 ### Memory (RAM) efficiency 
 
-Memory efficiency describes how much of your allocated memory was truly needed. If your job used close to the requested memory, you're right sized. If maximum memory is much lower than requested, then you over-allocated, and your job will fail if maximum memory exceeds the requested allocation.    
+Memory efficiency describes how much of your allocated memory was truly needed. If your job used close to the requested memory, you're right sized. If maximum memory is much lower than requested, then you over-allocated. Your job will fail if maximum memory exceeds the requested allocation.    
 
 ### Walltime awareness 
 
@@ -167,6 +169,12 @@ bwa mem -t 4 ref.fasta sample_R1.fq.gz sample_R2.fq.gz > alignment.sam
 You're telling BWA to use 4 worker threads for parts of the alignment process that can be parallelised. Not all parts of the process can be parallelised. 
 
 !!! example "Does more threads always speed up a job?" 
+
+    We've provided a script for you to examine the effects of multi-threading when running `bwa mem`. The script is located at `scripts/bwa-multithreaded.sh`:
+
+    ```bash title="scripts/bwa-multithreaded.sh"
+    
+    ```
 
     ```
     TODO time bwa mem
