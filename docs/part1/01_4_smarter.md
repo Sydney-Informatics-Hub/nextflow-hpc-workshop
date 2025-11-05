@@ -170,27 +170,217 @@ You're telling BWA to use 4 worker threads for parts of the alignment process th
 
 !!! example "Does more threads always speed up a job?" 
 
-    We've provided a script for you to examine the effects of multi-threading when running `bwa mem`. The script is located at `scripts/bwa-multithreaded.sh`:
+    We've provided a script for you to examine the effects of multi-threading when running `bwa mem`:
 
-    ```bash title="scripts/bwa-multithreaded.sh"
+    === "Gadi"
+
+        The Gadi version of the script is located at `/scripts/bwa-multithreaded.pbs.sh`:
+
+        ```bash title="scripts/bwa-multithreaded.pbs.sh"
+        #!/bin/bash
+        #PBS -P vp91
+        #PBS -N bwa
+        #PBS -q normalbw
+        #PBS -l ncpus=8
+        #PBS -l mem=1GB
+        #PBS -l walltime=00:02:00
+        #PBS -l storage=scratch/vp91
+        #PBS -l wd
+
+        module load bwa/0.7.17
+
+        for NCPUS in 2 4 6 8
+        do
+            echo "NCPUS: ${NCPUS}"
+            time ( bwa mem -t ${NCPUS} -o /dev/null ../data/ref/Hg38.subsetchr20-22.fasta ../data/fqs/NA12878_chr20-22.R1.fq.gz ../data/fqs/NA12878_chr20-22.R2.fq.gz > /dev/null 2> /dev/null ) 2>&1
+            echo "-----"
+        done > bwa_times.txt
+        ```
+
+    === "Setonix"
+
+        The Setonix version of the script is located at `/scripts/bwa-multithreaded.slurm.sh`:
+
+        ```bash title="scripts/bwa-multithreaded.slurm.sh"
+        #!/bin/bash
+        #SBATCH --account=courses01
+        #SBATCH --job-name=bwa
+        #SBATCH --partition=work
+        #SBATCH --nodes=1
+        #SBATCH --ntasks=1
+        #SBATCH --cpus-per-task=8
+        #SBATCH --mem=1GB
+        #SBATCH --time=00:02:00
+
+        module load bwa/0.7.17--h7132678_9
+
+        for NCPUS in 2 4 6 8
+        do
+            echo "NCPUS: ${NCPUS}"
+            time ( bwa mem -t ${NCPUS} -o /dev/null ../data/ref/Hg38.subsetchr20-22.fasta ../data/fqs/NA12878_chr20-22.R1.fq.gz ../data/fqs/NA12878_chr20-22.R2.fq.gz > /dev/null 2> /dev/null ) 2>&1
+            echo "-----"
+        done > bwa_times.txt
+        ```
+
+    The script runs a loop, increasing the number of threads given to `bwa mem` by 2 each time. At the end, you will get a file called `bwa_times.txt`. Submit this script to the HPC and once it finishes, inspect the output:
+
+    === "Gadi"
     
+        ```bash
+        qsub scripts/bwa-multithreaded.pbs.sh
+        ```
+
+    === "Setonix"
+
+        ```bash
+        sbatch scripts/bwa-multithreaded.slurm.sh
+        ```
+
+    The output in `bwa_times.txt` should look something like the following:
+
+    ```console title="Output"
+    NCPUS: 2
+
+    real	0m0.744s
+    user	0m1.296s
+    sys	0m0.085s
+    -----
+    NCPUS: 4
+
+    real	0m0.456s
+    user	0m1.399s
+    sys	0m0.138s
+    -----
+    NCPUS: 6
+
+    real	0m0.355s
+    user	0m1.520s
+    sys	0m0.098s
+    -----
+    NCPUS: 8
+
+    real	0m0.291s
+    user	0m1.519s
+    sys	0m0.109s
+    -----
     ```
 
-    ```
-    TODO time bwa mem
-    ```
+    We've used the `time` command to see how long each run of `bwa mem` takes. Notice that as the number of CPUs goes up, the `real` time (that is, the walltime, the number of real-world seconds it took for the job to complete) went down. Also notice that the `user` time (which is effectively the number of CPU hours spent on the job) stays mostly the same, or even increases slightly. This indicates that the same amount of computational time was being spent on the job, but because it was spread across more CPUs and run in parallel, it took fewer seconds to complete.
 
- Not all tools can make use of threads effectively, and some don't implement the `--threads` flag effectively at all. 
+    In the example above, the `user` time actually increased with additional CPUs, which is not unexpected. As mentioned above, parallelism and multi-threading come with additional overhead costs, as the software needs to track each thread and merge the results at the end. So once again, only use multi-threading where it is appropriate - for small datasets, it can actually make your pipeline less efficient!
+
+Be aware that not all tools can make use of threads effectively. This can stem from biological reasons, i.e. the computational problem simply needs to be run in a sequential manner. In other cases, the tool itself may simply not implement the `--threads` flag effectively.
 
 !!! example "Does more threads always speed up a job?" 
     
     While many tools benefit from multi-threading, [FastQC is not one of them](https://www.biostars.org/p/9598335/). It is designed to process one file per thread rather than splitting a single file across multiple threads.
 
-    ```
-    TODO fastqc example
+    We created another benchmarking script for `fastqc` that repeats the test we ran above with `bwa mem`.
+
+    === "Gadi"
+
+        The Gadi version of the script is located at `/scripts/fastqc-multithreaded.pbs.sh`:
+
+        ```bash title="scripts/fastqc-multithreaded.pbs.sh"
+        #!/bin/bash
+        #PBS -P vp91
+        #PBS -N fastqc
+        #PBS -q normalbw
+        #PBS -l ncpus=8
+        #PBS -l mem=1GB
+        #PBS -l walltime=00:02:00
+        #PBS -l storage=scratch/vp91
+        #PBS -l wd
+
+        module load fastqc
+
+        SAMPLE_ID="NA12878_chr20-22"
+        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
+        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
+
+        for NCPUS in 2 4 6 8
+        do
+            mkdir -p "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs"
+            echo "NCPUS: ${NCPUS}"
+            time ( fastqc -t ${NCPUS} --outdir "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs" --format fastq ${READS_1} ${READS_2} > /dev/null 2> /dev/null ) 2>&1
+            echo "-----"
+        done > fastqc_times.txt
+        ```
+
+    === "Setonix"
+
+        The Setonix version of the script is located at `/scripts/fastqc-multithreaded.slurm.sh`:
+
+        ```bash title="scripts/fastqc-multithreaded.slurm.sh"
+        #!/bin/bash
+        #SBATCH --account=courses01
+        #SBATCH --job-name=fastqc
+        #SBATCH --partition=work
+        #SBATCH --nodes=1
+        #SBATCH --ntasks=1
+        #SBATCH --cpus-per-task=8
+        #SBATCH --mem=1GB
+        #SBATCH --time=00:02:00
+
+        module load fastqc/0.11.9--hdfd78af_1
+
+        SAMPLE_ID="NA12878_chr20-22"
+        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
+        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
+
+        for NCPUS in 2 4 6 8
+        do
+            mkdir -p "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs"
+            echo "NCPUS: ${NCPUS}"
+            time ( fastqc -t ${NCPUS} --outdir "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs" --format fastq ${READS_1} ${READS_2} > /dev/null 2> /dev/null ) 2>&1
+            echo "-----"
+        done > fastqc_times.txt
+        ```
+
+    Once again, the script runs a loop, increasing the number of threads given to `fastqc` by 2 each time. At the end, you will get a file called `fastqc_times.txt`. Submit this script to the HPC and once it finishes, inspect the output:
+
+    === "Gadi"
+    
+        ```bash
+        qsub scripts/fastqc-multithreaded.pbs.sh
+        ```
+
+    === "Setonix"
+
+        ```bash
+        sbatch scripts/fastqc-multithreaded.slurm.sh
+        ```
+
+    The output in `fastqc_times.txt` should look something like the following:
+
+    ```console title="Output"
+    NCPUS: 2
+
+    real	0m0.064s
+    user	0m0.039s
+    sys	0m0.009s
+    -----
+    NCPUS: 4
+
+    real	0m0.057s
+    user	0m0.032s
+    sys	0m0.010s
+    -----
+    NCPUS: 6
+
+    real	0m0.064s
+    user	0m0.038s
+    sys	0m0.009s
+    -----
+    NCPUS: 8
+
+    real	0m0.064s
+    user	0m0.039s
+    sys	0m0.010s
+    -----
     ```
 
-    So here, increasing threads does not accelerate processing of a single fastq file. 
+    As you can see in the example above, the `real` time fluctuates a bit, but doesn't significantly decrease over time. The `user` time also stays fairly stable. This indicates that `fastqc` didn't speed up with additional threads.
 
 !!! warning "Threads ≠ cores " 
 
@@ -203,7 +393,7 @@ You're telling BWA to use 4 worker threads for parts of the alignment process th
     bwa mem -t 8
     ```
 
-    You're telling bwa to spawn 8 threads. For those threads to be executed in parallel, you must request 8 cores to run those threads on. If you were to request only 4 cores, those 8 threads will be competing for 4 cores which causes inefficiency and slower run times. If you ask for more CPUs than threads, those extra CPUs will sit idle, wasting allocation and increasing queue time. 
+    You're telling bwa to spawn 8 threads. For those threads to be executed in parallel, you must **also** request 8 cores from the HPC for those threads to run on. If you were to request only 4 cores, those 8 threads will be competing for 4 cores which causes inefficiency and slower run times. On the other hand, if you ask for more CPUs than threads, those extra CPUs will sit idle, wasting allocation and increasing queue time. In summary, always try to request the exact number of cores your job requires. If you have a mixture of tools where one uses lots of threads and another is single-threaded, consider separating them out into separate jobs so that you use the HPC resources efficiently.
 
 ## Parallelisation: multiprocessing 
 
@@ -215,16 +405,10 @@ You're telling BWA to use 4 worker threads for parts of the alignment process th
 
 ![](./figs/00_workflow02.png){width=80%}
 
-TODO maybe change this diagram to focus on one process and show different ways it can be implemented? 
-
-!!! example "TODO an exercise" 
-
-    ```
-    An exercise in workflow design
-    ```
+TODO maybe change this diagram to focus on one process and show different ways it can be implemented?
 
 !!! warning "Does it make sense biologically to process in parallel?" 
 
-    Not all parallelisation makes sense, it depends on what you're analysing and how the tool interprets the data. Parallelisation makes sense when the data are independent, e.g. running FastQC on multiple fastq files, aligning multiple samples with bwa-mem, or calling SNPs and indels per chromosome. 
+    Not all parallelisation makes sense: it depends on what you're analysing and how the tool interprets the data. Parallelisation makes sense when the data are independent, e.g. running FastQC on multiple fastq files, aligning multiple samples with bwa-mem, or calling SNPs and indels per chromosome. 
 
-    Paralellisation does not make sense when results depend on comparing all data together e.g. joint genotyping, genome assembly, or detecting structural variants across multiple chromosomes. 
+    Paralellisation does not make sense when results depend on comparing all data together e.g. joint genotyping, genome assembly, or detecting structural variants across multiple chromosomes.
