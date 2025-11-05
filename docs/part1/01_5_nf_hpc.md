@@ -164,11 +164,11 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
 
     === "Gadi"
         ```bash
-         nextflow run config-demo-nf/main.nf -profile pbspro --pbspro_account <provide-account>
+         nextflow run config-demo-nf/main.nf -profile pbspro --pbspro_account vp91
         ```
     === "Setonix"
         ```bash
-        nextflow run config-demo-nf/main.nf -profile slurm --slurm_account <provide-account>
+        nextflow run config-demo-nf/main.nf -profile slurm --slurm_account courses01
         ```
 
     The output of your command should now look something like this
