@@ -12,18 +12,72 @@ HPC systems give us access to large amounts of compute, but that doesn’t mean 
 
 HPC systems are constantly measuring your resource usage. You can use their built in tools to measure actual use. The tools available to you will depend on the job scheduler and the administrator's implementation of the scheduler. 
 
-!!! example "Inspect a previous job"
+!!! example "Exercise: Inspect a previous job"
 
-    TODO design an exercise for checking the previous lessons' jobs.
+    At the end of the previous lesson, we saved the job ID to a file called `run_id.txt`. We can use that ID to inspect the resources used by the job:
+
     === "Gadi"
+
         ```bash
-        qstat -xf <jobid> | grep -E "Resource_List|Used"
+        JOBID=$(cat run_id.txt)
+        qstat -xf ${JOBID} | grep -E "Resource_List|resources_used"
         ```
+
+        This will generate an output something like:
+
+        ```console title="Output"
+        resources_used.cpupercent = 55
+        resources_used.cput = 00:00:04
+        resources_used.jobfs = 0b
+        resources_used.mem = 434716kb
+        resources_used.ncpus = 1
+        resources_used.vmem = 434716kb
+        resources_used.walltime = 00:00:06
+        Resource_List.jobfs = 104857600b
+        Resource_List.mem = 1073741824b
+        Resource_List.mpiprocs = 1
+        Resource_List.ncpus = 1
+        Resource_List.nodect = 1
+        Resource_List.place = free
+        Resource_List.select = 1:ncpus=1:mpiprocs=1:mem=1073741824:job_tags=normalb
+        Resource_List.storage = scratch/vp91
+        Resource_List.walltime = 00:01:00
+        Resource_List.wd = 1
+        ```
+
+        We can see that in this example run, CPU usage was at 55%. Since we only requested 1 CPU, there is no more room for improvement here. We can also see that ~434MB of memory was used, while we requested 1GB, so in this case we could have gotten away with requesting 500MB of memory instead.
+
     === "Setonix"
+
         ```bash
-        sacct -j <jobid> --format=JobID,JobName,Elapsed,State,AllocCPUS,TotalCPU,MaxRSS
-        seff <jobid>
+        JOBID=$(sed -E -e 's/^Submitted batch job //g' run_id.txt)
+        sacct -j ${JOBID} --format=JobID,JobName,Elapsed,State,AllocCPUS,TotalCPU,MaxRSS
+        seff ${JOBID}
         ```
+
+        This will generate an output something like:
+
+        ```console title="Output"
+        JobID           JobName    Elapsed      State  AllocCPUS   TotalCPU     MaxRSS 
+        ------------ ---------- ---------- ---------- ---------- ---------- ---------- 
+        34324060         fastqc   00:00:17  COMPLETED          2  00:07.945            
+        34324060.ba+      batch   00:00:17  COMPLETED          2  00:07.942    376996K 
+        34324060.ex+     extern   00:00:17  COMPLETED          2  00:00.003          0
+
+        Job ID: 34324060
+        Cluster: setonix
+        User/Group: username/username
+        State: COMPLETED (exit code 0)
+        Nodes: 1
+        Cores per node: 2
+        CPU Utilized: 00:00:08
+        CPU Efficiency: 23.53% of 00:00:34 core-walltime
+        Job Wall-clock time: 00:00:17
+        Memory Utilized: 368.16 MB
+        Memory Efficiency: 35.95% of 1.00 GB (1.00 GB/node)
+        ```
+
+        We can see that in this example run, CPU usage was at 23.53%. Since we only requested 1 CPU, there is no more room for improvement here. We can also see that the memory efficiency was ~34%, using ~368MB of the requested 1GB, so in this case we could have gotten away with requesting 500MB of memory instead.
 
 ## 1.4.1 Resource awareness: right sizing 
 
@@ -102,7 +156,7 @@ We can explore parallelisation methods of multi-threading and multi-processing i
 
 !!! note "What is multi-threading?"
 
-    Multithreading means one program is using multiple cores on the same node to complete a single task faster. Our ability to do this is dependent on the tool being used. Some bioinformatics tools support multithreading via the `--threads` or `-t` flag.
+    Multithreading means one program is using multiple cores on the same node to complete a single task faster. Our ability to do this is dependent on the tool being used. Some bioinformatics tools support multithreading via a flag like `--threads` or `-t`.
 
 In our variant calling workflow, some tools work best when given multiple cores on the same node, e.g. alignment with `bwa mem`. When you run: 
 

@@ -501,18 +501,18 @@ The above command is quite long, and would be a pain to write out every time you
 
         Note how we need to explicity state the project name for the `--account` parameter.
 
-    With the script updated, you can simply run your HPC submission command without any of the previously supplied parameters:
+    With the script updated, you can simply run your HPC submission command without any of the previously supplied parameters. We will also redirect the output of the submission command (which prints a message containing the job ID) to a file called `run_id.txt` for use in the next lesson.
 
     === "Gadi"
 
         ```bash
-        qsub fastqc.sh
+        qsub fastqc.sh > run_id.txt
         ```
 
     === "Setonix"
 
         ```bash
-        sbatch fastqc.sh
+        sbatch fastqc.sh > run_id.txt
         ```
 
     The job can be monitored the same way as before, and once complete, should produce the exact same output:
