@@ -2,9 +2,9 @@
 
 !!! info "Learning objectives"
 
-    - Know what nf-core is
-    - Know where to find nf-core pipelines
-    - Understand the basic structure of nf-core workflows
+    - Understand what nf-core is
+    - Identify where to find and access nf-core pipelines
+    - Recognise the basic structure and key components of an nf-core workflow
 
 We have now seen how a Nextflow pipeline can be configured to run on an HPC. In tomorrow's section of the workshop, we will further explore optimising a custom Nextflow pipeline to efficiently utilise HPC resources. However, whenever you are considering building a workflow, it is always important to check whether a suitable tool already exists - after all, the goal of Nextflow is to build reproducible workflows, and we shouldn't re-invent the wheel if we don't have to! For the rest of this session, we will be looking at the **nf-core** project, which aims to address this very issue and provide a collection of bioinformatics Nextflow pipelines.
 
@@ -153,7 +153,7 @@ Let's take a few minutes to explore the `sarek/` directory and understand the st
     ```bash
     ls modules subworkflows
     ```
-    
+
     ```console title="Output"
     modules:
     local   nf-core
