@@ -78,7 +78,7 @@ We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatic
         ```console
         N E X T F L O W   ~  version 24.04.5
         Launching `main.nf` [jovial_lalande] DSL2 - revision: 4e4c91df36
-        executor >  pbspro (1)
+        executor >  local (1)
         [c1/104707] splitSequences | 1 of 1 ✔
         ```
 
@@ -104,9 +104,13 @@ Inside this directory, each process execution (or task) runs in its own isolated
 
 !!! note
 
-    You can execute tree `work/` to view the work directory structure.
+    You can execute `tree work/` to view the work directory structure.
 
     ```bash
+    tree work/
+    ```
+
+    ```console title="Output"
     work
     └── 6b
     └── e8feb6a83bb78a7a6661ccc1211857
@@ -146,7 +150,7 @@ It can specify:
 - Environment: Modules, containers, or conda environments to load.
 - Storage: Where to store temporary and output files.
 
-configs are powerful on HPC systems, because they are what connect your workflow to the scheduler.
+Configs are powerful on HPC systems, because they are what connect your workflow to the scheduler.
 They translate Nextflow’s processes into properly submitted batch jobs.
 
 Because configs are separate from the workflow logic, you can:
@@ -160,18 +164,23 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
 
 !!! example "Running the workflow on the compute nodes"
 
-    Now run the workflow using the executor profiles:
-
     === "Gadi"
-        ```bash
-         nextflow run config-demo-nf/main.nf -profile pbspro --pbspro_account vp91
-        ```
-    === "Setonix"
-        ```bash
-        nextflow run config-demo-nf/main.nf -profile slurm --slurm_account courses01
-        ```
 
-    The output of your command should now look something like this
+    We have pre-made a very simple configuration file, `pbspro.config`, that will allow the example Nextflow pipeline to run on Gadi. Go ahead and re-run the workflow, adding the new configuration file with the `-c pbspro.config` option. You will also need to define a new parameter: `pbspro_account`:
+
+    ```bash
+    nextflow run config-demo-nf/main.nf -c pbspro.config --pbspro_account vp91
+    ```
+
+    === "Setonix"
+
+    We have pre-made a very simple configuration file, `slurm.config`, that will allow the example Nextflow pipeline to run on Setonix. Go ahead and re-run the workflow, adding the new configuration file with the `-c slurm.config` option. You will also need to define a new parameter: `slurm_account`:
+
+    ```bash
+    nextflow run config-demo-nf/main.nf -c slurm.config --slurm_account courses01
+    ```
+
+    The output of your command should now look something like this:
 
     === "Gadi"
         ```bash
@@ -193,4 +202,53 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
         ```
     Notice that the executor now matches your HPC’s system, slurm on Setonix or pbspro on Gadi.
 
-[TODO] Add summary or think about an additional task
+## 1.5.4 Profiles
+
+Another very useful feature of Nextflow is the ability to bundle up configuration options into **profiles**. This can help to simplify the command line arguments to Nextflow by using the `-profile <profile name>` syntax, rather than having to provide the path to the relevant configuration file. We have already set up the `nextflow.config` file to define two profiles, `pbspro` and `slurm`, which import the relevant configuraiton files when they are used:
+
+```groovy title="nextflow.config" linenums="4"
+// Define HPC profiles to run with job scheduler
+profiles {
+  // Use this profile to interact with the scheduler on setonix 
+  slurm { includeConfig "slurm.config" }
+
+  // Use this profile to interact with the scheduler on gadi   
+  pbspro { includeConfig "pbspro.config" }
+}
+```
+
+!!! example "Running the workflow on the compute nodes with profiles"
+
+    Run the workflow once more, this time using the executor profiles:
+
+    === "Gadi"
+        ```bash
+         nextflow run config-demo-nf/main.nf -profile pbspro --pbspro_account vp91
+        ```
+    === "Setonix"
+        ```bash
+        nextflow run config-demo-nf/main.nf -profile slurm --slurm_account courses01
+        ```
+
+    The output of your command should be the same as before:
+
+    === "Gadi"
+        ```bash
+        N E X T F L O W   ~  version 24.04.5
+
+        Launching `main.nf` [lethal_gilbert] DSL2 - revision: 4e4c91df36
+
+        executor >  pbspro (1)
+        [a8/5345da] splitSequences | 1 of 1 ✔
+        ```
+    === "Setonix"
+        ```bash
+        N E X T F L O W   ~  version 24.10.0
+
+        Launching `main.nf` [nice_boltzmann] DSL2 - revision: 4e4c91df36
+
+        executor >  slurm (1)
+        [67/d497fa] splitSequences [100%] 1 of 1 ✔
+        ```
+
+Now that we've recapped the basics of Nextflow and seen how a simple Nextflow pipeline can be run on an HPC, in the next section we will look at how we can start running some more complex workflows on HPCs, and how we can configure them to more efficiently utilise the resources available to them.
