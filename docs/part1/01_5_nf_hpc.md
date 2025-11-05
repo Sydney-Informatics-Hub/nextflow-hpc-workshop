@@ -39,13 +39,13 @@ Each process in a Nextflow pipeline becomes a separate batch job or task array o
 - Checks for completion and retrieves logs, outputs, and exit codes
 - Publishes the output data to the shared filesystem
 
-TODO diagram demonstrating this, something like: https://sydney-informatics-hub.github.io/template-nf-guide/notebooks/demo.html
+![](figs/00_Nextflow_on_HPC.png)
 
 ## 1.5.2 Our first HPC workflow
 
 We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatics-Hub/config-demo-nf) to see this in action. This workflow contains a single process that splits a sequence into multiple files.
 
-![](figs/00_confid_demo_nf.png)
+![](figs/00_config_demo_nf_v2.png)
 
 [TODO] get oversight on figure and update (fix file). Fix demo to include appropriate channels
 
@@ -166,19 +166,19 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
 
     === "Gadi"
 
-    We have pre-made a very simple configuration file, `pbspro.config`, that will allow the example Nextflow pipeline to run on Gadi. Go ahead and re-run the workflow, adding the new configuration file with the `-c pbspro.config` option. You will also need to define a new parameter: `pbspro_account`:
+        We have pre-made a very simple configuration file, `pbspro.config`, that will allow the example Nextflow pipeline to run on Gadi. Go ahead and re-run the workflow, adding the new configuration file with the `-c pbspro.config` option. You will also need to define a new parameter: `pbspro_account`:
 
-    ```bash
-    nextflow run config-demo-nf/main.nf -c pbspro.config --pbspro_account vp91
-    ```
+        ```bash
+        nextflow run config-demo-nf/main.nf -c pbspro.config --pbspro_account vp91
+        ```
 
     === "Setonix"
 
-    We have pre-made a very simple configuration file, `slurm.config`, that will allow the example Nextflow pipeline to run on Setonix. Go ahead and re-run the workflow, adding the new configuration file with the `-c slurm.config` option. You will also need to define a new parameter: `slurm_account`:
+        We have pre-made a very simple configuration file, `slurm.config`, that will allow the example Nextflow pipeline to run on Setonix. Go ahead and re-run the workflow, adding the new configuration file with the `-c slurm.config` option. You will also need to define a new parameter: `slurm_account`:
 
-    ```bash
-    nextflow run config-demo-nf/main.nf -c slurm.config --slurm_account courses01
-    ```
+        ```bash
+        nextflow run config-demo-nf/main.nf -c slurm.config --slurm_account courses01
+        ```
 
     The output of your command should now look something like this:
 
@@ -209,10 +209,10 @@ Another very useful feature of Nextflow is the ability to bundle up configuratio
 ```groovy title="nextflow.config" linenums="4"
 // Define HPC profiles to run with job scheduler
 profiles {
-  // Use this profile to interact with the scheduler on setonix 
+  // Use this profile to interact with the scheduler on setonix
   slurm { includeConfig "slurm.config" }
 
-  // Use this profile to interact with the scheduler on gadi   
+  // Use this profile to interact with the scheduler on gadi
   pbspro { includeConfig "pbspro.config" }
 }
 ```
