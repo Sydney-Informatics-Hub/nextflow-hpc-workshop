@@ -6,7 +6,7 @@
     - Understand how Nextflow uses executor definitions to talk to the HPC schedulere
     - Understand the singularity configuration scope
     - Know how to dynamically define the queue based on required resources
-    
+
 ## 2.3.1 Executors
 
 Executors are the back-end that Nextflow talks to to run the tasks in your workflow. By default, Nextflow will assume that you want to run everything on the same computer that you ran the `nextflow run` command on. But, as we have learned, that is definitely **not** how we want to run things on a shared HPC system: we want each task to be submitted to the scheduler to run on a compute node with all the appropriate resources.
@@ -513,72 +513,8 @@ We now have a configuration file with both our executor defined and singularity 
     ??? question "Result..."
 
         After a few moments as the pipeline starts up, you should notice the tasks getting submitted to the HPC:
-        
+
         ```console title="Output"
-        N E X T F L O W   ~  version 24.04.5
-
-        Launching `sarek/main.nf` [peaceful_perlman] DSL2 - revision: 3954909713
-
-
-        ------------------------------------------------------
-                                                ,--./,-.
-              ___     __   __   __   ___     /,-._.--~'
-        |\ | |__  __ /  ` /  \ |__) |__         }  {
-        | \| |       \__, \__/ |  \ |___     \`-._,-`-,
-                                                `._,._,'
-           ____
-         .´ _  `.
-        /  |\`-_ \      __        __   ___     
-       |   | \  `-|    |__`  /\  |__) |__  |__/
-        \ |   \  /     .__| /¯¯\ |  \ |___ |  \
-         `|____\´
-
-        nf-core/sarek 3.5.0
-        ------------------------------------------------------
-        Input/output options
-        input          : ../data/bams/samplesheet.csv
-        step           : markduplicates
-        outdir         : results
-
-        Main options
-        no_intervals   : true
-        skip_tools     : baserecalibrator,mosdepth,samtools
-
-        General reference genome options
-        igenomes_ignore: true
-
-        Reference genome options
-        fasta          : ../data/ref/Hg38.subsetchr20-22.fasta
-        fasta_fai      : ../data/ref/Hg38.subsetchr20-22.fasta.fai
-
-        Core Nextflow options
-        runName        : peaceful_perlman
-        containerEngine: singularity
-        launchDir      : /scratch/vp91/username/nextflow-on-hpc-materials/part1
-        workDir        : /scratch/vp91/username/nextflow-on-hpc-materials/part1/work
-        projectDir     : /scratch/vp91/username/nextflow-on-hpc-materials/part1/sarek
-        userName       : username
-        profile        : standard
-        configFiles    : 
-
-        !! Only displaying parameters that differ from the pipeline defaults !!
-        ------------------------------------------------------
-        * The pipeline
-            https://doi.org/10.12688/f1000research.16665.2
-            https://doi.org/10.1093/nargab/lqae031
-            https://doi.org/10.5281/zenodo.3476425
-
-        * The nf-core framework
-            https://doi.org/10.1038/s41587-020-0439-x
-
-        * Software dependencies
-            https://github.com/nf-core/sarek/blob/master/CITATIONS.md
-
-        WARN: The following invalid input values have been detected:
-
-        * --trace_timestamp: 2025-11-05_13-01-43
-
-
         executor >  pbspro (5)
         [-        ] process > NFCORE_SAREK:PREPARE_GENOME:BWAMEM1_INDEX                                              -
         [-        ] process > NFCORE_SAREK:PREPARE_GENOME:BWAMEM2_INDEX                                              -
