@@ -24,6 +24,10 @@ approach, perhaps SU usage/cost and resource usage too.
 - Outline what are we optimising for? Time/cost/throughput? Focusing on time an
 throughput.
 
+What part 2 is NOT:
+- How to write and build nextflow pipelines and logic
+- Understanding the contents input and output files in detail
+
 ## Why do you need custom pipelines?
 
 Reasons for using custom pipeline:

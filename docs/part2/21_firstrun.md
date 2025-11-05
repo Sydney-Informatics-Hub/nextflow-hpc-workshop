@@ -8,7 +8,6 @@
     and interpretting exit codes and error messages
     - Know how to find and specify system-dependent HPC values such as queues/partitions
     - Recall how Nextflow interacts with HPC components
-
 We start with running things on a single sample. This should be representative
 of all the data we run i.e. we will be processing chromosomes 20, 21, 22.
 
@@ -168,7 +167,17 @@ running pbs/slurm scripts.
 
 !!! example "Exercises"
 
-    TODO add some super basic config to get GENOTYPE working (cpu = 1, mem = 2GB)
+    For both Pawsey (Slurm) and Gadi (PBS) create a new file
+    `conf/custom.config` and add the following:
+
+    ```groovy title='custom.config
+    process {
+        cpu = 1
+        memory = 2.GB
+    }
+    ```
+
+TODO: Explain the `-c` flag. When would you use it?
 
 !!! example "Exercises"
 
@@ -177,3 +186,20 @@ running pbs/slurm scripts.
     of running NXF across different envs - run.sh is one of the things we adapt
     for the system (i.e. project name, scheduler) so everything else can stay
     the same.
+
+    Run script should look something like:
+
+    ```bash
+    #load modules ...
+
+    
+    nextflow run main.nf -profile <sched> --<sched>_account <project> -c custom.config
+    ```
+
+!!! example "Exercise"
+
+    TODO Maybe, qstat and sacct/seff the GENOTYPE process again. What changed?
+
+qstat/sacct-ing each job is inefficient, especially with pipelines with more
+processes, and running on more than one sample. Segue into the next section
+where this can be automated using Nextflow's in-built monitoring features.

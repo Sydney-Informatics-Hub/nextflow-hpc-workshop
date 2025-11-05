@@ -5,11 +5,16 @@
     - Inspect workflow performance and resource usage utilising Nextflow's
     in-built monitoring features
     - Recognise the importance of benchmarking to request appropriate resources (e.g. CPUs, memory, time) when scheduling jobs on HPC
+    - Know which fields help determine efficiency and HPC resource usage
     - Compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
 
 Once we get the workflow running without error on the scheduler, where can we optimise. 
 
 Look at the report.html. Create a more informative trace file: https://www.nextflow.io/docs/latest/reports.html#trace-file
+
+!!! example "Exercise"
+
+    TODO: Enable all trace reporting available, with default settings
 
 !!! example "Exercise"
     
