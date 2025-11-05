@@ -13,7 +13,7 @@
 
     A nextflow pipeline consists of three primary components:
 
-    - **Processes** define what to run — the actual task or command. Each process can use any Linux-compatible language (e.g., Bash, Python, R, Perl).
+    - **Processes** define what to run. Each process can use any Linux-compatible language (e.g., Bash, Python, R, Perl).
     - **Channels** define how data flows between processes. Channels asynchronously carry data between processes and can fan-out (parallel tasks) or fan-in (merge results).
     - **Workflows** Define the order in which processes connect. They orchestrate execution, specifying dependencies and the overall structure of the pipeline.
 
@@ -73,11 +73,42 @@ We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatic
     ```bash
     nextflow run config-demo-nf/main.nf
     ```
+    The output of your command should look something like this
     ```console
-    TODO output
+     N E X T F L O W   ~  version 24.10.0
+    Launching `main.nf` [prickly_lovelace] DSL2 - revision: 66bfcf5bb9
+    executor >  local (1)
+    [6b/e8feb6] splitSequences [100%] 1 of 1 ✔
     ```
 
-TODO explore the output printed to the screen, like https://sydney-informatics-hub.github.io/template-nf-guide/notebooks/demo.html#run-the-demo
+    What does each line mean?
+
+    1. The version of Nextflow that was executed
+    2. The script and version names
+    3. The executor used (in the above case: local)
+    4. The process that was executed once, which means there is one task. The line starts with a unique hexadecimal value, and ends with the task completion information
+
+## Task directories and the `work/` folder
+
+When you run a Nextflow pipeline, it automatically creates a `work/` directory. This is where all computation happens behind the scenes.
+Inside this directory, each process execution (or task) runs in its own isolated subdirectory, identified by a unique hash, in the above example, `work/6b/e8feb6` (NOTE: your unique hash will be different).
+
+Here’s what happens inside each task directory:
+
+1. Setup: Nextflow stages (copies or links) the input files, plus a small script (.command.sh) that defines what to run.
+2. Execution: The process runs inside that folder, writing its results there.
+3. Cleanup: Nextflow collects the output files and makes them available for downstream processes or publishing.
+
+Each directory is independent so tasks don’t share writable space. If one process needs data from another, it’s passed through Nextflow channels, not shared files. This isolation is especially important on HPC systems, where tasks may run on different compute nodes.
+
+## Where did my task actually run?
+
+Our first run used the local executor, which means all computation happened directly on the login node, the same machine where we typed the command.
+This is perfectly fine for quick tests or debugging, but not suitable for real workloads on HPC systems.
+
+On HPC, heavy computation should be handled by compute nodes managed by a job scheduler.
+
+To make that happen, we’ll use Nextflow configuration files.
 
 ### 1.5.3 Configuring for the scheduler
 
