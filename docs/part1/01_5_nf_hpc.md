@@ -40,7 +40,7 @@ Each process in a Nextflow pipeline becomes a separate batch job or task array o
 - Checks for completion and retrieves logs, outputs, and exit codes
 - Publishes the output data to the shared filesystem
 
-![](figs/00_Nextflow_on_HPC.png)
+![](figs/00_Nextflow_on_HPC_v2.png)
 
 ## 1.5.2 Our first HPC workflow
 
