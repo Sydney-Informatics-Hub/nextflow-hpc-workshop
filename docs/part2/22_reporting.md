@@ -12,10 +12,19 @@ Once we get the workflow running without error on the scheduler, where can we op
 
 !!! example "Exercise"
 
-    TODO: Enable all trace reporting available, with default/minimal settings
+    Enable all trace reporting available, with default/minimal settings.
+    We use the configured `trace` from Part 1.
 
     ```groovy title='nextflow.config'
-    trace { enabled = true }
+     params.trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+     
+     trace {
+         enabled = true
+         overwrite = false
+         file = "./runInfo/trace-${params.trace_timestamp}.txt"
+         fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,rss'
+     }
+
     timeline { enabled = true }
     report { enabled = true }
     dag { enabled = true }
@@ -32,32 +41,11 @@ Addition of timestamp and overwrite = false - helps with benchmarking when you
 need to compare settings before vs. after e.g. optimisation
 
 !!! example "Exercise"
-    
-    Replace the following in your `nextflow.config`
 
-    **Before:**
-
-    ```groovy title='nextflow.config'
-    trace { enabled = true }
-    ```
-
-    **After:**
-
-    ```groovy title='nextflow.config'
-     params.trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
-     
-     trace {
-         enabled = true
-         overwrite = false
-         file = "./runInfo/trace-${params.trace_timestamp}.txt"
-         fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,rss'
-     }
-    ```
-   
-
-!!! example "Exercise"
+    TODO View trace fields, add some stuff that could be useful. e.g. jobid so you don't have to grep .nextflow.log
 
     TODO Run pipeline, view reports, particularly trace - what has changed?
 
+    === "Gadi (PBS)"
 
 TODO compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`

@@ -141,6 +141,41 @@ running on different systems.
 
 TODO brief explanation on "2 x 1" for Setonix - virtual cores for the partition
 
+We know that 2GB memory will be sufficient for this process. Let's explicitly
+configure that.
+
+!!! tip: Isn't 1 CPU enough?
+
+    Note that different values are provided based on the specific, low-cost
+    queue and partition. 
+
+    TODO: average number of cores available based on memory requirements.
+    Revisit in the resourcing section.
+
+!!! example "Exercises"
+
+    === "Gadi (PBS)"
+
+        Add the following code block in `conf/pbspro.config`
+
+        ```groovy title='custom.config
+        process {
+            cpu = 4 // 'queue' normalbw = 128 GB / 28 CPU ~ 4.6
+            memory = 2.GB
+        }
+        ```
+
+    === "Pawsey (Slurm)"
+
+    Add the following code block in `conf/slurm.config`
+
+        ```groovy title='custom.config
+        process {
+            cpu = 2 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+            memory = 2.GB
+        }
+        ```
+
 !!! example "Exercises"
 
     TODO add the QoL additions from nf-core config 1.2.
@@ -164,20 +199,6 @@ in code in scopes, and talk through what each thing does. -->
 
 TODO Relate this back and compare why Nextflow is powerful for HPC vs. serially
 running pbs/slurm scripts.
-
-!!! example "Exercises"
-
-    For both Pawsey (Slurm) and Gadi (PBS) create a new file
-    `conf/custom.config` and add the following:
-
-    ```groovy title='custom.config
-    process {
-        cpu = 1
-        memory = 2.GB
-    }
-    ```
-
-TODO: Explain the `-c` flag. When would you use it?
 
 !!! example "Exercises"
 

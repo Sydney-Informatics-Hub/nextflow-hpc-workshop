@@ -14,7 +14,7 @@
 
 !!! example "Exercise"
 
-    TODO Recall whether FASTQC() -t ${task.cpus} will make is more efficient or not
+    TODO Refer to fastqc thread benchmarking from part 1
 
 !!! example "Exercise"
 
@@ -24,7 +24,7 @@
 
 !!! example "Exercise"
 
-    TODO Add modules for SPLIT_FASTQ(), ALIGN_CHUNK(), MERGE_BAM()
+    TODO Import modules for SPLIT_FASTQ(), ALIGN_CHUNK(), MERGE_BAM()
     
 !!! example "Exercise"
 
@@ -32,6 +32,8 @@
 
 ## Bonus: Dynamic resourcing
 
-!!! Exercise
+This is smart for 
+!!! example "Exercise"
 
     TODO error strategies with e.g. maxretries * task.memory
+

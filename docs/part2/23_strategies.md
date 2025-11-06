@@ -40,26 +40,28 @@ Key strategies:
     | STATS          | Yes              | No              | NO                                |
     | MULTIQC        | Yes              | No              | NO                                |
 
+TODO: provide image for Polls
+
 ### The false positive and negative answers
 
 Discuss!
 
 ### The No's
 
-    - JOINT_GENOTYPE, STATS, MULTIQC cannot be split
-        - 1. Biology: Variants need to be called across all samples in the cohort in the scaling up section
-        - 2. Technical: MULTIQC needs all the files to compile the report
-    - Multi-threading is not supported by all tools.
+- JOINT_GENOTYPE, STATS, MULTIQC cannot be split
+    - 1. Biology: Variants need to be called across all samples in the cohort in the scaling up section
+    - 2. Technical: MULTIQC needs all the files to compile the report
+- Multi-threading is not supported by all tools.
 
 ### The Yes'
 
-    - Resourcing is extremely important when working on HPC:
-        1. it fits the requirements for the system infrastructure(queues or partitions)
-        2. so you jobs are scheduled quickly
-        3. so your jobs are run efficiently and request the right number of resources
+- Resourcing is extremely important when working on HPC:
+    1. it fits the requirements for the system infrastructure(queues or partitions)
+    2. so you jobs are scheduled quickly
+    3. so your jobs are run efficiently and request the right number of resources
 
-    - For the ones that support multi-threading... should we..? how many threads?
+- For the ones that support multi-threading... should we..? how many threads?
 
-    - FASTQC-ALIGN can be scattered, done in parallel (leveraging HPC resources, lowering walltime), and brought back together
+- FASTQC-ALIGN can be scattered, done in parallel (leveraging HPC resources, lowering walltime), and brought back together
 
 These three points will be revisited in the next sections sequentially.
