@@ -3,6 +3,7 @@
 !!! info "Learning objectives"
 
     - Understand how HPC resources affect job scheduling and performance  
+    - Describe how HPC scheduling and resource limitations shape pipeline configuration.
     - Differentiate between multithreading and scatter–gather approaches to parallelisation  
     - Identify how to size resource requests appropriately for each process in a workflow  
     - Apply resource-aware design principles to improve job efficiency and reproducibility  
@@ -11,18 +12,72 @@ HPC systems give us access to large amounts of compute, but that doesn’t mean 
 
 HPC systems are constantly measuring your resource usage. You can use their built in tools to measure actual use. The tools available to you will depend on the job scheduler and the administrator's implementation of the scheduler. 
 
-!!! example "Inspect a previous job"
+!!! example "Exercise: Inspect a previous job"
 
-    TODO design an exercise for checking the previous lessons' jobs.
+    At the end of the previous lesson, we saved the job ID to a file called `run_id.txt`. We can use that ID to inspect the resources used by the job:
+
     === "Gadi"
+
         ```bash
-        qstat -xf <jobid> | grep -E "Resource_List|Used"
+        JOBID=$(cat run_id.txt)
+        qstat -xf ${JOBID} | grep -E "Resource_List|resources_used"
         ```
+
+        This will generate an output something like:
+
+        ```console title="Output"
+        resources_used.cpupercent = 55
+        resources_used.cput = 00:00:04
+        resources_used.jobfs = 0b
+        resources_used.mem = 434716kb
+        resources_used.ncpus = 1
+        resources_used.vmem = 434716kb
+        resources_used.walltime = 00:00:06
+        Resource_List.jobfs = 104857600b
+        Resource_List.mem = 1073741824b
+        Resource_List.mpiprocs = 1
+        Resource_List.ncpus = 1
+        Resource_List.nodect = 1
+        Resource_List.place = free
+        Resource_List.select = 1:ncpus=1:mpiprocs=1:mem=1073741824:job_tags=normalb
+        Resource_List.storage = scratch/vp91
+        Resource_List.walltime = 00:01:00
+        Resource_List.wd = 1
+        ```
+
+        We can see that in this example run, CPU usage was at 55%. Since we only requested 1 CPU, there is no more room for improvement here. We can also see that ~434MB of memory was used, while we requested 1GB, so in this case we could have gotten away with requesting 500MB of memory instead.
+
     === "Setonix"
+
         ```bash
-        sacct -j <jobid> --format=JobID,JobName,Elapsed,State,AllocCPUS,TotalCPU,MaxRSS
-        seff <jobid>
+        JOBID=$(sed -E -e 's/^Submitted batch job //g' run_id.txt)
+        sacct -j ${JOBID} --format=JobID,JobName,Elapsed,State,AllocCPUS,TotalCPU,MaxRSS
+        seff ${JOBID}
         ```
+
+        This will generate an output something like:
+
+        ```console title="Output"
+        JobID           JobName    Elapsed      State  AllocCPUS   TotalCPU     MaxRSS 
+        ------------ ---------- ---------- ---------- ---------- ---------- ---------- 
+        34324060         fastqc   00:00:17  COMPLETED          2  00:07.945            
+        34324060.ba+      batch   00:00:17  COMPLETED          2  00:07.942    376996K 
+        34324060.ex+     extern   00:00:17  COMPLETED          2  00:00.003          0
+
+        Job ID: 34324060
+        Cluster: setonix
+        User/Group: username/username
+        State: COMPLETED (exit code 0)
+        Nodes: 1
+        Cores per node: 2
+        CPU Utilized: 00:00:08
+        CPU Efficiency: 23.53% of 00:00:34 core-walltime
+        Job Wall-clock time: 00:00:17
+        Memory Utilized: 368.16 MB
+        Memory Efficiency: 35.95% of 1.00 GB (1.00 GB/node)
+        ```
+
+        We can see that in this example run, CPU usage was at 23.53%. Since we only requested 1 CPU, there is no more room for improvement here. We can also see that the memory efficiency was ~34%, using ~368MB of the requested 1GB, so in this case we could have gotten away with requesting 500MB of memory instead.
 
 ## 1.4.1 Resource awareness: right sizing 
 
@@ -46,13 +101,15 @@ TODO fix this table to make it make sense/honest/relevant.
 |------|-------------------|-------------|
 | **Quality control** | I/O-bound | Reads many small files; CPU idle time high |
 | **Read alignment** | CPU-bound | CPU pegged near 100%; memory stable |
-| **Variant callingr** | CPU + memory | CPU ~90%, high steady memory usage |
+| **Variant calling** | CPU + memory | CPU ~90%, high steady memory usage |
 
 We will observe these constraints in subsequent lessons when we run and optimise our workflows.
 
 !!! note "Where can I find this information?" 
 
-    Most mature bioinformatics tools document their approximate resource usage. Keep in mind, documentation will not reflect the reality of your specific dataset and environment. Look at your own resource usage and scaling behaviour to test this.  
+    Most mature bioinformatics tools document their approximate resource usage. Keep in mind, documentation will not reflect the reality of your specific dataset and environment. Look at your own resource usage and scaling behaviour to test this.
+
+    It's also very helpful to have small-scale datasets to initially test your workflows with. Common practices are to subset FASTQs to a small fraction of the reads, and to subset aligned data to the smaller chromosomes (e.g. chr22 in human data). This will help you quickly (and cheaply!) determine how your workflow behaves at each step and how it will scale with larger datasets.
 
     The more you practice tuning processes for efficiency, the faster you'll develop an intuition for scaling. 
 
@@ -68,7 +125,7 @@ Values near 1 mean your job used all the CPUs efficiently. Values much lower tha
 
 ### Memory (RAM) efficiency 
 
-Memory efficiency describes how much of your allocated memory was truly needed. If your job used close to the requested memory, you're right sized. If maximum memory is much lower than requested, then you over-allocated, and your job will fail if maximum memory exceeds the requested allocation.    
+Memory efficiency describes how much of your allocated memory was truly needed. If your job used close to the requested memory, you're right sized. If maximum memory is much lower than requested, then you over-allocated. Your job will fail if maximum memory exceeds the requested allocation.    
 
 ### Walltime awareness 
 
@@ -101,7 +158,7 @@ We can explore parallelisation methods of multi-threading and multi-processing i
 
 !!! note "What is multi-threading?"
 
-    Multithreading means one program is using multiple cores on the same node to complete a single task faster. Our ability to do this is dependent on the tool being used. Some bioinformatics tools support multithreading via the `--threads` or `-t` flag.
+    Multithreading means one program is using multiple cores on the same node to complete a single task faster. Our ability to do this is dependent on the tool being used. Some bioinformatics tools support multithreading via a flag like `--threads` or `-t`.
 
 In our variant calling workflow, some tools work best when given multiple cores on the same node, e.g. alignment with `bwa mem`. When you run: 
 
@@ -113,21 +170,217 @@ You're telling BWA to use 4 worker threads for parts of the alignment process th
 
 !!! example "Does more threads always speed up a job?" 
 
-    ```
-    TODO time bwa mem
+    We've provided a script for you to examine the effects of multi-threading when running `bwa mem`:
+
+    === "Gadi"
+
+        The Gadi version of the script is located at `/scripts/bwa-multithreaded.pbs.sh`:
+
+        ```bash title="scripts/bwa-multithreaded.pbs.sh"
+        #!/bin/bash
+        #PBS -P vp91
+        #PBS -N bwa
+        #PBS -q normalbw
+        #PBS -l ncpus=8
+        #PBS -l mem=1GB
+        #PBS -l walltime=00:02:00
+        #PBS -l storage=scratch/vp91
+        #PBS -l wd
+
+        module load bwa/0.7.17
+
+        for NCPUS in 2 4 6 8
+        do
+            echo "NCPUS: ${NCPUS}"
+            time ( bwa mem -t ${NCPUS} -o /dev/null ../data/ref/Hg38.subsetchr20-22.fasta ../data/fqs/NA12878_chr20-22.R1.fq.gz ../data/fqs/NA12878_chr20-22.R2.fq.gz > /dev/null 2> /dev/null ) 2>&1
+            echo "-----"
+        done > bwa_times.txt
+        ```
+
+    === "Setonix"
+
+        The Setonix version of the script is located at `/scripts/bwa-multithreaded.slurm.sh`:
+
+        ```bash title="scripts/bwa-multithreaded.slurm.sh"
+        #!/bin/bash
+        #SBATCH --account=courses01
+        #SBATCH --job-name=bwa
+        #SBATCH --partition=work
+        #SBATCH --nodes=1
+        #SBATCH --ntasks=1
+        #SBATCH --cpus-per-task=8
+        #SBATCH --mem=1GB
+        #SBATCH --time=00:02:00
+
+        module load bwa/0.7.17--h7132678_9
+
+        for NCPUS in 2 4 6 8
+        do
+            echo "NCPUS: ${NCPUS}"
+            time ( bwa mem -t ${NCPUS} -o /dev/null ../data/ref/Hg38.subsetchr20-22.fasta ../data/fqs/NA12878_chr20-22.R1.fq.gz ../data/fqs/NA12878_chr20-22.R2.fq.gz > /dev/null 2> /dev/null ) 2>&1
+            echo "-----"
+        done > bwa_times.txt
+        ```
+
+    The script runs a loop, increasing the number of threads given to `bwa mem` by 2 each time. At the end, you will get a file called `bwa_times.txt`. Submit this script to the HPC and once it finishes, inspect the output:
+
+    === "Gadi"
+    
+        ```bash
+        qsub scripts/bwa-multithreaded.pbs.sh
+        ```
+
+    === "Setonix"
+
+        ```bash
+        sbatch scripts/bwa-multithreaded.slurm.sh
+        ```
+
+    The output in `bwa_times.txt` should look something like the following:
+
+    ```console title="Output"
+    NCPUS: 2
+
+    real	0m0.744s
+    user	0m1.296s
+    sys	0m0.085s
+    -----
+    NCPUS: 4
+
+    real	0m0.456s
+    user	0m1.399s
+    sys	0m0.138s
+    -----
+    NCPUS: 6
+
+    real	0m0.355s
+    user	0m1.520s
+    sys	0m0.098s
+    -----
+    NCPUS: 8
+
+    real	0m0.291s
+    user	0m1.519s
+    sys	0m0.109s
+    -----
     ```
 
- Not all tools can make use of threads effectively, and some don't implement the `--threads` flag effectively at all. 
+    We've used the `time` command to see how long each run of `bwa mem` takes. Notice that as the number of CPUs goes up, the `real` time (that is, the walltime, the number of real-world seconds it took for the job to complete) went down. Also notice that the `user` time (which is effectively the number of CPU hours spent on the job) stays mostly the same, or even increases slightly. This indicates that the same amount of computational time was being spent on the job, but because it was spread across more CPUs and run in parallel, it took fewer seconds to complete.
+
+    In the example above, the `user` time actually increased with additional CPUs, which is not unexpected. As mentioned above, parallelism and multi-threading come with additional overhead costs, as the software needs to track each thread and merge the results at the end. So once again, only use multi-threading where it is appropriate - for small datasets, it can actually make your pipeline less efficient!
+
+Be aware that not all tools can make use of threads effectively. This can stem from biological reasons, i.e. the computational problem simply needs to be run in a sequential manner. In other cases, the tool itself may simply not implement the `--threads` flag effectively.
 
 !!! example "Does more threads always speed up a job?" 
     
     While many tools benefit from multi-threading, [FastQC is not one of them](https://www.biostars.org/p/9598335/). It is designed to process one file per thread rather than splitting a single file across multiple threads.
 
-    ```
-    TODO fastqc example
+    We created another benchmarking script for `fastqc` that repeats the test we ran above with `bwa mem`.
+
+    === "Gadi"
+
+        The Gadi version of the script is located at `/scripts/fastqc-multithreaded.pbs.sh`:
+
+        ```bash title="scripts/fastqc-multithreaded.pbs.sh"
+        #!/bin/bash
+        #PBS -P vp91
+        #PBS -N fastqc
+        #PBS -q normalbw
+        #PBS -l ncpus=8
+        #PBS -l mem=1GB
+        #PBS -l walltime=00:02:00
+        #PBS -l storage=scratch/vp91
+        #PBS -l wd
+
+        module load fastqc
+
+        SAMPLE_ID="NA12878_chr20-22"
+        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
+        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
+
+        for NCPUS in 2 4 6 8
+        do
+            mkdir -p "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs"
+            echo "NCPUS: ${NCPUS}"
+            time ( fastqc -t ${NCPUS} --outdir "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs" --format fastq ${READS_1} ${READS_2} > /dev/null 2> /dev/null ) 2>&1
+            echo "-----"
+        done > fastqc_times.txt
+        ```
+
+    === "Setonix"
+
+        The Setonix version of the script is located at `/scripts/fastqc-multithreaded.slurm.sh`:
+
+        ```bash title="scripts/fastqc-multithreaded.slurm.sh"
+        #!/bin/bash
+        #SBATCH --account=courses01
+        #SBATCH --job-name=fastqc
+        #SBATCH --partition=work
+        #SBATCH --nodes=1
+        #SBATCH --ntasks=1
+        #SBATCH --cpus-per-task=8
+        #SBATCH --mem=1GB
+        #SBATCH --time=00:02:00
+
+        module load fastqc/0.11.9--hdfd78af_1
+
+        SAMPLE_ID="NA12878_chr20-22"
+        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
+        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
+
+        for NCPUS in 2 4 6 8
+        do
+            mkdir -p "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs"
+            echo "NCPUS: ${NCPUS}"
+            time ( fastqc -t ${NCPUS} --outdir "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs" --format fastq ${READS_1} ${READS_2} > /dev/null 2> /dev/null ) 2>&1
+            echo "-----"
+        done > fastqc_times.txt
+        ```
+
+    Once again, the script runs a loop, increasing the number of threads given to `fastqc` by 2 each time. At the end, you will get a file called `fastqc_times.txt`. Submit this script to the HPC and once it finishes, inspect the output:
+
+    === "Gadi"
+    
+        ```bash
+        qsub scripts/fastqc-multithreaded.pbs.sh
+        ```
+
+    === "Setonix"
+
+        ```bash
+        sbatch scripts/fastqc-multithreaded.slurm.sh
+        ```
+
+    The output in `fastqc_times.txt` should look something like the following:
+
+    ```console title="Output"
+    NCPUS: 2
+
+    real	0m0.064s
+    user	0m0.039s
+    sys	0m0.009s
+    -----
+    NCPUS: 4
+
+    real	0m0.057s
+    user	0m0.032s
+    sys	0m0.010s
+    -----
+    NCPUS: 6
+
+    real	0m0.064s
+    user	0m0.038s
+    sys	0m0.009s
+    -----
+    NCPUS: 8
+
+    real	0m0.064s
+    user	0m0.039s
+    sys	0m0.010s
+    -----
     ```
 
-    So here, increasing threads does not accelerate processing of a single fastq file. 
+    As you can see in the example above, the `real` time fluctuates a bit, but doesn't significantly decrease over time. The `user` time also stays fairly stable. This indicates that `fastqc` didn't speed up with additional threads.
 
 !!! warning "Threads ≠ cores " 
 
@@ -140,7 +393,7 @@ You're telling BWA to use 4 worker threads for parts of the alignment process th
     bwa mem -t 8
     ```
 
-    You're telling bwa to spawn 8 threads. For those threads to be executed in parallel, you must request 8 cores to run those threads on. If you were to request only 4 cores, those 8 threads will be competing for 4 cores which causes inefficiency and slower run times. If you ask for more CPUs than threads, those extra CPUs will sit idle, wasting allocation and increasing queue time. 
+    You're telling bwa to spawn 8 threads. For those threads to be executed in parallel, you must **also** request 8 cores from the HPC for those threads to run on. If you were to request only 4 cores, those 8 threads will be competing for 4 cores which causes inefficiency and slower run times. On the other hand, if you ask for more CPUs than threads, those extra CPUs will sit idle, wasting allocation and increasing queue time. In summary, always try to request the exact number of cores your job requires. If you have a mixture of tools where one uses lots of threads and another is single-threaded, consider separating them out into separate jobs so that you use the HPC resources efficiently.
 
 ## Parallelisation: multiprocessing 
 
@@ -152,16 +405,10 @@ You're telling BWA to use 4 worker threads for parts of the alignment process th
 
 ![](./figs/00_workflow02.png){width=80%}
 
-TODO maybe change this diagram to focus on one process and show different ways it can be implemented? 
-
-!!! example "TODO an exercise" 
-
-    ```
-    An exercise in workflow design
-    ```
+TODO maybe change this diagram to focus on one process and show different ways it can be implemented?
 
 !!! warning "Does it make sense biologically to process in parallel?" 
 
-    Not all parallelisation makes sense, it depends on what you're analysing and how the tool interprets the data. Parallelisation makes sense when the data are independent, e.g. running FastQC on multiple fastq files, aligning multiple samples with bwa-mem, or calling SNPs and indels per chromosome. 
+    Not all parallelisation makes sense: it depends on what you're analysing and how the tool interprets the data. Parallelisation makes sense when the data are independent, e.g. running FastQC on multiple fastq files, aligning multiple samples with bwa-mem, or calling SNPs and indels per chromosome. 
 
-    Paralellisation does not make sense when results depend on comparing all data together e.g. joint genotyping, genome assembly, or detecting structural variants across multiple chromosomes. 
+    Paralellisation does not make sense when results depend on comparing all data together e.g. joint genotyping, genome assembly, or detecting structural variants across multiple chromosomes.
