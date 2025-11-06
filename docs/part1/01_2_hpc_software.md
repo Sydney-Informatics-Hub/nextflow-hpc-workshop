@@ -50,41 +50,16 @@ This might seem like a pretty significant problem, but don't worry! You can stil
 
     Note that there are cases where we may package up two very closely related tools into a single container and Nextflow process, either because they are part of a larger suite of software, or they are known to work well together, or it would introduce unnecessary complexity into our pipeline to separate them. However, this is the exception, not the rule.
 
-## 1.2.2 A simple script 
+## 1.2.2 A simple command 
 
-Let's start exploring HPC software with a simple script that runs `fastqc`. You should find this in the `scripts/` directory: 
-
-```bash title="scripts/fastqc.sh"
-#!/bin/bash
-
-SAMPLE_ID="NA12878_chr20-22"
-READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
-
-mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-fastqc \
-    --outdir "results/fastqc_${SAMPLE_ID}_logs" \
-    --format fastq ${READS_1} ${READS_2}
-```
-
-A small fastq dataset has also been provided:
-
-```bash
-ls ../data/fqs
-```
-
-```console
-NA12877_chr20-22.R1.fq.gz NA12878_chr20-22.R1.fq.gz NA12889_chr20-22.R1.fq.gz samplesheet.fq.csv
-NA12877_chr20-22.R2.fq.gz NA12878_chr20-22.R2.fq.gz NA12889_chr20-22.R2.fq.gz
-```
+Let's start exploring HPC software with a simple command: accessing the help page for `fastqc`.
 
 !!! example "Exercise: Try to run fastqc"
 
-    Try running the script:
+    Try running the following command:
 
     ```bash
-    chmod +x scripts/fastqc.sh
-    ./scripts/fastqc.sh
+    fastqc --help
     ```
 
 ??? question "Result..."
@@ -92,10 +67,10 @@ NA12877_chr20-22.R2.fq.gz NA12878_chr20-22.R2.fq.gz NA12889_chr20-22.R2.fq.gz
     You will see:
 
     ```console
-    ./fastqc.sh: line 9: fastqc: command not found
+    bash: fastqc: command not found
     ```
 
-    The command fails because `fastqc` is **not installed by default**.
+    The command fails because `fastqc` is **not available by default**.
     On HPC, you’ll need to either load a pre-installed module or use a container.
 
 ## 1.2.3 Using modules
@@ -176,17 +151,30 @@ Note that the modules appear in a format of `<TOOL NAME>/<VERSION>`. Often, seve
         FastQC v0.11.9
         ```
 
-    Once loaded, you can rerun the `fastqc.sh` script and verify that it now runs successfully.
+    Once loaded, you can rerun the `fastqc --help` command and verify that it now runs successfully.
 
     ```bash
-    ./scripts/fastqc.sh
+    fastqc --help
     ```
 
     ```console
-    Started analysis of NA12878_chr20-22.R1.fq.gz
-    Analysis complete for NA12878_chr20-22.R1.fq.gz
-    Started analysis of NA12878_chr20-22.R2.fq.gz
-    Analysis complete for NA12878_chr20-22.R2.fq.gz
+                FastQC - A high throughput sequence QC analysis tool
+
+    SYNOPSIS
+
+        fastqc seqfile1 seqfile2 .. seqfileN
+
+        fastqc [-o output dir] [--(no)extract] [-f fastq|bam|sam] 
+            [-c contaminant file] seqfile1 .. seqfileN
+
+    DESCRIPTION
+
+        FastQC reads a set of sequence files and produces from each one a quality
+        control report consisting of a number of different modules, each one of 
+        which will help to identify a different potential type of problem in your
+        data.
+
+    ...
     ```
 
 Modules are quick and convenient, but they depend on what your HPC administrators provide. As we saw above, Gadi and Setonix provided different versions of FastQC. Relying on administrators to install modules for you can be a barrier to running your workflows. 
@@ -241,19 +229,32 @@ To run a command or script inside a singularity container, you simply run `singu
 
     You should find a pre-built container image for running the `fastqc` command at `singularity/fastqc.sif`.  
     
-    You can execute your script inside it with:
+    You can execute the `fastqc --help` inside it with:
 
     ```bash
-    singularity exec singularity/fastqc.sif ./fastqc.sh
+    singularity exec singularity/fastqc.sif fastqc --help
     ```
 
     The output should look familiar:
 
     ```console
-    Started analysis of NA12878_chr20-22.R1.fq.gz
-    Analysis complete for NA12878_chr20-22.R1.fq.gz
-    Started analysis of NA12878_chr20-22.R2.fq.gz
-    Analysis complete for NA12878_chr20-22.R2.fq.gz
+                FastQC - A high throughput sequence QC analysis tool
+
+    SYNOPSIS
+
+        fastqc seqfile1 seqfile2 .. seqfileN
+
+        fastqc [-o output dir] [--(no)extract] [-f fastq|bam|sam] 
+            [-c contaminant file] seqfile1 .. seqfileN
+
+    DESCRIPTION
+
+        FastQC reads a set of sequence files and produces from each one a quality
+        control report consisting of a number of different modules, each one of 
+        which will help to identify a different potential type of problem in your
+        data.
+
+    ...
     ```
 
-Later, when we set up Nextflow to run on the HPC, we will configure it to use singularity containers. Behind the scenes, this process of running a script within a container is essentially what Nextflow does for us.
+Later, when we set up Nextflow to run on the HPC, we will configure it to use singularity containers. Behind the scenes, this process of running a command within a container is essentially what Nextflow does for us.

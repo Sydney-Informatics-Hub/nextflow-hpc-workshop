@@ -42,182 +42,15 @@ For details about queue limits and scheduling policies on systems used today, se
 - [Setonix (Slurm) – Running Jobs on Setonix (Pawsey)](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix)
 - [Gadi (PBS Pro) – Queue Limits (NCI)](https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits)
 
-!!! example "Exercise: Where are my Jobs running? - Login vs compute nodes"
-
-    First, run the `hostname` command where you're working from; this is the login node, and its name varies depending on the infrastructure provider.
-
-    === "Gadi (PBS)"
-
-        ```bash
-        hostname
-        ```
-
-        You will see the name of the node you ran your command on
-
-        ```console
-        gadi-login-05.gadi.nci.org.au
-        ```
-        
-        Gadi uses descriptive hostnames that include the infrastructure name (gadi-login-XX).
-
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        hostname
-        ```
-        You will see the name of the node you ran your command on
-
-        ```console
-        setonix-01
-        ```
-        
-        Setonix opts for simpler hostnames, often just setonix-XX.
-
-    Next, we'll submit a simple job to the scheduler to run the same command on a compute node. Different HPCs have distinct sets of commands for submitting, monitoring, and managing jobs, so it is important to know the relevant commands for your system:
-
-    === "Gadi (PBS)"
-
-        On Gadi, you submit jobs to the cluster with the `qsub` command. Let's try submitting the `hostname` command to Gadi's queue:
-
-        ```bash
-        echo hostname | qsub
-        ```
-
-        PBS will return a job ID like:
-
-        ```console
-        123456.gadi-pbs
-        ```
-
-    === "Setonix (Slurm)"
-
-        On Setonix, you submit jobs to the cluster with the `sbatch` command. Let's try submitting the `hostname` command to Setonix's queue:
-
-        ```bash
-        sbatch --wrap="hostname"
-        ```
-
-        Slurm will return a message containing the job ID like:
-
-        ```console
-        Submitted batch job 123456
-        ```
-
-    Once the job finishes, check the output file to confirm it ran on a compute node. Node names will differ from login nodes and vary by infrastructure.
-
-    === "Gadi (PBS)"
-
-        ```bash
-        cat STDIN.o123456
-        ```
-
-        ```console
-        gadi-cpu-clx-0534.gadi.nci.org.au
-
-        ======================================================================================
-                    Resource Usage on 2025-11-03 11:54:04:
-        Job Id:             123456.gadi-pbs
-        Project:            [project_id]
-        Exit Status:        0
-        Service Units:      0.00
-        NCPUs Requested:    1                      NCPUs Used: 1
-                                                CPU Time Used: 00:00:00
-        Memory Requested:   500.0MB               Memory Used: 7.09MB
-        Walltime requested: 00:01:00            Walltime Used: 00:00:01
-        JobFS requested:    100.0MB                JobFS used: 0B
-        ======================================================================================
-        ```
-
-        Note: On PBS systems like Gadi, a job file is automatically generated with detailed resource usage information and appended to the end of the job output file. This is not common on Slurm systems.
-
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        cat slurm-123456.out
-        ```
-
-        ```console
-        nid002024
-        ```
-
-        Slurm does not generate a detailed job file by default, only a basic output file unless configured otherwise.
-
-
-    This confirms that compute jobs are executed on separate compute nodes, not the login nodes.
-
 ## Shared storage
 
 All nodes are connected to a shared parallel filesystem. This is a large, high-speed storage system where input data, reference files and workflow outputs are kept. Because it is shared across all users, it enables collaborative research and scalable workflows. However, it also introduces constraints around file organisation and performance, which is why workflows must be careful about how they read and write data here.
-
-!!! example "Exercise: Hello from the other side - shared filesystems"
-
-    Both login and compute nodes share the same file systems (e.g., `/scratch`).
-    You can demonstrate this by writing to a file from the login node and then appending to it from a compute node.
-
-    First, on the **login node**, create a simple file:
-
-    ```bash
-    echo "hello from " $(hostname) > ./shared_storage_system.txt
-    cat shared_storage_system.txt
-    ```
-
-    ```console
-    hello from gadi-login-05.gadi.nci.org.au
-    ```
-
-    This created a file in the current directory (./shared_storage_system.txt) and wrote the hostname of the login node into it.
-
-    Next, submit a job that appends a new line from the compute node:
-
-    === "Gadi (PBS)"
-
-        ```bash
-        echo "echo 'hello from' \$(hostname) >> $(pwd)/shared_storage_system.txt" | qsub
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        sbatch --wrap="echo 'hello from' \$(hostname) >> ./shared_storage_system.txt"
-        ```
-
-    This submitted a job to a compute node, which appended its own hostname to the same file.
-
-    After the job completes, check the contents of the file again:
-
-    === "Gadi (PBS)"
-
-        ```bash
-        cat shared_storage_system.txt
-        ```
-
-        ```console
-        hello from gadi-login-05.gadi.nci.org.au
-        hello from gadi-cpu-clx-0134.gadi.nci.org.au
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        cat shared_storage_system.txt
-        ```
-
-        ```console
-        hello from setonix-01
-        hello from nid002041
-        ```
-
-    The first entry in the file reflects the login node’s hostname, while the second entry corresponds to the compute node on which the job ran. Repeating the job may produce a different compute node name. This demonstrates that both login and compute nodes can access and modify the same file, confirming that they share a common storage system.
 
 !!! warning "Overwriting Files in Shared Filesystems"
 
     Because the filesystem is shared, multiple jobs or users writing to the same file, especially if it has a common name, can accidentally overwrite each other’s data or cause [race conditions](https://en.wikipedia.org/wiki/Race_condition).
 
-    In the example above, we safely added a line to a file using a method that appends without deleting what's already there.
-
-    However, in real workflows, most tools and scripts write to files in a way that replaces the entire file. On shared systems like /scratch, where many users and jobs access the same space, this can lead to conflicts or data loss.
+    Most tools and scripts write to files in a way that replaces the entire file. On shared systems like /scratch, where many users and jobs access the same space, this can lead to conflicts or data loss.
 
     It’s good practice to:
 
@@ -525,3 +358,21 @@ The above command is quite long, and would be a pain to write out every time you
     NA12878_chr20-22.R1_fastqc.html NA12878_chr20-22.R2_fastqc.html
     NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip
     ```
+
+
+```console title="TODO: Explain Gadi outputs"
+======================================================================================
+            Resource Usage on 2025-11-03 11:54:04:
+Job Id:             123456.gadi-pbs
+Project:            [project_id]
+Exit Status:        0
+Service Units:      0.00
+NCPUs Requested:    1                      NCPUs Used: 1
+                                        CPU Time Used: 00:00:00
+Memory Requested:   500.0MB               Memory Used: 7.09MB
+Walltime requested: 00:01:00            Walltime Used: 00:00:01
+JobFS requested:    100.0MB                JobFS used: 0B
+======================================================================================
+```
+
+Note: On PBS systems like Gadi, a job file is automatically generated with detailed resource usage information and appended to the end of the job output file. This is not common on Slurm systems.
