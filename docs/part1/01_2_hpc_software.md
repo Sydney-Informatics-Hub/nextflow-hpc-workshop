@@ -11,32 +11,23 @@ As soon as we start using HPC, we’re working in a shared environment where we 
 
 !!! warning "No sudo for you!"
 
-    Unlike your laptop, you do not have administrative (`sudo`) privileges on HPC systems. On a laptop, you can install software however you like. On HPC, thousands of users share the same system, so unrestricted installs would break environments, cause version conflicts, and introduce security risks. That’s why HPC systems block `sudo`.
+    Unlike your laptop, you do not have administrative (`sudo`) privileges on HPC systems. This puts some restrictions on what software you can install and where. On a laptop, you can install software however you like. On HPC, thousands of users share the same system, so unrestricted installs would break environments, cause version conflicts, and introduce security risks. That’s why HPC systems block `sudo`.
 
 ## 1.2.1 Software installation is different on HPCs
 
-Bioinformatics workflows need software, and often many versions of it. Consider the tools we want to use in our mapping and variant calling workflow:
-
-- `fastqc v0.12.1`: For quality analysis of FASTQ reads
-- `bwa v0.7.18`: For aligning FASTQ reads to a reference genome
-- `samtools v1.20`: For analysis and handling of BAM alignment files
-- `bcftools v1.22`: For analysis and handling of VCF variant call files
-- `gatk v4.6.2.0`: A suite of tools for performing variant calling and analysis of genomic variants
-- `multiqc v1.19`: For constructing a final summary report of our analyses
-
-These tools don’t always play nicely together. Sometimes specific versions of a tool will have bugs or introduce new features that break a workflow. As such, we often want to exactly control the versions of each tool that we use to ensure our pipeline is reliable and reproducible. Another issue is that the dependencies of these tools and their specific versions can conflict with one another.
-
-This might seem like a pretty significant problem, but don't worry! You can still install and manage software for your own workflows, you just need to use HPC-approved methods. There are three main approaches:
+There are a few ways in which we can install and use software on HPCs. Some of these are more complex than others, and they each have their benefits and drawbacks:
 
 | Approach | Description | Pros | Cons |
 |----------|-------------|------|------|
+| **Pre-built executables** | Pre-built, ready-to-run executable files that you simply download and run | Easy to use - just download and run | Few tools provide pre-built executables on Linux; they must be built for the same operating system and CPU architecture that you are using |
+| **DIY installation** | Compiling and installing software yourself from open-source code | Full control over where the software gets installed | Not beginner-friendly; build times can be long; often requires lots of configuration and specific dependencies |
 | **Conda/Mamba environments** | User-managed Python/R environments | Flexible; easy for development; well-documented; lots of tutorials available | Slow installs; dependency conflicts common; not fully reproducible; can use up lots of storage space |
 | **Environment modules** | Pre-installed software provided by HPC admins, loaded with `module load` | Fast; easy to use; no setup required | Limited versions; may conflict with workflow needs; not every tool is available on every system |
 | **Containers** (Apptainer/Singularity) | Portable, isolated software environments | Reproducible; portable; avoids dependency issues; huge repositories of pre-built containers available | Requires container knowledge; introduces slightly more complexity into scripts and workflows |
 
 !!! note "Why we love containers" 
 
-    Of the three options described above, we highly recommend using containers for workflow development, especially when using workflow languages like Nextflow. Containers bundle up everything a tool needs, including, dependencies, libraries, OS layers, into a single portable image. This image is self-contained (hence the name!) and doesn't interact or conflict with any of the software installed on your computer. On HPC, that means:
+    Of the several options described above, we highly recommend using containers for workflow development, especially when using workflow languages like Nextflow. Containers bundle up everything a tool needs, including, dependencies, libraries, OS layers, into a single portable image. This image is self-contained (hence the name!) and doesn't interact or conflict with any of the software installed on your computer. On HPC, that means:
 
     - No dependency conflicts: every container runs in its own isolated environment, unaffected by other users or system modules
     - Reproducibility: the same container image can be used across clusters, clouds, or laptops, ensuring identical software behaviour everywhere

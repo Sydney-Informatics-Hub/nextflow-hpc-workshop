@@ -30,17 +30,32 @@ Because queues are mapped to distinct sets of compute nodes, requesting the righ
 
 Queue names and limits differ across infrastructure providers but some common examples include:
 
-| Queue type        | Description                           | Typical limits                                         |
-| ----------------- | ------------------------------------- | ------------------------------------------------------ |
-| Normal/work       | Default queue for most batch jobs     | Moderate walltime (e.g. 24–48 h), general-purpose CPUs |
-| Express/short     | Prioritised for rapid turnaround      | Small jobs, short walltime                             |
-| Large/high memory | For jobs requiring many CPUs or nodes | Long walltime, higher resource requests                |
-| GPU               | Access to GPU-enabled nodes           | GPU-specific workloads only                            |
+| Queue type        | Description                             | Typical limits                                           |
+| ----------------- | --------------------------------------- | -------------------------------------------------------- |
+| Normal/work       | Default queue for most batch jobs       | Moderate walltime (e.g. 24–48 h), general-purpose CPUs   |
+| Express/short     | Prioritised for rapid turnaround        | Small jobs, short walltime                               |
+| Large/high memory | For jobs requiring many CPUs or nodes   | Long walltime, higher resource requests                  |
+| Copy              | For copying data to and from the system | Low CPU and RAM availability, moderate walltime (10-48h) |
+| GPU               | Access to GPU-enabled nodes             | GPU-specific workloads only                              |
 
 For details about queue limits and scheduling policies on systems used today, see:
 
 - [Setonix (Slurm) – Running Jobs on Setonix (Pawsey)](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix)
 - [Gadi (PBS Pro) – Queue Limits (NCI)](https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits)
+
+### Internet access on compute nodes
+
+Often, a workflow may need access to resources on the internet, such as Singularity container images and large reference databases. This can become an issue on HPCs, as some systems restrict internet access on the compute nodes. While on Setonix, all compute nodes are given internet access and can be used for downloading such resources, on Gadi, most of the compute nodes are kept offline; instead, only the compute nodes that make up the `copyq` queue are allowed to access the internet. Furthermore, this queue has a few important constraints, primarily that it only allows single CPU jobs and a maximum walltime of 10 hours. As such, when designing your workflows, you need to make sure you are working within these constraints.
+
+As a general rule of thumb, it is always best to have as much as possible of your workflow's input data pre-downloaded, as in any case, downloading data from the internet can be a major bottleneck. Where possible, running your workflow 'offline' is best practice.
+
+!!! warning "Mind your Qs"
+
+    Make sure you are using the right queue for the right job! Requesting the wrong queue can lead to long wait times due to other jobs getting higher priority, or to failures or outright rejection from the scheduler due to invalid resource requests. Always **consult the documentation** specific to your system before designing, configuring, and running your workflow.
+
+    Later on in this workshop, we will see some simple examples of how we can **dynamically** request the queue for Nextflow processes based on the resources they require.
+
+Remember to **always consult the documentation** specific to your HPC before writing and running workflows!
 
 ## Shared storage
 
@@ -97,68 +112,47 @@ Schedulers like PBS Pro and Slurm use queues to group jobs that share similar re
 
 ## Submitting scripts to the scheduler
 
-We've already seen how we can submit a very simple command to the HPC scheduler, but how do we submit more complex scripts and explicitly request the resources they require?
+To start getting familiar with working with the scheduler and submitting jobs, we will once again use `fastqc` as an example. We have an example script for running `fastqc` in the `scripts/` directory:
 
-Let's return to our `fastqc` example from the [previous section](./01_2_hpc_software.md):
+=== "Gadi"
 
-```bash title="scripts/fastqc.sh"
-#!/bin/bash
+    ```bash title="scripts/fastqc.pbs.sh"
+    #!/bin/bash
 
-SAMPLE_ID="NA12878_chr20-22"
-READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
+    module load singularity
 
-mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-fastqc \
-    --outdir "results/fastqc_${SAMPLE_ID}_logs" \
-    --format fastq ${READS_1} ${READS_2}
-```
+    SAMPLE_ID="NA12878_chr20-22"
+    READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
+    READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
-Previously, we ran this on the login node with a tiny dataset, but this is actually quite a bad practice! We should be submitting this job to the scheduler so that it can run on a proper compute node.
+    mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
+    singularity exec singularity/fastqc.sif \
+    fastqc \
+        --outdir "results/fastqc_${SAMPLE_ID}_logs" \
+        --format fastq ${READS_1} ${READS_2}
+    ```
 
-Before we submit anything, we will need to slightly modify our `scripts/fastqc.sh` script. Previously, we interactively loaded the Singularity module, then ran the whole script within a Singularity container. However, to simplify things for job submission, we will load the Singularity module as a command within the script, and just use Singularity to run the `fastqc` command. Open the `scripts/fastqc.sh` script in VSCode and make the following changes:
+=== "Setonix"
 
-!!! example "Exercise: Update the scripts/fastqc.sh script to load and use Singularity"
+    ```bash title="scripts/fastqc.slurm.sh"
+    #!/bin/bash
 
-    === "Gadi"
+    module load singularity/4.1.0-slurm
 
-        ```bash title="scripts/fastqc.sh" hl_lines="3 10"
-        #!/bin/bash
+    SAMPLE_ID="NA12878_chr20-22"
+    READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
+    READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
-        module load singularity
+    mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
+    singularity exec singularity/fastqc.sif \
+    fastqc \
+        --outdir "results/fastqc_${SAMPLE_ID}_logs" \
+        --format fastq ${READS_1} ${READS_2}
+    ```
 
-        SAMPLE_ID="NA12878_chr20-22"
-        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
+The script does a few things. First, it loads the `singularity` module; we'll need this to run the `fastqc` command when the job gets submitted to the compute node. Next, it defines a few bash variables that point to the input FASTQ data. It then creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`. And finally, it runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec singularity/fastqc.sif`. Note that we have already pre-loaded the `fastqc` singularity container image at `singularity/fastqc.sif`.
 
-        mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec singularity/fastqc.sif \
-        fastqc \
-            --outdir "results/fastqc_${SAMPLE_ID}_logs" \
-            --format fastq ${READS_1} ${READS_2}
-        ```
-
-    === "Setonix"
-
-        ```bash title="scripts/fastqc.sh" hl_lines="3 10"
-        #!/bin/bash
-
-        module load singularity/4.1.0-slurm
-
-        SAMPLE_ID="NA12878_chr20-22"
-        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
-
-        mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec singularity/fastqc.sif \
-        fastqc \
-            --outdir "results/fastqc_${SAMPLE_ID}_logs" \
-            --format fastq ${READS_1} ${READS_2}
-        ```
-
-    We have added two lines. The first new line (line 3) simply loads the singularity module within the script. The second new line (line 10) prefixes our `fastqc` command with `singularity exec singularity/fastqc.sif`; that is, we are now running the `fastqc` command through the `fastqc.sif` container. Note the trailing backslash `\` on line 10, indicating that the command continues on the next line.
-
-Now we are ready to submit the updated job to the HPC. In doing so, we will provide the following details to the scheduler:
+This is everything we need to run the job; we just have to submit the script to the HPC scheduler. In doing so, we will provide the following details to the scheduler:
 
 - Project name: This is the HPC project that we want to run our job under, used to determine which filesystems we have access to and what project to bill to.
 - Job name: A name to give our job, to help distinguish it from others we or other people may be running; we will call our job `fastqc`
@@ -167,7 +161,7 @@ Now we are ready to submit the updated job to the HPC. In doing so, we will prov
 - Amount of memory: The amount of RAM that our job requires to run; we will request 1 gigabyte.
 - Walltime: The time our job needs to complete; we will request 1 minute.
 
-!!! example "Exercise: Submitting scripts/fastqc.sh to the HPC"
+!!! example "Exercise: Submitting the fastqc script to the HPC"
 
     === "Gadi (PBS)"
 
@@ -181,7 +175,7 @@ Now we are ready to submit the updated job to the HPC. In doing so, we will prov
             -l walltime=00:01:00 \
             -l storage=scratch/$PROJECT \
             -l wd \
-            scripts/fastqc.sh
+            scripts/fastqc.pbs.sh
         ```
 
         Let's deconstruct this command:
@@ -208,7 +202,7 @@ Now we are ready to submit the updated job to the HPC. In doing so, we will prov
             --cpus-per-task=1 \
             --mem=1GB \
             --time=00:01:00 \
-            scripts/fastqc.sh
+            scripts/fastqc.slurm.sh
         ```
 
         Let's deconstruct this command:
@@ -358,21 +352,3 @@ The above command is quite long, and would be a pain to write out every time you
     NA12878_chr20-22.R1_fastqc.html NA12878_chr20-22.R2_fastqc.html
     NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip
     ```
-
-
-```console title="TODO: Explain Gadi outputs"
-======================================================================================
-            Resource Usage on 2025-11-03 11:54:04:
-Job Id:             123456.gadi-pbs
-Project:            [project_id]
-Exit Status:        0
-Service Units:      0.00
-NCPUs Requested:    1                      NCPUs Used: 1
-                                        CPU Time Used: 00:00:00
-Memory Requested:   500.0MB               Memory Used: 7.09MB
-Walltime requested: 00:01:00            Walltime Used: 00:00:01
-JobFS requested:    100.0MB                JobFS used: 0B
-======================================================================================
-```
-
-Note: On PBS systems like Gadi, a job file is automatically generated with detailed resource usage information and appended to the end of the job output file. This is not common on Slurm systems.
