@@ -4,7 +4,7 @@
 
     - Define high performance computing (HPC) and describe its main components
     - Explain when bioinformatics workflows require HPC resources rather than local execution
-    - Summarise the main constraints imposed by HPC environments. 
+    - Summarise the main constraints imposed by HPC environments.
 
 ## 1.1.1 What is an HPC?
 
@@ -22,28 +22,27 @@ Not every workflow needs a supercomputer. Many analyses start on a laptop and st
 
 A workflow is usually ready for HPC when scale becomes a problem. This might be scale in data size (more gigabytes than your laptop can hold), compute time (weeks of serial runs), memory usage (jobs crash due to insufficient RAM), or workflow complexity (tens of jobs become too painful to run manually).
 
-
-| Challenge | Example scenario |
-|-----------|----------|
-| Runtime is too long | A single sample takes >12 hours to process |
-| Data size is too big | Multiple large FASTQs need to be processed |
-| Memory requirements are too large | R or Python crashes loading matrices |
-| Scaling samples manually is painful | Manually running multiple scripts across multiple samples |
-| Storage is a bottleneck | Local disk is constantly full due to raw and processed data size |
-| Serial execution is too slow | Workflow is too slow to run one sample after another - multi-sample analysis must run faster |
+| Challenge                                         | Example scenario                                                                                        |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Runtime is too long                               | A single sample takes >12 hours to process                                                              |
+| Data size is too big                              | Multiple large FASTQs need to be processed                                                              |
+| Memory requirements are too large                 | R or Python crashes loading matrices                                                                    |
+| Scaling samples manually is painful               | Manually running multiple scripts across multiple samples                                               |
+| Storage is a bottleneck                           | Local disk is constantly full due to raw and processed data size                                        |
+| Serial execution is too slow                      | Workflow is too slow to run one sample after another - multi-sample analysis must run faster            |
 | Data governance, ethics, and security constraints | Legal and/or ethical requirements mean highly-protected data must stay on institutional, secure systems |
 
 If any of the above scenarios sound familiar, then your workflow is likely ready to be moved to and configured for running on an HPC.
 
-## 1.1.3 From your laptop to HPC 
+## 1.1.3 From your laptop to HPC
 
-Before running a workflow, it is important to understand the system we are running it on. Running workloads on HPC is very different from running them on your laptop or a local workstation. HPCs are not just bigger, they are also: 
+Before running a workflow, it is important to understand the system we are running it on. Running workloads on HPC is very different from running them on your laptop or a local workstation. HPCs are not just bigger, they are also:
 
 - Shared
 - Scheduled
-- Resource constrained. 
+- Resource constrained.
 
-This introduces an important trade-off. HPCs give you access to massive computational power but at the cost of flexibility. On your laptop or a local workstation you can run whatever you like, whenever you like so long as it fits within the resource limitations of the system. On HPC, you gain scale and speed but you must work within system policies and limits. 
+This introduces an important trade-off. HPCs give you access to massive computational power but at the cost of flexibility. On your laptop or a local workstation you can run whatever you like, whenever you like so long as it fits within the resource limitations of the system. On HPC, you gain scale and speed but you must work within system policies and limits.
 
 ![](figs/00_hpc_use.png){width=70%}
 
@@ -59,42 +58,41 @@ Another constraint is the file system. While HPCs typically have huge shared fil
 
 On your local laptop, you will be used to running things whenever you like, but on shared systems like HPCs, this is not the case. Instead, HPCs require you to **submit** jobs to a **scheduler**, which decides where and when to run your job based on its resource requirements and the requirements of all other jobs in the **queue**. This makes HPCs **asynchronous** and **non-interactive**: job execution doesn't happen immediately and jobs won't necessarily execute in the order that they were submitted. As such, an HPC workflow needs to be designed to handle this delayed and potentially out-of-order execution style. As we will see later today, Nextflow is perfectly suited to writing workflows that work in this way.
 
-
 ### Resource constraints
 
 Finally, HPCs may have large amounts of computing resources, but they aren't infinite, and they also need to be shared between many users. Therefore, it is vital when running jobs on an HPC to define exactly how many resources you require, including the number of CPUs you need, the amount of memory/RAM, and how much time your jobs needs. As you will see later in this workshop, it is very important to optimise these requests as best as you can, as under- and over-requesting resources can negatively impact your jobs.
 
 ## 1.1.4 Introducing our workshop scenario: WGS short variant calling
- 
+
 !!! warning "Don't worry if you don't have prior knowledge of this workflow"
 
     The focus of this workflow is on learning Nextflow; the experimental context we are using (WGS short variant calling) is just a practical example to help you understand workflow design principles for HPC and how Nextflow works. You are not expected to have prior knowledge of variant calling workflows or best practices.
 
-For this workshop, we will be focussing on a common bioinformatics analysis workflow used in genomics to identify genetic variants (SNPs and indels) from short-read whole genome sequencing data. This workflow involves multiple processes and tools and is computationally intensive. At a high level, the general procedure is: 
+For this workshop, we will be focussing on a common bioinformatics analysis workflow used in genomics to identify genetic variants (SNPs and indels) from short-read whole genome sequencing data. This workflow involves multiple processes and tools and is computationally intensive. At a high level, the general procedure is:
 
-![TODO add fig](../img/wgs_variant_calling.png)
+![](figs/00_workflow_illustration.png)
 
 1. Quality control of raw sequences, e.g. filtering & trimming reads
 2. Alignment of reads to a reference genome
 3. Post alignment processing: sorting, marking duplicates, indexing
 4. Variant calling: call SNVs and indels for each sample against reference
 5. Joint genotyping: combining samples from a cohort into a single callset
-6. Quality filtering and annotation
+6. Reporting
 
-Running this workflow end-to-end captures many challenges that running on HPC using Nextflow can solve: 
+Running this workflow end-to-end captures many challenges that running on HPC using Nextflow can solve:
 
-- Many independent jobs: each sample can be processed separately for many steps 
-- Resource diversity: tools used at each step require different amounts of CPU, memory, and walltime  
-- Large IO demands: reading and writing of multi-gigabyte files benefits from parallel filesystems 
+- Many independent jobs: each sample can be processed separately for many steps
+- Resource diversity: tools used at each step require different amounts of CPU, memory, and walltime
+- Large IO demands: reading and writing of multi-gigabyte files benefits from parallel filesystems
 
-Throughout the workshop we will implement and explore different parts of this workflow in slightly different ways in order to highlight the lessons being taught. 
+Throughout the workshop we will implement and explore different parts of this workflow in slightly different ways in order to highlight the lessons being taught.
 
 !!! example "Discussion: why does this workflow need HPC?"
 
-    Consider the workflow described above: 
+    Consider the workflow described above:
 
-    1. Which parts of the workflow are the most computationally expensive? 
-    2. What would happen if we tried to run this workflow on a personal computer?  
+    1. Which parts of the workflow are the most computationally expensive?
+    2. What would happen if we tried to run this workflow on a personal computer?
 
 ## Conclusion
 

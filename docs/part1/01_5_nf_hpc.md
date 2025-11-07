@@ -40,7 +40,7 @@ Each process in a Nextflow pipeline becomes a separate batch job or task array o
 - Checks for completion and retrieves logs, outputs, and exit codes
 - Publishes the output data to the shared filesystem
 
-![](figs/00_Nextflow_on_HPC.png)
+![](figs/00_Nextflow_on_HPC_v2.png)
 
 ## 1.5.2 Our first HPC workflow
 
@@ -142,7 +142,9 @@ To make that happen, we’ll use Nextflow configuration files.
 
 A Nextflow configuration file (`nextflow.config` or files inside a `config/` directory) defines how and where your workflow runs without changing the workflow code itself.
 
-It can specify:
+![](figs/00_config_diagram.png)
+
+It can specify: [TODO: update below for priority blocks, edit diagram to order you use in workshop]
 
 - Executor: Which system to use (e.g., local, slurm, pbspro).
 - Queue: Defines where jobs run within the scheduler (e.g., normal, highmem, gpu).
