@@ -8,6 +8,7 @@
     and interpretting exit codes and error messages
     - Know how to find and specify system-dependent HPC values such as queues/partitions
     - Recall how Nextflow interacts with HPC components
+
 We start with running things on a single sample. This should be representative
 of all the data we run i.e. we will be processing chromosomes 20, 21, 22.
 
@@ -22,7 +23,7 @@ for your system.
     === "Gadi (PBS)"
 
         ```bash
-        nextflow run main.nf -profile pbspro 
+        nextflow run main.nf -profile pbspro
         ```
 
         ??? abstract "Output"
@@ -144,13 +145,13 @@ TODO brief explanation on "2 x 1" for Setonix - virtual cores for the partition
 We know that 2GB memory will be sufficient for this process. Let's explicitly
 configure that.
 
-!!! tip: Isn't 1 CPU enough?
+!!! tip
 
     Note that different values are provided based on the specific, low-cost
     queue and partition. 
 
-    TODO: average number of cores available based on memory requirements.
-    Revisit in the resourcing section.
+    Here we assign the average number of cores available based on memory
+    requirements. This will be revisited in the resourcing section.
 
 !!! example "Exercises"
 
@@ -178,49 +179,122 @@ configure that.
 
 !!! example "Exercises"
 
-    TODO add the QoL additions from nf-core config 1.2.
-
     === "Gadi (PBS)"
 
-        TODO: Build up to the config used in part 1.2 for
-        [Gadi](https://github.com/Sydney-Informatics-Hub/nextflow-on-hpc-materials/blob/main/part1/config/gadi.config) and
+        ```groovy title="conf/pbspro.config"
+        singularity {
+            enabled = true
+            cacheDir = "$projectDir/singularity"
+        }
+         
+        executor {
+            queueSize = 30
+            pollInterval = '30 sec'
+            queueStatInterval = '30 sec'
+            submitRateLimit = '20 min'
+        }
+         
+        process {
+            executor = 'pbspro'
+            storage = "scratch/${System.getenv('PROJECT')}"
+            module = 'singularity'
+            cache = 'lenient'
+            stageInMode = 'symlink'
+            queue = 'normalbw'
+            clusterOptions = "-P ${System.getenv('PROJECT')}"
+        }
+        ```
 
     === "Setonix (Slurm)"
 
-        TODO: Build up to the config used in part 1.2 for
-        [Setonix](https://github.com/Sydney-Informatics-Hub/nextflow-on-hpc-materials/blob/main/part1/config/setonix.config)
+        ```groovy title="conf/slurm.config"
+        singularity {
+            enabled = true
+            cacheDir = "$projectDir/singularity"
+        }
+         
+        executor {
+            queueSize = 30
+            pollInterval = '30 sec'
+            queueStatInterval = '30 sec'
+            submitRateLimit = '20 min'
+        }
+         
+        process {
+            executor = 'slurm'
+            module = 'singularity/4.1.0-slurm'
+            cache = 'lenient'
+            stageInMode = 'symlink'
+            queue = 'work'
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+        }
+        ```
 
-TODO: add why we use each scope and directive. Mainly for reference and demo-ing
-QoL things for running pipelines, rather that teaching HPC concepts. e.g. this
-is how we usually do things.
+Nextflow is powerful for HPC vs. serially running pbs/slurm scripts.
 
-<!-- Attendees to copy and paste things into their configs, lead trainer to add
-in code in scopes, and talk through what each thing does. -->
-
-TODO Relate this back and compare why Nextflow is powerful for HPC vs. serially
-running pbs/slurm scripts.
+Next we will wrap this up in a run script.
 
 !!! example "Exercises"
-
-    TODO add run script. Goal: so we don't have to specify the same flags each time
-    (e.g. -profile, --<sched>_account). Tie back to reproducibility and flexibility
-    of running NXF across different envs - run.sh is one of the things we adapt
-    for the system (i.e. project name, scheduler) so everything else can stay
-    the same.
-
-    Run script should look something like:
-
-    ```bash
-    #load modules ...
-
     
-    nextflow run main.nf -profile <sched> --<sched>_account <project> -c custom.config
-    ```
+    === "Gadi (PBS)"
+
+        ```groovy title="conf/pbspro.config"
+        #!/bin/bash
+
+        module load nextflow/24.04.5
+        module load singularity
+        
+        nextflow run main.nf -profile pbspro
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```groovy title="conf/slurm.config"
+        #!/bin/bash
+
+        module load nextflow/24.10.0
+        module load singularity/4.1.0-slurm
+
+        nextflow run main.nf -profile slurm
+        ```
+
+!!! warning Running the head job on the correct node
+
+    For the workshop, we have pre-pulled containers and use them from the cache,
+    and as data is small and the workflow runs quickly, we will be running them
+    on login nodes.
+
+    **However, this should not be done when developing and running your own
+    pipelines.**
+
+    The main Nextflow job is a low-resource and long running job that schedules
+    the individual tasks to be run on a compute node. Running this on the login
+    node will result in your pipeline being killed prematurely. 
+
+    TODO: WHY they get killed (e.g. max 30 mins, 4 GB). Throttling is standard
+    on any HPC
+
+    When testing and developing your own pipeline, it is recommended to refer
+    back to the HPC's recommended way of running long-running, low-memory head
+    jobs. These could include persistent sessions with tools like `tmux` or
+    `screen` or dedicated workflow nodes.
+
+    TODO: include links to these
+
+    Alternatively, interactive jobs are a useful option to run and debug your
+    workflows interactively. If you need to schedule your Nextflow job, **the
+    scheduling options should be included in the `run.sh` script**.
+
+    The last consideration should be whether the compute nodes have network
+    access or not. When using containers, it is like that these need to be pulled
+    when the process runs on a compute node. If compute nodes do not have network
+    access, this will fail to pull the container, and consequently the pipeline.
+
 
 !!! example "Exercise"
 
-    TODO Maybe, qstat and sacct/seff the GENOTYPE process again. What changed?
+    Run your newly configured pipeline using by executing `run.sh` in the terminal.
 
-qstat/sacct-ing each job is inefficient, especially with pipelines with more
-processes, and running on more than one sample. Segue into the next section
-where this can be automated using Nextflow's in-built monitoring features.
+qstat/sacct each job is inefficient, especially with pipelines with more
+processes, and running on more than one sample. The next section will introduce
+how this can be automated using Nextflow's in-built monitoring features.

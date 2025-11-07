@@ -40,12 +40,28 @@ allocation.
 Addition of timestamp and overwrite = false - helps with benchmarking when you
 need to compare settings before vs. after e.g. optimisation
 
+## Customising the trace file
+
+Currently, the trace file reports on the resources used per task. However,
+when a tasks errors or produces an unexpected result, it is recommended to
+view the work directory, or view the job run information with `qstat` or
+`sacct`.
+
+and select ones that are not yet included. Things such as the `workDir`bb
+
 !!! example "Exercise"
 
-    TODO View trace fields, add some stuff that could be useful. e.g. jobid so you don't have to grep .nextflow.log
+    1. View the documentation on [trace fields](https://www.nextflow.io/docs/latest/reports.html#trace-fields)
+    2. Locate the two field names that provides the:
 
-    TODO Run pipeline, view reports, particularly trace - what has changed?
+        - directory path where the task was executed
+        - the job ID when executed by a grid engine (scheduler)
 
-    === "Gadi (PBS)"
+    3. Append these to `trace.fields` in `nextflow.config`
+    4. Save, and run the workflow using `run.sh`
 
-TODO compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
+## Summary
+
+Nextflow's profiling features are powerful automations that scale nicely when
+you have many processes in a pipeline. This saves the need for manual
+benchmarking such as using `time`.

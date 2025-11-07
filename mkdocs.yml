@@ -18,14 +18,14 @@ nav:
     - Layering configs: part1/02_4_nfcore_layer.md
     - Summary: part1/03_0_outro.md
   - Part 2:
-    - Introduction: part2/20_intro.md
-    - Configuring a custom pipeline: part2/21_firstrun.md
-    - Monitoring workflow runs: part2/22_reporting.md
-    - HPC optimisation strategies: part2/23_strategies.md
-    - Configuring resource usage: part2/24_resourcing.md
-    - Parallelisation: part2/25_parallelisation.md
-    - Scaling up: part2/27_scale.md
-    - Summary: part2/28_outro.md
+    - 2.0 Introduction: part2/20_intro.md
+    - 2.1 Configuring a custom pipeline: part2/21_firstrun.md
+    - 2.2 Monitoring workflow runs: part2/22_reporting.md
+    - 2.3 HPC optimisation strategies: part2/23_strategies.md
+    - 2.4 Configuring resource usage: part2/24_resourcing.md
+    - 2.5 Parallelisation: part2/25_parallelisation.md
+    - 2.6 Scaling up: part2/27_scale.md
+    - 2.7 Summary: part2/28_outro.md
 
 theme:
   name: material
