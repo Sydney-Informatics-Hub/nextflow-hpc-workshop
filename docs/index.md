@@ -19,6 +19,7 @@ This workshop is delivered concurrently on Australia's Tier-1 HPCs; [NCI's Gadi 
 - Giorgia Mori, Australian BioCommons
 - Sarah Beecroft, Pawsey Supercomputing Research Centre
 - Kisaru Liyanage, National Computational Infrastructure
+- Wenjing Xue, National Computational Infrastructure
 - Cali Willet, Sydney Informatics Hub, University of Sydney
 - Kristina Gagalova, Curtin University
 - Gayatri Aniruddha, University of Western Australia
