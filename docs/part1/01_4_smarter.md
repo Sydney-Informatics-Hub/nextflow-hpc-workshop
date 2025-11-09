@@ -16,7 +16,7 @@ HPC systems are constantly measuring your resource usage. You can use their buil
 
     At the end of the previous lesson, we saved the job ID to a file called `run_id.txt`. We can use that ID to inspect the resources used by the job:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         JOBID=$(cat run_id.txt)
@@ -71,7 +71,7 @@ HPC systems are constantly measuring your resource usage. You can use their buil
 
         Again, we see that 440.7 MB was used out of the total requested 1 GB.
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         JOBID=$(sed -E -e 's/^Submitted batch job //g' run_id.txt)
@@ -202,7 +202,7 @@ You're telling BWA to use 4 worker threads for parts of the alignment process th
 
         Note that the following scripts are for example purposes only. In a real-world scenario, you would never run `bwa mem` in a loop like this; instead, you would submit each run of `bwa mem` as a separate job to the HPC.
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         The Gadi version of the script is located at `/scripts/bwa-multithreaded.pbs.sh`:
 
@@ -227,7 +227,7 @@ You're telling BWA to use 4 worker threads for parts of the alignment process th
         done > bwa_times.txt
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         The Setonix version of the script is located at `/scripts/bwa-multithreaded.slurm.sh`:
 
@@ -254,13 +254,13 @@ You're telling BWA to use 4 worker threads for parts of the alignment process th
 
     The script runs a loop, increasing the number of threads given to `bwa mem` by 2 each time. At the end, you will get a file called `bwa_times.txt`. Submit this script to the HPC and once it finishes, inspect the output:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         qsub scripts/bwa-multithreaded.pbs.sh
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         sbatch scripts/bwa-multithreaded.slurm.sh
@@ -307,7 +307,7 @@ Be aware that not all tools can make use of threads effectively. This can stem f
 
     We created another benchmarking script for `fastqc` that repeats the test we ran above with `bwa mem`.
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         The Gadi version of the script is located at `/scripts/fastqc-multithreaded.pbs.sh`:
 
@@ -337,7 +337,7 @@ Be aware that not all tools can make use of threads effectively. This can stem f
         done > fastqc_times.txt
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         The Setonix version of the script is located at `/scripts/fastqc-multithreaded.slurm.sh`:
 
@@ -369,13 +369,13 @@ Be aware that not all tools can make use of threads effectively. This can stem f
 
     Once again, the script runs a loop, increasing the number of threads given to `fastqc` by 2 each time. At the end, you will get a file called `fastqc_times.txt`. Submit this script to the HPC and once it finishes, inspect the output:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         qsub scripts/fastqc-multithreaded.pbs.sh
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         sbatch scripts/fastqc-multithreaded.slurm.sh
@@ -447,7 +447,7 @@ An important issue when designing workflows for HPC is knowing how much it will 
 
 The specific calculation for how many SUs a job will use is system-specific, but generally you are charged based on the proportion of available CPUs or available memory that you use, whichever is larger. More specifically:
 
-=== "Gadi"
+=== "Gadi (PBS)"
 
     On Gadi, SUs are calculated as:
 
@@ -468,7 +468,7 @@ The specific calculation for how many SUs a job will use is system-specific, but
 
     This SU calculation is described further on NCI's [Job Costs documentaiton page](https://opus.nci.org.au/spaces/Help/pages/236880942/Job+Costs...)
 
-=== "Setonix"
+=== "Setonix (Slurm)"
 
     On Setonix, SUs are calculated as:
 

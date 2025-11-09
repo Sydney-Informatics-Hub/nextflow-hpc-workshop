@@ -78,7 +78,7 @@ Modules are the standard way to access centrally installed software on HPC syste
 
     The terminal will fill up with a long list of available modules:
    
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```console title="Available modules"
         -------------------------------------------------------------------- /opt/Modules/modulefiles ---------------------------------------------------------------------
@@ -92,7 +92,7 @@ Modules are the standard way to access centrally installed software on HPC syste
         abaqus/2021                gamess/2022-R2                 intel-dpct/2021.1.1              lammps/3Mar2020           openquake/3.11.2                              
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```console title="Available modules"
         ----------------------------------------------- /opt/cray/pe/lmod/modulefiles/mpi/gnu/12.0/ofi/1.0/cray-mpich/8.0 ------------------------------------------------
@@ -120,7 +120,7 @@ Note that the modules appear in a format of `<TOOL NAME>/<VERSION>`. Often, seve
     ```
 
     Load the module on your system and confirm the version: 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         module load fastqc
@@ -131,7 +131,7 @@ Note that the modules appear in a format of `<TOOL NAME>/<VERSION>`. Often, seve
         FastQC v0.12.1
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         module load fastqc/0.11.9--hdfd78af_1
@@ -192,13 +192,13 @@ Containers are portable software environments: they package everything your tool
 
     Singularity, like other software, is not loaded by default. On Gadi, there is just one default Singularity module, and can be simply loaded with `module load`. On Setonix, you can find the versions of Singularity available with `module avail`:
     
-    === "Gadi"
+    === "Gadi (PBS)"
   
         ```bash
         module load singularity
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         module avail singularity

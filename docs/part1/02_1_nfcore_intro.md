@@ -10,7 +10,7 @@ We have now seen how a Nextflow pipeline can be configured to run on an HPC. In 
 
 ## 2.1.1 What is nf-core?
 
-![nf-core logo](/docs/assets/nf-core.png)
+![nf-core logo](../assets/nf-core-logo.png)
 
 nf-core is a community-driven effort to develop and curate open-source bioinformatics workflows built with Nextflow.
 
@@ -62,7 +62,7 @@ By default, Nextflow will pull the default git branch of the pipeline unless a s
 
 As mentioned above, the rest of today's workshop will be focussing on the `nf-core/sarek` pipeline. This is a large workflow dedicated to performing variant calling on genome sequencing data. It is highly configurable and incoroprates a wide variety of tools and methods for detecting both germline and somatic variants.
 
-![The structure of the nf-core/sarek pipeline](/docs/assets/sarek_subway.png)
+![The structure of the nf-core/sarek pipeline](../assets/sarek_subway.png)
 
 The pipeline consists of three main stages:
 
@@ -72,7 +72,7 @@ The pipeline consists of three main stages:
 
 As you can imagine, this is a very complex pipeline with lots of options and parameters, and could take a long time to run in its default mode. Luckily, it also includes a wide range of options for selecting which parts of the pipeline to run or skip. We will be making heavy use of these options today so that we can just run a small section of the workflow. We will be providing the pipeline with pre-aligned BAM files and just running the `markduplicates` part of the pre-processing stage.
 
-![The markduplicates subsection of the nf-core/sarek pipeline](/docs/assets/sarek_markduplicates.png)
+![The markduplicates subsection of the nf-core/sarek pipeline](../assets/sarek_markduplicates.png)
 
 !!! note "An explanation of the markduplicates workflow"
 

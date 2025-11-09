@@ -182,7 +182,7 @@ This configuration will have the following consequences:
 
     Now that we have our custom configuration file created, we need to update our run script one final time and add the new file to the `-c` option:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash title="run.sh" linenums="1" hl_lines="15"
         #!/bin/bash
@@ -203,7 +203,7 @@ This configuration will have the following consequences:
             -resume
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash title="run.sh" linenums="1" hl_lines="15"
         #!/bin/bash

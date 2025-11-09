@@ -114,7 +114,7 @@ Schedulers like PBS Pro and Slurm use queues to group jobs that share similar re
 
 To start getting familiar with working with the scheduler and submitting jobs, we will once again use `fastqc` as an example. We have an example script for running `fastqc` in the `scripts/` directory:
 
-=== "Gadi"
+=== "Gadi (PBS)"
 
     ```bash title="scripts/fastqc.pbs.sh"
     #!/bin/bash
@@ -132,7 +132,7 @@ To start getting familiar with working with the scheduler and submitting jobs, w
         --format fastq ${READS_1} ${READS_2}
     ```
 
-=== "Setonix"
+=== "Setonix (Slurm)"
 
     ```bash title="scripts/fastqc.slurm.sh"
     #!/bin/bash
@@ -216,13 +216,13 @@ This is everything we need to run the job; we just have to submit the script to 
 
     Once submitted, you can monitor the progress of your job with the following command:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         qstat -u ${USER}
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         squeue -u ${USER}
@@ -230,7 +230,7 @@ This is everything we need to run the job; we just have to submit the script to 
 
     This will output a list of all running jobs and their status:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```console title="Output"
         gadi-pbs: 
@@ -242,7 +242,7 @@ This is everything we need to run the job; we just have to submit the script to 
 
         The `S` column near the end shows the status of the job, with typical codes being `Q` for queued, `R` for running, and `E` for finished or ending jobs.
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```console title="Output"
         JOBID        USER ACCOUNT                   NAME   EXEC_HOST ST     REASON START_TIME       END_TIME  TIME_LEFT NODES   PRIORITY       QOS
@@ -272,7 +272,7 @@ The above command is quite long, and would be a pain to write out every time you
 
     Update your `fastqc.sh` script with the following header comments:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash title="fastqc.sh" hl_lines="2-9"
         #!/bin/bash
@@ -300,7 +300,7 @@ The above command is quite long, and would be a pain to write out every time you
 
         Note how we need to explicitly state the project name for both the `-P` and `-l storage` parameters.
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash title="fastqc.sh" hl_lines="2-9"
         #!/bin/bash
@@ -330,13 +330,13 @@ The above command is quite long, and would be a pain to write out every time you
 
     With the script updated, you can simply run your HPC submission command without any of the previously supplied parameters. We will also redirect the output of the submission command (which prints a message containing the job ID) to a file called `run_id.txt` for use in the next lesson.
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         qsub fastqc.sh > run_id.txt
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         sbatch fastqc.sh > run_id.txt

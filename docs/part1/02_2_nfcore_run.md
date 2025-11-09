@@ -32,14 +32,14 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
 
     Let's now take a look at the BAM files themselves. These are binary files, so we can't view them directly, although we can use a tool called `samtools` to get a quick glance at their contents:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         module load samtools
         samtools view ../data/bams/NA12878_chr20-22.bam | head -n 3
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         module load samtools/<TODO version>
@@ -84,7 +84,7 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
 
     Next, we'll start the run command by adding the following lines:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash title="run.sh"
         #!/bin/bash
@@ -95,7 +95,7 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
         nextflow run sarek/main.nf
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash title="run.sh"
         #!/bin/bash
@@ -145,7 +145,7 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
     
     At the end, the `run.sh` script should look like the following:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash title="run.sh" linenums="1"
         #!/bin/bash
@@ -165,7 +165,7 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
             -resume
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash title="run.sh" linenums="1"
         #!/bin/bash

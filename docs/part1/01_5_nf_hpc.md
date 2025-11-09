@@ -50,84 +50,13 @@ We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatic
 
 [TODO] get oversight on figure and update (fix file). Fix demo to include appropriate channels
 
-!!! example "Download and run the workflow"
+!!! example "Download the example workflow"
 
     Use git to clone the workflow code base to your working directory:
 
     ```bash
     git clone https://github.com/Sydney-Informatics-Hub/config-demo-nf.git
     ```
-
-    Then load the nextflow module, following the same method we used in lesson 1.2:
-
-    === "Gadi"
-        ```bash
-        module load nextflow
-        ```
-    === "Setonix"
-        ```bash
-        module load nextflow/version
-        ```
-
-    Now run the workflow:
-
-    ```bash
-    nextflow run config-demo-nf/main.nf
-    ```
-    The output of your command should look something like this
-    === "Gadi"
-        ```console
-        N E X T F L O W   ~  version 24.04.5
-        Launching `main.nf` [jovial_lalande] DSL2 - revision: 4e4c91df36
-        executor >  local (1)
-        [c1/104707] splitSequences | 1 of 1 ✔
-        ```
-
-    === "Setonix"
-        ```console
-        N E X T F L O W   ~  version 24.10.0
-        Launching `main.nf` [prickly_lovelace] DSL2 - revision: 66bfcf5bb9
-        executor >  local (1)
-        [6b/e8feb6] splitSequences [100%] 1 of 1 ✔
-        ```
-
-    What does each line mean?
-
-    1. The version of Nextflow that was executed
-    2. The script and version names
-    3. The executor used (in the above case: local)
-    4. The process that was executed once, which means there is one task. The line starts with a unique hexadecimal value, and ends with the task completion information
-
-### Task directories and the `work/` folder
-
-When you run a Nextflow pipeline, it automatically creates a `work/` directory. This is where all computation happens behind the scenes.
-Inside this directory, each process execution (or task) runs in its own isolated subdirectory, identified by a unique hash, in the above example, `work/6b/e8feb6` (NOTE: your unique hash will be different).
-
-!!! note
-
-    You can execute `tree work/` to view the work directory structure.
-
-    ```bash
-    tree work/
-    ```
-
-    ```console title="Output"
-    work
-    └── 6b
-    └── e8feb6a83bb78a7a6661ccc1211857
-        ├── seq_1
-        ├── seq_2
-        ├── seq_3
-        └── sequence.fa -> /scratch/PROJECT/USER/nextflow-on-hpc-materials/part1/config-demo-nf/sequence.fa
-    ```
-
-Here’s what happens inside each task directory:
-
-1. Setup: Nextflow stages (copies or links) the input files, plus a small script (.command.sh) that defines what to run.
-2. Execution: The process runs inside that folder, writing its results there.
-3. Cleanup: Nextflow collects the output files and makes them available for downstream processes or publishing.
-
-Each directory is independent so tasks don’t share writable space. If one process needs data from another, it’s passed through Nextflow channels, not shared files. This isolation is especially important on HPC systems, where tasks may run on different compute nodes.
 
 ### Where did my task actually run?
 
@@ -139,6 +68,8 @@ On HPC, heavy computation should be handled by compute nodes managed by a job sc
 To make that happen, we’ll use Nextflow configuration files.
 
 ## 1.5.3 Configuring for the scheduler
+
+If we were to run `nextflow run config-demo-nf/main.nf` right now without any parameters, the workflow would run entirely on the login node. As we've mentioned already, this is not good practice, and we should instead make sure that we are submitting jobs via the HPC scheduler. In Nextflow, we do this by specifying the **executor** in the Nextflow **configuration**.
 
 A Nextflow configuration file (`nextflow.config` or files inside a `config/` directory) defines how and where your workflow runs without changing the workflow code itself.
 
@@ -167,25 +98,27 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
 
 !!! example "Running the workflow on the compute nodes"
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
-        We have pre-made a very simple configuration file, `pbspro.config`, that will allow the example Nextflow pipeline to run on Gadi. Go ahead and re-run the workflow, adding the new configuration file with the `-c pbspro.config` option. You will also need to define a new parameter: `pbspro_account`:
-
-        ```bash
-        nextflow run config-demo-nf/main.nf -c pbspro.config --pbspro_account vp91
-        ```
-
-    === "Setonix"
-
-        We have pre-made a very simple configuration file, `slurm.config`, that will allow the example Nextflow pipeline to run on Setonix. Go ahead and re-run the workflow, adding the new configuration file with the `-c slurm.config` option. You will also need to define a new parameter: `slurm_account`:
+        We have pre-made a very simple configuration file, `pbspro.config`, that will allow the example Nextflow pipeline to run on Gadi. Go ahead and run the workflow with the `pbspro.config` configuration file using the `-c pbspro.config` option. You will also need to define a new parameter: `pbspro_account` and pass it the project ID (`vp91`):
 
         ```bash
-        nextflow run config-demo-nf/main.nf -c slurm.config --slurm_account courses01
+        module load nextflow/24.04.5
+        nextflow run config-demo-nf/main.nf -c config-demo-nf/pbspro.config --pbspro_account vp91
         ```
 
-    The output of your command should now look something like this:
+    === "Setonix (Slurm)"
 
-    === "Gadi"
+        We have pre-made a very simple configuration file, `slurm.config`, that will allow the example Nextflow pipeline to run on Setonix. Go ahead and run the workflow with the `slurm.config` configuration file using the `-c slurm.config` option. You will also need to define a new parameter: `slurm_account` and pass it the project ID (`courses01`):
+
+        ```bash
+        module load nextflow/24.10.0
+        nextflow run config-demo-nf/main.nf -c config-demo-nf/slurm.config --slurm_account courses01
+        ```
+
+    The output of your command should look something like this:
+
+    === "Gadi (PBS)"
         ```bash
         N E X T F L O W   ~  version 24.04.5
 
@@ -194,7 +127,7 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
         executor >  pbspro (1)
         [a8/5345da] splitSequences | 1 of 1 ✔
         ```
-    === "Setonix"
+    === "Setonix (Slurm)"
         ```bash
         N E X T F L O W   ~  version 24.10.0
 
@@ -203,7 +136,45 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
         executor >  slurm (1)
         [67/d497fa] splitSequences [100%] 1 of 1 ✔
         ```
-    Notice that the executor now matches your HPC’s system, slurm on Setonix or pbspro on Gadi.
+    Notice that the executor matches your HPC’s system: `slurm` on Setonix or `pbspro` on Gadi.
+
+    What does each line mean?
+
+    1. The version of Nextflow that was executed
+    2. The script and version names
+    3. The executor used (`pbspro` or `slurm`)
+    4. The process that was executed once, which means there is one task. The line starts with a unique hexadecimal value, and ends with the task completion information
+
+### Task directories and the `work/` folder
+
+When you run a Nextflow pipeline, it automatically creates a `work/` directory. This is where all computation happens behind the scenes.
+Inside this directory, each process execution (or task) runs in its own isolated subdirectory, identified by a unique hash, in the above example, `work/6b/e8feb6` (**NOTE**: your unique hash will be different).
+
+!!! note
+
+    You can execute `tree work/` to view the work directory structure.
+
+    ```bash
+    tree work/
+    ```
+
+    ```console title="Output"
+    work
+    └── 6b
+        └── e8feb6a83bb78a7a6661ccc1211857
+            ├── seq_1
+            ├── seq_2
+            ├── seq_3
+            └── sequence.fa -> /scratch/PROJECT/USER/nextflow-on-hpc-materials/part1/config-demo-nf/sequence.fa
+    ```
+
+Here’s what happens inside each task directory:
+
+1. Setup: Nextflow stages (copies or links) the input files, plus a small script (.command.sh) that defines what to run.
+2. Execution: The process runs inside that folder, writing its results there.
+3. Cleanup: Nextflow collects the output files and makes them available for downstream processes or publishing.
+
+Each directory is independent so tasks don’t share writable space. If one process needs data from another, it’s passed through Nextflow channels, not shared files. This isolation is especially important on HPC systems, where tasks may run on different compute nodes.
 
 ## 1.5.4 Profiles
 
@@ -224,18 +195,18 @@ profiles {
 
     Run the workflow once more, this time using the executor profiles:
 
-    === "Gadi"
+    === "Gadi (PBS)"
         ```bash
          nextflow run config-demo-nf/main.nf -profile pbspro --pbspro_account vp91
         ```
-    === "Setonix"
+    === "Setonix (Slurm)"
         ```bash
         nextflow run config-demo-nf/main.nf -profile slurm --slurm_account courses01
         ```
 
     The output of your command should be the same as before:
 
-    === "Gadi"
+    === "Gadi (PBS)"
         ```bash
         N E X T F L O W   ~  version 24.04.5
 
@@ -244,7 +215,7 @@ profiles {
         executor >  pbspro (1)
         [a8/5345da] splitSequences | 1 of 1 ✔
         ```
-    === "Setonix"
+    === "Setonix (Slurm)"
         ```bash
         N E X T F L O W   ~  version 24.10.0
 

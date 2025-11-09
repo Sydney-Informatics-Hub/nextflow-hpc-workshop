@@ -33,7 +33,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     Within the process scope, define the `executor` option and set it to the relevant executor for your system:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```groovy hl_lines="2"
         process {
@@ -41,7 +41,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         }
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```groovy hl_lines="2"
         process {
@@ -53,7 +53,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     For our purposes, we will keep our queued job limit to 30, and limit the number of jobs we can submit at once to 20 per minute. We will also tell Nextflow to request for status updates on our jobs once every 30 seconds.
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```groovy hl_lines="5-10"
         process {
@@ -68,7 +68,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         }
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```groovy hl_lines="5-10"
         process {
@@ -87,7 +87,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     In the `run.sh` script, add the following highlighted line to the `nextflow run` command:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash title="run.sh" linenums="1" hl_lines="15"
         #!/bin/bash
@@ -108,7 +108,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
             -resume
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash title="run.sh" linenums="1" hl_lines="15"
         #!/bin/bash
@@ -139,7 +139,7 @@ We've now set up a basic configuration file to specify our HPC executor, but we 
 
     At the bottom of our `config/hpc.config` configuration file, we will now add a `singularity` scope and enable the containerisation software. At the same time, we will also define the Singularity cache directory. This is the directory where Singularity should store all downloaded containers so that it doesn't need to download them over and over again whenever the same tool is required. As part of the setup work we did earlier today, we have already created this cache directory within the `sarek` folder, at `sarek/singularity/`. We can define this in the `singularity` configuration scope by setting `cacheDir = "$projectDir/singularity"`, where `"$projectDir"` is a Nextflow variable that refers to the directory in which the `main.nf` script is located (in our case, the `sarek/` directory).
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```groovy hl_lines="11-15"
         process {
@@ -159,7 +159,7 @@ We've now set up a basic configuration file to specify our HPC executor, but we 
         }
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```groovy hl_lines="11-15"
         process {
@@ -181,7 +181,7 @@ We've now set up a basic configuration file to specify our HPC executor, but we 
 
     Enabling the use of Singularity will tell Nextflow to run our tasks using a `singularity exec` command, similar to what we used earlier today. However, you may remember that the `singularity` command isn't available to use by default on the HPC systems: we needed to run `module load` first. If we tried to run the workflow now, we would get an error that `singularity` couldn't be found. Luckily, Nextflow has us covered here once again: the `process.module` configuration option lets us define modules that we want to load when running a process. Go ahead and update the `process` scope to define the `singularity` module:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```groovy hl_lines="3"
         process {
@@ -202,7 +202,7 @@ We've now set up a basic configuration file to specify our HPC executor, but we 
         }
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```groovy hl_lines="3"
         process {
@@ -241,7 +241,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     Nextflow doesn't have a way to natively set the project parameter for our HPCs, but it does let us define arbitrary parameters to pass to the scheduler via the `process.clusterOptions` setting. We will use that now:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         On Gadi, we set the project via the `-P` option. We will use the groovy function `System.getenv()` to grab the value of the `$PROJECT` environment variable, which holds our default project ID, and pass that to the `-P` option:
 
@@ -288,7 +288,7 @@ We now have a configuration file with both our executor defined and singularity 
         }
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         On Setonix, we set the project via the `--account` option. We will use the groovy function `System.getenv()` to grab the value of the `$PAWSEY_PROJECT` environment variable, which holds our default project ID, and pass that to the `--account` option:
 
@@ -316,7 +316,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     Nextflow lets us defin the queue that we want via the `queue` option in the `process` scope. We can dynamically specify the queue by using curly braces to wrap around a conditional statement that tests how much memory each job needs:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         On Gadi, the `normalbw` queue supports tasks with up to 128GB of memory. If we need more than that, we want to use the `hugemembw` queue. We can achieve this using a short-hand if-else statement in groovy: `<condition> ? <value if true> : <value if false>`. We can ask whether the memory required by the current task (`task.memory`) is less than 128GB; if so, we set `queue` to `normalbw`, otherwise we set it to `hugemembw`. By wrapping the whole statement in curly braces, we ensure that it is evaluated when the task runs:
 
@@ -342,7 +342,7 @@ We now have a configuration file with both our executor defined and singularity 
         }
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         On Setonix, the `work` queue supports tasks with up to 230GB of memory. If we need more than that, we want to use the `highmem` queue. We can achieve this using a short-hand if-else statement in groovy: `<condition> ? <value if true> : <value if false>`. We can ask whether the memory required by the current task (`task.memory`) is less than 230GB; if so, we set `queue` to `work`, otherwise we set it to `highmem`. By wrapping the whole statement in curly braces, we ensure that it is evaluated when the task runs:
 
@@ -373,7 +373,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     Let's set these two options now:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```groovy hl_lines="7-8"
         process {
@@ -399,7 +399,7 @@ We now have a configuration file with both our executor defined and singularity 
         }
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```groovy hl_lines="6-7"
         process {
@@ -426,7 +426,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     We now have a fully-functioning HPC configuration file! We will, however, add just one more feature that will help us monitor the resources we are using and optimise our workflow. This is the `trace` file, and the next few lines that we add will enable it, set its file name (including a time stamp), and set the values that we want to keep track of:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```groovy hl_lines="22-30"
         process {
@@ -461,7 +461,7 @@ We now have a configuration file with both our executor defined and singularity 
         }
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```groovy hl_lines="21-30"
         process {
