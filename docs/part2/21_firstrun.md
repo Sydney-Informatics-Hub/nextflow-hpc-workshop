@@ -20,6 +20,19 @@ for your system.
 
 !!! example "Exercises"
 
+    First load the nextflow and singularity modules, following the same method we learnt yesterday:
+
+    === "Gadi"
+        ```bash
+        module load nextflow/24.04.5 singularity
+        ```
+    === "Setonix"
+        ```bash
+        module load nextflow/24.10.0 singularity/4.1.0-slurm
+        ```
+
+    Then execute your nextflow command:
+
     === "Gadi (PBS)"
 
         ```bash
@@ -37,21 +50,21 @@ for your system.
             [-        ] STATS                      -
             [-        ] MULTIQC                    | 0 of 1
             ERROR ~ Error executing process > 'GENOTYPE (1)'
-            
+
             Caused by:
               Process `GENOTYPE (1)` terminated with an error exit status (247)
-            
-            
+
+
             Command executed:
-            
+
               gatk --java-options "-Xmx4g" HaplotypeCaller -R Hg38.subsetchr20-22.fasta -I NA12877.bam -O NA12877.g.vcf.gz -ERC GVCF
-            
+
             Command exit status:
               247
-            
+
             Command output:
               (empty)
-            
+
             Command error:
             ```
 
@@ -64,25 +77,25 @@ for your system.
         ??? abstract "Output"
 
             ```console
-            N E X T F L O W   ~  version 24.10.0                 14:13:57 
-                                                                           
+            N E X T F L O W   ~  version 24.10.0                 14:13:57
+
             Launching `main.nf` [dreamy_cuvier] DSL2 - revision: 5e5c4f57e0
-                                                                           
-            executor >  slurm (8)                                          
-            [c4/babfde] FASTQC (fastqc on NA12877) | 3 of 3 ✔              
-            [6f/7a523b] ALIGN (1)                  | 1 of 1 ✔              
-            [bf/525fc9] GENOTYPE (1)               | 1 of 1 ✔              
-            [5c/ea7cb0] JOINT_GENOTYPE (1)         | 1 of 1 ✔              
-            [7f/4e64dc] STATS (1)                  | 1 of 1 ✔              
-            [70/254c9e] MULTIQC                    | 1 of 1 ✔              
-            Completed at: 05-Nov-2025 13:59:02                             
-            Duration    : 2m 21s                                           
-            CPU hours   : (a few seconds)                                  
-            Succeeded   : 8                                                
+
+            executor >  slurm (8)
+            [c4/babfde] FASTQC (fastqc on NA12877) | 3 of 3 ✔
+            [6f/7a523b] ALIGN (1)                  | 1 of 1 ✔
+            [bf/525fc9] GENOTYPE (1)               | 1 of 1 ✔
+            [5c/ea7cb0] JOINT_GENOTYPE (1)         | 1 of 1 ✔
+            [7f/4e64dc] STATS (1)                  | 1 of 1 ✔
+            [70/254c9e] MULTIQC                    | 1 of 1 ✔
+            Completed at: 05-Nov-2025 13:59:02
+            Duration    : 2m 21s
+            CPU hours   : (a few seconds)
+            Succeeded   : 8
             ```
 
 !!! example "Exercises"
-    
+
     Find the `GENOTYPE` job id from `.nextflow.log`
 
     ```bash
@@ -138,6 +151,7 @@ There are pros (you don't get allocated too many resources) and cons (the job
 fails). This both indicates that we need to be intentional how we need to be
 explicit with configuration, and being aware of differences to note when
 running on different systems.
+
 - With "real" larger data sets, this will likely fail
 
 TODO brief explanation on "2 x 1" for Setonix - virtual cores for the partition
@@ -148,7 +162,7 @@ configure that.
 !!! tip
 
     Note that different values are provided based on the specific, low-cost
-    queue and partition. 
+    queue and partition.
 
     Here we assign the average number of cores available based on memory
     requirements. This will be revisited in the resourcing section.
@@ -177,6 +191,7 @@ configure that.
         ```
 
 Next, add the additional options from part 1.
+
 - Institutional config
 
 !!! example "Exercises"
@@ -189,13 +204,13 @@ Next, add the additional options from part 1.
             autoMounts = true
             cacheDir = "$projectDir/singularity"
         }
-         
+
         executor {
             queueSize = 300
             pollInterval = '30 sec'
             queueStatInterval = '30 sec'
         }
-         
+
         process {
             executor = 'pbspro'
             storage = "scratch/${System.getenv('PROJECT')}"
@@ -215,13 +230,13 @@ Next, add the additional options from part 1.
             autoMounts = true
             cacheDir = "$projectDir/singularity"
         }
-         
+
         executor {
             queueSize = 300
             pollInterval = '30 sec'
             queueStatInterval = '30 sec'
         }
-         
+
         process {
             executor = 'slurm'
             module = 'singularity/4.1.0-slurm'
@@ -240,7 +255,7 @@ We will add the new custom configs using `-c`. This will be revisited in
 resourcing.
 
 !!! example "Exercises"
-   
+
     1. Create a new file called `run.sh`
     2. Copy and paste the following code based on your HPC:
 
@@ -251,7 +266,7 @@ resourcing.
 
         module load nextflow/24.04.5
         module load singularity
-        
+
         nextflow run main.nf -profile pbspro -c conf/custom.confg
         ```
 
@@ -280,7 +295,7 @@ resourcing.
 
     The main Nextflow job is a low-resource and long running job that schedules
     the individual tasks to be run on a compute node. Running this on the login
-    node will result in your pipeline being killed prematurely. 
+    node will result in your pipeline being killed prematurely.
 
     TODO: WHY they get killed (e.g. max 30 mins, 4 GB). Throttling is standard
     on any HPC
@@ -301,7 +316,6 @@ resourcing.
     when the process runs on a compute node. If compute nodes do not have network
     access, this will fail to pull the container, and consequently the pipeline.
 
-
 !!! example "Exercise"
 
     Run your newly configured pipeline using by executing `./run.sh` in the terminal.
@@ -315,11 +329,11 @@ resourcing.
             ```bash
             Loading nextflow/24.04.5
             Loading requirement: java/jdk-17.0.2
-            
+
              N E X T F L O W   ~  version 24.04.5
-            
+
             Launching `main.nf` [determined_picasso] DSL2 - revision: 5e5c4f57e0
-            
+
             executor >  <scheduler> (6)
             [7b/16f7c2] FASTQC (fastqc on NA12877) | 1 of 1 ✔
             [ec/5fd924] ALIGN (1)                  | 1 of 1 ✔
@@ -338,9 +352,9 @@ resourcing.
 
             ```bash
              N E X T F L O W   ~  version 24.10.0
-            
+
             Launching `main.nf` [nostalgic_bell] DSL2 - revision: 5e5c4f57e0
-            
+
             executor >  slurm (6)
             [a4/1eae6a] FASTQC (fastqc on NA12877) [100%] 1 of 1 ✔
             [76/9e6fca] ALIGN (1)                  [100%] 1 of 1 ✔
