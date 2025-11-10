@@ -14,16 +14,14 @@ Introduce our workflow use case and lesson structure:
 
 - Getting "unoptimised" workflow running
 - Benchmarking, testing and optimisation on a single sample.
-- Review HPC optimisation strategies 
+- Review HPC optimisation strategies
 - Implement them
 - Scale up to multiple samples
 
-TODO: Figures comparing serially run bash scripts vs. unoptimised vs.
-optimised workflow structure. Figure to include walltime comparison of each
-approach, perhaps SU usage/cost and resource usage too.
+![](figs/00_workflow_illustration.png)
 
 - Outline what are we optimising for? Time/cost/throughput? Focusing on time an
-throughput:
+  throughput:
 
 Throughput may be important for clinicians who need a fast turnaround
 of results by expending more SUs.
@@ -39,14 +37,36 @@ Reasons for using custom pipeline:
 
 - Fit for your own purposes
 - Existing pipelines (nf-core) may not do everything required, pipelines
-doesn't exist
+  doesn't exist
 - nf-core can be expensive and misconfigured
 - It doesn't exist!
 
 ## The pipeline file anatomy
 
-TODO: `tree` of part2 structure - showcasing locations of /conf, /modules,
-main.nf, nextflow.config
+```bash
+tree
+```
+
+```
+.
+├── conf
+│   ├── pbspro.config
+│   └── slurm.config
+├── main.nf
+├── modules
+│   ├── align_chunk.nf
+│   ├── align.nf
+│   ├── fastqc.nf
+│   ├── genotype.nf
+│   ├── joint_genotype.nf
+│   ├── merge_bams.nf
+│   ├── multiqc.nf
+│   ├── split_fastq.nf
+│   └── stats.nf
+├── nextflow.config
+├── samplesheet_full.csv
+└── samplesheet_single.csv
+```
 
 ### `main.nf` and `modules/`
 
@@ -115,8 +135,8 @@ HPCs.
 - Mention modules imported.
 - Why modules?
 - During scatter-gather later, easy to swap out modules, rather than coding
-in processes in main.nf. Reinforce reproducibility, not all files need to be
-touched
+  in processes in main.nf. Reinforce reproducibility, not all files need to be
+  touched
 - https://sydney-informatics-hub.github.io/template-nf-guide/notebooks/modules.html
 
 ### `nextflow.config` and `conf/`
@@ -168,7 +188,7 @@ profiles {
 === "Pawsey (Slurm"
 
 TODO: snippet of starting `nextflow.config` and `conf/pbs-or-slurm.config`
-- This is what we will be starting with, building up towards the optimised
-pipeline by end of part 2
-- Show for pbspro and slurm
 
+- This is what we will be starting with, building up towards the optimised
+  pipeline by end of part 2
+- Show for pbspro and slurm
