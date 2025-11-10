@@ -236,7 +236,8 @@ Nextflow is powerful for HPC vs. serially running pbs/slurm scripts.
 
 Next we will wrap this up in a run script.
 
-We will add the new custom configs using `-c`. 
+We will add the new custom configs using `-c`. This will be revisited in
+resourcing.
 
 !!! example "Exercises"
    

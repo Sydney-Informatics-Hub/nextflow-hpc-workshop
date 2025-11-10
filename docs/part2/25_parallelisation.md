@@ -26,6 +26,9 @@ bwa mem benchmarking results from part 1 suggests 2N threads is ideal
 
 ## Multi-processing with scatter-gather
 
+TODO add figure with: more resources, less walltime, less SUs when
+scatter-gathered
+
 !!! example "Exercise"
 
     _Before:_

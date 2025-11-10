@@ -58,7 +58,23 @@ and select ones that are not yet included. Things such as the `workDir`bb
         - the job ID when executed by a grid engine (scheduler)
 
     3. Append these to `trace.fields` in `nextflow.config`
+
+    ??? question 'Hint'
+
+        ```groovy hl_lines="5"
+        trace {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/trace-${params.trace_timestamp}.txt"
+            fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,rss,workdir,native_id'
+        }
+        ```
+
     4. Save, and run the workflow using `run.sh`
+    5. View the newly generate trace file under the `runInfo/` folder
+
+These added fields help you track down the scheduler job and work directories
+for debugging.
 
 ## Summary
 
