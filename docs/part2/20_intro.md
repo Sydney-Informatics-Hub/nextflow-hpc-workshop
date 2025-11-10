@@ -47,18 +47,6 @@ Reasons for using custom pipeline:
 tree
 ```
 
-TODO: confirm what you want in the tree; top diagrammatic or below real part 2 tree
-
-```
-.
-├── conf
-│   └── [name].config
-├── main.nf
-├── modules
-│   └── [module].nf
-└── nextflow.config
-```
-
 ```
 .
 ├── conf
@@ -77,56 +65,7 @@ TODO: confirm what you want in the tree; top diagrammatic or below real part 2 t
 │   └── stats.nf
 ├── nextflow.config
 ├── samplesheet_full.csv
-├── samplesheet_single.csv
-└── _scripts
-    ├── ex0
-    │   ├── conf
-    │   │   ├── pbspro.config
-    │   │   └── slurm.config
-    │   ├── main.nf
-    │   └── nextflow.config
-    ├── ex1
-    │   ├── conf
-    │   │   ├── pbspro.config
-    │   │   └── slurm.config
-    │   ├── main.nf
-    │   └── nextflow.config
-    ├── ex2
-    │   ├── conf
-    │   │   ├── pbspro.config
-    │   │   └── slurm.config
-    │   ├── main.nf
-    │   ├── nextflow.config
-    │   └── outputs
-    │       ├── gadi-genotype.command.log
-    │       ├── gadi-qstat.txt
-    │       └── pawsey-2025-11-03_18-21-10.txt
-    ├── ex3
-    │   ├── conf
-    │   │   ├── pbspro.config
-    │   │   └── slurm.config
-    │   ├── main.nf
-    │   ├── nextflow.config
-    │   └── outputs
-    │       ├── gadi-2025-11-03_20-46-34.txt
-    │       └── pawsey-2025-11-03_19-01-35.txt
-    └── ex_scattered
-        ├── conf
-        │   ├── pbspro.config
-        │   └── slurm.config
-        ├── main.nf
-        ├── nextflow.config
-        └── outputs
-            ├── gadi
-            │   ├── dag.2025-11-03_22-23-08.html
-            │   ├── report.2025-11-03_22-23-08.html
-            │   ├── timeline.2025-11-03_22-23-08.html
-            │   └── trace.2025-11-03_22-23-08.txt
-            └── pawsey
-                ├── dag.2025-11-03_20-42-42.html
-                ├── report.2025-11-03_20-42-42.html
-                ├── timeline.2025-11-03_20-42-42.html
-                └── trace.2025-11-03_20-42-42.txt
+└── samplesheet_single.csv
 ```
 
 ### `main.nf` and `modules/`
