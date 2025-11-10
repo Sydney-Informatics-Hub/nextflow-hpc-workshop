@@ -8,8 +8,9 @@
     
 Now it has run successfully and efficiently on one, run on multiple samples in parallel. Explain sample-level paralellism. Refer back to smarter not harder lesson in HPC foundations. 
 
-Could compare to things like removing the need for [loop optimisations](https://pawsey.atlassian.net/wiki/spaces/US/pages/51925998/Loop+Optimisations)
+Compare to things like removing the need for [loop optimisations](https://pawsey.atlassian.net/wiki/spaces/US/pages/51925998/Loop+Optimisations)
 
+This demonstrates another form of parallelisation, by sample
 
 !!! example "Exercise"
 

@@ -12,10 +12,19 @@ Once we get the workflow running without error on the scheduler, where can we op
 
 !!! example "Exercise"
 
-    TODO: Enable all trace reporting available, with default/minimal settings
+    Enable all trace reporting available, with default/minimal settings.
+    We use the configured `trace` from Part 1.
 
     ```groovy title='nextflow.config'
-    trace { enabled = true }
+     params.trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+     
+     trace {
+         enabled = true
+         overwrite = false
+         file = "./runInfo/trace-${params.trace_timestamp}.txt"
+         fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,rss'
+     }
+
     timeline { enabled = true }
     report { enabled = true }
     dag { enabled = true }
@@ -31,33 +40,28 @@ allocation.
 Addition of timestamp and overwrite = false - helps with benchmarking when you
 need to compare settings before vs. after e.g. optimisation
 
-!!! example "Exercise"
-    
-    Replace the following in your `nextflow.config`
+## Customising the trace file
 
-    **Before:**
+Currently, the trace file reports on the resources used per task. However,
+when a tasks errors or produces an unexpected result, it is recommended to
+view the work directory, or view the job run information with `qstat` or
+`sacct`.
 
-    ```groovy title='nextflow.config'
-    trace { enabled = true }
-    ```
-
-    **After:**
-
-    ```groovy title='nextflow.config'
-     params.trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
-     
-     trace {
-         enabled = true
-         overwrite = false
-         file = "./runInfo/trace-${params.trace_timestamp}.txt"
-         fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,rss'
-     }
-    ```
-   
+and select ones that are not yet included. Things such as the `workDir`bb
 
 !!! example "Exercise"
 
-    TODO Run pipeline, view reports, particularly trace - what has changed?
+    1. View the documentation on [trace fields](https://www.nextflow.io/docs/latest/reports.html#trace-fields)
+    2. Locate the two field names that provides the:
 
+        - directory path where the task was executed
+        - the job ID when executed by a grid engine (scheduler)
 
-TODO compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
+    3. Append these to `trace.fields` in `nextflow.config`
+    4. Save, and run the workflow using `run.sh`
+
+## Summary
+
+Nextflow's profiling features are powerful automations that scale nicely when
+you have many processes in a pipeline. This saves the need for manual
+benchmarking such as using `time`.
