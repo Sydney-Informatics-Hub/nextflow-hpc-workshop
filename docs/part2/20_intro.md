@@ -19,8 +19,7 @@ Introduce our workflow use case and lesson structure:
 - Scale up to multiple samples
 
 TODO: Figures comparing serially run bash scripts vs. unoptimised vs.
-optimised workflow structure. Figure to include walltime comparison of each
-approach, perhaps SU usage/cost and resource usage too.
+optimised workflow structure. 
 
 - Outline what are we optimising for? Time/cost/throughput? Focusing on time an
 throughput:
@@ -44,6 +43,10 @@ doesn't exist
 - It doesn't exist!
 
 ## The pipeline file anatomy
+
+This follows the file structure outlined in our introductory
+[Nextflow for the life sciences](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part2/00_intro/#205-nextflowing-the-workflow)
+workshop.
 
 TODO: `tree` of part2 structure - showcasing locations of /conf, /modules,
 main.nf, nextflow.config
@@ -124,7 +127,7 @@ touched
 ![](figs/schema.png)
 
 We start with basic preconfigured - executors, the default queues, and
-singularity enabled.
+singularity enabled, from Part 1.
 
 As well as the default parameters for the workflow to run.
 
@@ -162,13 +165,41 @@ profiles {
 === "Gadi (PBS)"
 
     ```groovy
+    params.pbspro_account = ""
 
+    process {
+      executor = 'pbspro'
+      queue = 'normal'
+      clusterOptions = "-P ${params.pbspro_account}"
+      module = 'singularity'
+    }
+    
+    singularity {
+      enabled = true
+      autoMounts = true
+      cacheDir = "${projectDir}/singularity" 
+    }
     ```
 
-=== "Pawsey (Slurm"
+=== "Setonix (Slurm)"
 
-TODO: snippet of starting `nextflow.config` and `conf/pbs-or-slurm.config`
-- This is what we will be starting with, building up towards the optimised
+    ```groovy
+    params.slurm_account = ""
+
+    process {
+      executor = 'slurm'
+      queue = 'work'
+      clusterOptions = "--account=${params.slurm_account}"
+      module = 'singularity/4.1.0-slurm'
+    }
+    
+    singularity {
+      enabled = true
+      autoMounts = true
+      cacheDir = "${projectDir}/singularity" 
+    }
+    ```
+
+This is what we will be starting with, building up towards the optimised
 pipeline by end of part 2
-- Show for pbspro and slurm
 

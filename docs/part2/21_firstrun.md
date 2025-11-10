@@ -155,27 +155,29 @@ configure that.
 
 !!! example "Exercises"
 
+    1. Create a new file `conf/custom.config`
+    2. Add the following contents based on your HPC
+
     === "Gadi (PBS)"
 
-        Add the following code block in `conf/pbspro.config`
-
-        ```groovy title='custom.config
+        ```groovy title='custom.config'
         process {
-            cpu = 4 // 'queue' normalbw = 128 GB / 28 CPU ~ 4.6
+            cpu = 4 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
             memory = 2.GB
         }
         ```
 
-    === "Pawsey (Slurm)"
+    === "Setonix (Slurm)"
 
-    Add the following code block in `conf/slurm.config`
-
-        ```groovy title='custom.config
+        ```groovy title='custom.config'
         process {
             cpu = 2 // 'work' partition = 230 GB / 128 CPU ~ 1.8
             memory = 2.GB
         }
         ```
+
+Next, add the additional options from part 1.
+- Institutional config
 
 !!! example "Exercises"
 
@@ -184,14 +186,14 @@ configure that.
         ```groovy title="conf/pbspro.config"
         singularity {
             enabled = true
+            autoMounts = true
             cacheDir = "$projectDir/singularity"
         }
          
         executor {
-            queueSize = 30
+            queueSize = 300
             pollInterval = '30 sec'
             queueStatInterval = '30 sec'
-            submitRateLimit = '20 min'
         }
          
         process {
@@ -210,14 +212,14 @@ configure that.
         ```groovy title="conf/slurm.config"
         singularity {
             enabled = true
+            autoMounts = true
             cacheDir = "$projectDir/singularity"
         }
          
         executor {
-            queueSize = 30
+            queueSize = 300
             pollInterval = '30 sec'
             queueStatInterval = '30 sec'
-            submitRateLimit = '20 min'
         }
          
         process {
@@ -234,29 +236,37 @@ Nextflow is powerful for HPC vs. serially running pbs/slurm scripts.
 
 Next we will wrap this up in a run script.
 
+We will add the new custom configs using `-c`. 
+
 !!! example "Exercises"
-    
+   
+    1. Create a new file called `run.sh`
+    2. Copy and paste the following code based on your HPC:
+
     === "Gadi (PBS)"
 
-        ```groovy title="conf/pbspro.config"
+        ```groovy title="run.sh"
         #!/bin/bash
 
         module load nextflow/24.04.5
         module load singularity
         
-        nextflow run main.nf -profile pbspro
+        nextflow run main.nf -profile pbspro -c conf/custom.confg
         ```
 
     === "Setonix (Slurm)"
 
-        ```groovy title="conf/slurm.config"
+        ```groovy title="run.sh"
         #!/bin/bash
 
         module load nextflow/24.10.0
         module load singularity/4.1.0-slurm
 
-        nextflow run main.nf -profile slurm
+        nextflow run main.nf -profile slurm -c conf/custom.confg
         ```
+
+    3. Save the `run.sh` file
+    4. Provide execute permission by running `chmod +x run.sh`
 
 !!! warning Running the head job on the correct node
 
@@ -293,7 +303,55 @@ Next we will wrap this up in a run script.
 
 !!! example "Exercise"
 
-    Run your newly configured pipeline using by executing `run.sh` in the terminal.
+    Run your newly configured pipeline using by executing `./run.sh` in the terminal.
+    ??? note "Results"
+
+        On both Gadi and Setonix, both runs should now be successful and
+        executed on the respective scheduler.
+
+        === "Gadi (PBS)"
+
+            ```bash
+            Loading nextflow/24.04.5
+            Loading requirement: java/jdk-17.0.2
+            
+             N E X T F L O W   ~  version 24.04.5
+            
+            Launching `main.nf` [determined_picasso] DSL2 - revision: 5e5c4f57e0
+            
+            executor >  <scheduler> (6)
+            [7b/16f7c2] FASTQC (fastqc on NA12877) | 1 of 1 ✔
+            [ec/5fd924] ALIGN (1)                  | 1 of 1 ✔
+            [17/803fe5] GENOTYPE (1)               | 1 of 1 ✔
+            [0f/e21d58] JOINT_GENOTYPE (1)         | 1 of 1 ✔
+            [40/0c6e28] STATS (1)                  | 1 of 1 ✔
+            [6a/94910b] MULTIQC                    | 1 of 1 ✔
+            Completed at: 10-Nov-2025 12:19:38
+            Duration    : 4m 1s
+            CPU hours   : (a few seconds)
+            Succeeded   : 6
+            ```
+
+        === "Pawsey (Slurm)"
+
+
+            ```bash
+             N E X T F L O W   ~  version 24.10.0
+            
+            Launching `main.nf` [nostalgic_bell] DSL2 - revision: 5e5c4f57e0
+            
+            executor >  slurm (6)
+            [a4/1eae6a] FASTQC (fastqc on NA12877) [100%] 1 of 1 ✔
+            [76/9e6fca] ALIGN (1)                  [100%] 1 of 1 ✔
+            [96/f57a2e] GENOTYPE (1)               [100%] 1 of 1 ✔
+            [ec/547a9c] JOINT_GENOTYPE (1)         [100%] 1 of 1 ✔
+            [88/b49a40] STATS (1)                  [100%] 1 of 1 ✔
+            [8d/b5b351] MULTIQC                    [100%] 1 of 1 ✔
+            Completed at: 10-Nov-2025 10:28:08
+            Duration    : 3m 31s
+            CPU hours   : (a few seconds)
+            Succeeded   : 6
+            ```
 
 qstat/sacct each job is inefficient, especially with pipelines with more
 processes, and running on more than one sample. The next section will introduce
