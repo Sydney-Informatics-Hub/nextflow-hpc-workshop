@@ -202,6 +202,11 @@ configure that.
 !!! example "Exercises"
 
     1. Create a new file `conf/custom.config`
+
+        ```bash
+        touch conf/custom.config
+        ```
+
     2. Add the following contents based on your HPC
 
     === "Gadi (PBS)"
