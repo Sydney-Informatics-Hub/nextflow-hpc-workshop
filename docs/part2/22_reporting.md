@@ -59,7 +59,7 @@ and select ones that are not yet included. Things such as the `workDir`bb
 
     3. Append these to `trace.fields` in `nextflow.config`
 
-    ??? question 'Hint'
+    ??? question "Hint"
 
         ```groovy hl_lines="5"
         trace {

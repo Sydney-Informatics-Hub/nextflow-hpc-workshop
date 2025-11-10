@@ -133,7 +133,7 @@ the ones we intentionally want with the default settings.
 
         ```groovy title="conf/custom.config"
         process {
-            // Default configuration for all processes
+            // Default configuration for unconfigured processes
             cpus = 4 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
             memory = 2.GB
         
@@ -164,6 +164,7 @@ the ones we intentionally want with the default settings.
 
         ```groovy title="conf/custom.config"
         process {
+            // Default configuration for all processes
             cpu = 2 // 'work' partition = 230 GB / 128 CPU ~ 1.8
             memory = 2.GB
 
@@ -220,7 +221,7 @@ to ensure that these resources are assigned:
     }
     ```
 
-    ```groovy title='modules/stats.nf
+    ```groovy title='modules/stats.nf' hl_lines='5'
     process STATS {
 
         container "quay.io/biocontainers/bcftools:1.22--h3a4d415_1"
@@ -356,9 +357,10 @@ However on shared HPC systems, we need to be more explicit with what
 we can use. Providing the extra resources can provide extra processing
 power in comparison to being stringent.
 
-## Dynamically passing allocated resources to tool
+## Passing allocated resources to the process script
 
-Some tools require you to explicitly specify how much resources to use.
+Some tools require you to explicitly specify how much resources to use in
+the process script block.
 
 If you do not update this, the resources will be allocated but not all
 completely utilised. In our current pipeline the memory is hardcoded for
@@ -420,6 +422,13 @@ added memory allocated, and reduce walltime.
         """
     }
     ```
+
+!!! example "Exercises"
+
+    Run your newly configured pipeline with `./run.sh`.
+
+TODO: Inspect trace file, and note that there should be no difference in efficiency
+or resource usage, as our datasets are small.
 
 Other examples of tools include `STAR` with threads and memory, or samtools sort
 where you can explicitly control the amount of mem per sort thread.
