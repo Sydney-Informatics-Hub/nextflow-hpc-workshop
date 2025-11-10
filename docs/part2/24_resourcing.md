@@ -108,6 +108,8 @@ TODO: Figure for MEM/CPU
 - How does this impact: scheduling time?
 - SUs?
 
+The following steps will build off this configuration.
+
 ### Configuring `withLabel` and `withName`
 
 Processes that require the same resources are recommended to be
@@ -118,8 +120,10 @@ process indivdually.
 In this case, `withName` will be used for processes `FASTQC` and `GENOTYPE`,
 where extra tuning is required.
 
-Note that the `process` configuration is now the default for all processes and
-overlaps with the `
+Note that there is redundancy between the now default `process` configuration 
+and the `withLabel: 'process_small` configuration. This is useful to have when
+new processes/modules are being added, to be explicit what the default is vs.
+the ones we intentionally want with the default settings.
 
 !!! example "Exercise"
 
@@ -352,15 +356,75 @@ However on shared HPC systems, we need to be more explicit with what
 we can use. Providing the extra resources can provide extra processing
 power in comparison to being stringent.
 
-## Configuring java heap sizes
+## Dynamically passing allocated resources to tool
 
-- Provide benchmarks for both
-- Exercise to identify optimal res
+Some tools require you to explicitly specify how much resources to use.
+
+If you do not update this, the resources will be allocated but not all
+completely utilised. In our current pipeline the memory is hardcoded for
+processes `GENOTYPE` and `JOINT_GENOTYPE` with 4 GB of memory.
+
+This is bad practice due to the reason above.
+
+In this section we will "softcode" the requested values according to what
+we have defined in `conf/custom.config`. This provides several benefits:
+
+- Additional memory will be assigned automatically to that process
+when specified in a config file.
+- If the process will exceed the memory requirement, it will cap and throw an
+error. This is useful to know so the appropriate memory can be specified.
+- If the process underutilises memory, this may reduce the scheduling time given
+less resources are requested.
+
+In this case the size of the data will not impact the memory usage drastically
+as the previous trace files show that both processes use less than 4 GB. In
+your own pipelines, a task with high memory utilisation may benefit from the
+added memory allocated, and reduce walltime.
+
 !!! example "Exercises"
 
-    Update GENOTYPE and JOINT_GENOTYPE processes with -Xmx${tasks.memory}
+    For both systems, replace the hardcoded `"-Xmx4g"` setting with the memory
+    allocated to that task using `"-Xmx${task.memory}g"` for:
 
-## Writing good custom scripts
+    1. Process `GENOTYPE` in `modules/genotype.nf`.
+
+    ```groovy title='modules/genotype.nf'
+    process GENOTYPE {
+    // truncated
+
+        output:
+        tuple val(sample_id), path("${sample_id}.g.vcf.gz"), path("${sample_id}.g.vcf.gz.tbi"), emit: gvcf
+
+        script:
+        """
+        gatk --java-options "-Xmx${task.memory}g" HaplotypeCaller -R $ref_fasta -I $bam -O ${sample_id}.g.vcf.gz -ERC GVCF
+        """
+
+    }
+    ```
+
+    2. Process `JOINT_GENOTYPE` in `modules/joint_genotype.nf`
+
+    ```groovy title='modules/joint_genotype.nf'
+    process JOINT_GENOTYPE {
+    // truncated
+
+        output:
+        tuple val(cohort_id), path("${cohort_id}.vcf.gz"), path("${cohort_id}.vcf.gz.tbi"), emit: vcf
+        
+        script:
+        variant_params = gvcfs.collect { f -> "--variant ${f}" }.join(" ")
+        """
+        gatk --java-options "-Xmx${task.memory}g" CombineGVCFs -R $ref_fasta $variant_params -O cohort.g.vcf.gz
+        gatk --java-options "-Xmx${task.memory}g" GenotypeGVCFs -R $ref_fasta -V cohort.g.vcf.gz -O cohort.vcf.gz
+        """
+    }
+    ```
+
+Other examples of tools include `STAR` with threads and memory, or samtools sort
+where you can explicitly control the amount of mem per sort thread.
+
+## Writing efficient custom scripts
 
 Other things to consider - when writing custom R or Python scripts, writing
 them efficiently. Utilising things like vectorisation, libraries such as numpy
