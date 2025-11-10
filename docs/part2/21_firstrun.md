@@ -294,6 +294,11 @@ resourcing.
 !!! example "Exercises"
 
     1. Create a new file called `run.sh`
+
+        ```bash
+        touch run.sh
+        ```
+
     2. Copy and paste the following code based on your HPC:
 
     === "Gadi (PBS)"
@@ -304,7 +309,7 @@ resourcing.
         module load nextflow/24.04.5
         module load singularity
 
-        nextflow run main.nf -profile pbspro -c conf/custom.confg
+        nextflow run main.nf -profile pbspro -c conf/custom.config
         ```
 
     === "Setonix (Slurm)"
@@ -315,11 +320,15 @@ resourcing.
         module load nextflow/24.10.0
         module load singularity/4.1.0-slurm
 
-        nextflow run main.nf -profile slurm -c conf/custom.confg
+        nextflow run main.nf -profile slurm -c conf/custom.config
         ```
 
-    3. Save the `run.sh` file
-    4. Provide execute permission by running `chmod +x run.sh`
+    3. Save the run.sh file (Windows: Ctrl+S, macOS: Cmd+S).
+    4. Provide execute permission by running
+
+        ```bash
+        chmod +x run.sh
+        ```
 
 !!! example "Exercise"
 
