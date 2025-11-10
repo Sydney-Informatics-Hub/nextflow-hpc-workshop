@@ -9,6 +9,38 @@
     - Know how to find and specify system-dependent HPC values such as queues/partitions
     - Recall how Nextflow interacts with HPC components
 
+!!! warning Running the head job on the correct node
+
+    For the workshop, we have pre-pulled containers and use them from the cache,
+    and as data is small and the workflow runs quickly, we will be running them
+    on login nodes.
+
+    **However, this should not be done when developing and running your own
+    pipelines.**
+
+    The main Nextflow job is a low-resource and long running job that schedules
+    the individual tasks to be run on a compute node. Running this on the login
+    node will result in your pipeline being killed prematurely.
+
+    TODO: WHY they get killed (e.g. max 30 mins, 4 GB). Throttling is standard
+    on any HPC
+
+    When testing and developing your own pipeline, it is recommended to refer
+    back to the HPC's recommended way of running long-running, low-memory head
+    jobs. These could include persistent sessions with tools like `tmux` or
+    `screen` or dedicated workflow nodes.
+
+    TODO: include links to these
+
+    Alternatively, interactive jobs are a useful option to run and debug your
+    workflows interactively. If you need to schedule your Nextflow job, **the
+    scheduling options should be included in the `run.sh` script**.
+
+    The last consideration should be whether the compute nodes have network
+    access or not. When using containers, it is like that these need to be pulled
+    when the process runs on a compute node. If compute nodes do not have network
+    access, this will fail to pull the container, and consequently the pipeline.
+
 We start with running things on a single sample. This should be representative
 of all the data we run i.e. we will be processing chromosomes 20, 21, 22.
 
@@ -283,38 +315,6 @@ resourcing.
 
     3. Save the `run.sh` file
     4. Provide execute permission by running `chmod +x run.sh`
-
-!!! warning Running the head job on the correct node
-
-    For the workshop, we have pre-pulled containers and use them from the cache,
-    and as data is small and the workflow runs quickly, we will be running them
-    on login nodes.
-
-    **However, this should not be done when developing and running your own
-    pipelines.**
-
-    The main Nextflow job is a low-resource and long running job that schedules
-    the individual tasks to be run on a compute node. Running this on the login
-    node will result in your pipeline being killed prematurely.
-
-    TODO: WHY they get killed (e.g. max 30 mins, 4 GB). Throttling is standard
-    on any HPC
-
-    When testing and developing your own pipeline, it is recommended to refer
-    back to the HPC's recommended way of running long-running, low-memory head
-    jobs. These could include persistent sessions with tools like `tmux` or
-    `screen` or dedicated workflow nodes.
-
-    TODO: include links to these
-
-    Alternatively, interactive jobs are a useful option to run and debug your
-    workflows interactively. If you need to schedule your Nextflow job, **the
-    scheduling options should be included in the `run.sh` script**.
-
-    The last consideration should be whether the compute nodes have network
-    access or not. When using containers, it is like that these need to be pulled
-    when the process runs on a compute node. If compute nodes do not have network
-    access, this will fail to pull the container, and consequently the pipeline.
 
 !!! example "Exercise"
 
