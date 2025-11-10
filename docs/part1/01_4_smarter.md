@@ -115,15 +115,15 @@ Here we focus on 3 metrics:
 
 In the context of running a workflow made up of multiple steps, each running a different tool, we consider each step separately in optimising for efficiency.
 
-Let's look at our workflow:
+Let's look again at our workflow:
 
 ![](./figs/00_workflow01_v2.png){width=80%}
 
-TODO fix this table to make it make sense/honest/relevant.
+As we touched on in [HPC for workflows](./01_1_hpc_for_workflows.md#114-introducing-our-workshop-scenario-wgs-short-variant-calling), each stage of this workflow has differeing resource requirements and bottlenecks:
 
-| Step                | Dominant resource | How to tell                                |
+| Step                | Dominant resource | Characteristics                            |
 | ------------------- | ----------------- | ------------------------------------------ |
-| **Quality control** | I/O-bound         | Reads many small files; CPU idle time high |
+| **Quality control** | I/O-bound         | Reads many files; CPU idle time high       |
 | **Read alignment**  | CPU-bound         | CPU pegged near 100%; memory stable        |
 | **Variant calling** | CPU + memory      | CPU ~90%, high steady memory usage         |
 
@@ -139,21 +139,38 @@ We will observe these constraints in subsequent lessons when we run and optimise
 
 ### CPU efficiency
 
-This refers to how well the CPU requested for the job are being utilised. It is commonly expressed as a percentage or range from 0-1. It is calculated as:
+CPU efficiency refers to how well the CPUs requested for the job are being utilised. It is commonly expressed as a percentage or as a range from 0-1. It is calculated as:
 
 ```
 CPU time / walltime / number of CPUs
 ```
 
-Values near 1 mean your job used all the CPUs efficiently. Values much lower than 1 suggest your job was waiting on I/O, memory, or over-allocated resources.
+Where:
+
+- CPU time is the **cumulative** time that all CPUs were actively working; and
+- Walltime is the real-world time that the job took to run: i.e. the time as measured by a clock on the wall
+
+Values near 1 mean your job used all the CPUs efficiently. Values much lower than 1 mean that the CPUs were sitting idle for a lot of the time; this can be because the job was waiting on I/O, or otherwise you may have over-allocated CPUs to your job.
+
+As an example, suppose you requested 4 CPUs for a job which ran for 1 hour (walltime). If each CPU was utilised for 100% of the time, then CPU time would be **4 hours** and CPU efficiency would be:
+
+!!! note ""
+    4 hours CPU time / 1 hour walltime / 4 CPUs = 100%
+    
+On the other hand, if the job actually only used 1 of those CPUs for that entire hour, then CPU time would only be 1 hour and CPU efficiency would be:
+
+!!! note ""
+    1 hour CPU time / 1 hour walltime / 4 CPUS = 25%
 
 ### Memory (RAM) efficiency
 
-Memory efficiency describes how much of your allocated memory was truly needed. If your job used close to the requested memory, you're right sized. If maximum memory is much lower than requested, then you over-allocated. Your job will fail if maximum memory exceeds the requested allocation.
+Memory efficiency describes how much of your allocated memory was truly needed. If your job used close to the requested memory, you're right sized. On the other hand, if the maximum memory used by the job is much lower than requested, then you over-allocated. Your job will fail if maximum memory exceeds the requested allocation.
+
+Note that it is a good idea to **slightly** over-request memory, since it is quite difficult to accurately predict exactly how much memory your job will need, and if you don't have enough of a buffer, you may find that slight fluctuations in the required memory will cause some jobs to fail. From a cost perspective, it is better to pay slightly more for a little more memory than pay twice to re-run a failed job.
 
 ### Walltime awareness
 
-Walltime is the time it takes for your job to run from start to finish. Schedulers use this value to plan future jobs being run by yourself and others. Overestimating walltime will keep you job in the queue for longer. If you underestimate walltime, the job will be killed mid-run.
+As mentioned above, walltime is the real-world time it takes for your job to run from start to finish. Schedulers use this value to plan future jobs being run by yourself and others. Overestimating walltime will keep you job in the queue for longer as it will have to wait for a suitable time slot to run. However, if you underestimate walltime, the job will be killed mid-run. As such, like memory, it is usually a good idea to **slightly** over-request walltime, esepcially since you are usually only charged for **actual walltime used**.
 
 ## 1.4.2 Optimising your jobs for efficiency
 
@@ -166,7 +183,7 @@ In bioinformatics workflows, there are 2 main strategies used for increasing eff
 | **Multi-threading**  | Multiple threads share memory space inside a single process. Threads cooperate to perform a single task faster.                        | One node                   | Shared memory               | Using the `-t` or `--threads` flag on a tool        |
 | **Multi-processing** | Multiple independent processes run in parallel, each with its own memory space. Often managed by a workflow engine or batch scheduler. | One node or multiple nodes | Separate memory per process | Running `fastqc` on multiple samples simultaneously |
 
-![TODO figure]()
+![](./figs/00_smarter_multi_diagram.png)
 
 We can explore parallelisation methods of multi-threading and multi-processing in the context of our variant calling workflow and some small dummy data. 
 
@@ -433,7 +450,7 @@ Multi-processing is typically implemented by the user in workflow design, rather
 
 A common multi-processing pattern is called **scatter-gather**. This involves initially splitting a dataset up into many independent jobs and later merging the results back together again. For example, within the context of short variant calling, a common practice is to run the variant calling tools on each chromosome separately. Since a sequencing read can only originate from one chromosome, and because these variants only affect one genomic region at a time, we can safely split the data up per chromosome and treat them independently. Once the data has been processed, the per-chromosome results can be merged back together for downstream analysis.
 
-![TODO scatter gather chrom figure]()
+![](./figs/00_smarter_scatter_gather.png)
 
 !!! warning "Does it make sense biologically to process in parallel?"
 
@@ -491,8 +508,10 @@ The specific calculation for how many SUs a job will use is system-specific, but
 
     This SU calculation is described further on Pawsey's [Setonix General Information page](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929028/Setonix+General+Information)
 
-The per-CPU or per-memory proportion charging model is easiest to understand in the extreme cases. If you use the total CPU allocation of a node, no one else can use that node, and so you have effectively used the entire node, regardless of how much of the memory you requested. Similarly, if you request the entire memory allocation of a node, you also use up the entire node's resources, regardless of the number of CPUs you request.
+![](./figs/00_smarter_proportions.png)
 
-![TODO memory and CPU proportions]()
+The above diagram illustrates this method of evenly dividing up the memory per CPU. In this example, we have a compute node with just 10 CPUs and 40 GB of memory. In this case, the memory is divided evenly up per CPU to give 4 GB per CPU. From a cost perspective, if you claim 1 CPU, you effectively claim 4 GB of memory as well; and vice versa, for every 4 GB of memory you claim, you effectively claim 1 CPU.
+
+This billing model is easiest to understand in the extreme cases. If you use the total CPU allocation of a node, no one else can use that node, and so you have effectively used the entire node, regardless of how much of the memory you requested. Similarly, if you request the entire memory allocation of a node, you also use up the entire node's resources, regardless of the number of CPUs you request.
 
 Note that on both Gadi and Setonix, you are only charged for the walltime you **actually use**: you are **not** charged for any unused walltime. The only consequence of over-requesting walltime is potentially longer wait times for your job to start if there are a lot of other jobs queued up. If in doubt of how long a job will take, there is no financial cost to increasing the walltime requested for a job.

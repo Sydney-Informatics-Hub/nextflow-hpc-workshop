@@ -20,25 +20,19 @@
 
     Each process runs independently. When a channel contains multiple inputs, Nextflow automatically creates parallel tasks, each running in isolation, connected only by data passed through channels.
 
-    When running locally, these tasks all execute on your own computer using the local executor. This is great for development and small test runs.
-
-    But as datasets grow, your laptop quickly runs out of CPU and memory. That’s where the HPC scheduler takes over.
+    Nextflow has a built-in concept called an **executor** which defines where Nextflow runs the workflow tasks. By default, this is the **local executor**, which executes all of the tasks on your own computer.
+    
+    This is great for development and small test runs, but as datasets grow, your laptop quickly runs out of CPU and memory. This is where HPCs come in.
 
 ## 1.5.1 From your laptop to the cluster
 
-In earlier lessons, we saw that HPCs are shared, scheduled, and resource-limited. Nextflow acts as an intermediary, it:
+Nextflow supports several HPC executors, including `pbspro` and `slurm`, which we are using today. In earlier lessons, we saw that HPCs are shared, scheduled, and resource-limited. The HPC executors are set up to work within these constraints by acting as intermediaries between your workflow and the HPC scheduler. Their job is to:
 
-- Submits your workflow's processes to the scheduler
-- Handls the movement of data between filesystems
-- Monitors job completion.
-
-Each process in a Nextflow pipeline becomes a separate batch job or task array on the cluster if and only if you configure the workflow to interact with the cluster's job scheduler. Nextflow then:
-
-- Prepares a `work/` directory on shared storage
-- Submits the process commands to the scheduler
-- Moves data between the filesystem and compute nodes as needed
-- Checks for completion and retrieves logs, outputs, and exit codes
-- Publishes the output data to the shared filesystem
+- Prepare a `work/` directory within shared storage
+- Submit the workflow's tasks to the scheduler and request the necessary resources like CPUs, memory, and walltime
+- Handle the movement of data between filesystems, including between shared storage and the compute nodes' local filesystems
+- Check for job completion and retrieve logs, outputs, and exit codes
+- Publish the output data to the shared filesystem
 
 ![](figs/00_Nextflow_on_HPC_v2.png)
 
@@ -46,9 +40,7 @@ Each process in a Nextflow pipeline becomes a separate batch job or task array o
 
 We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatics-Hub/config-demo-nf) to see this in action. This workflow contains a single process that splits a sequence into multiple files.
 
-![](figs/00_config_demo_nf_v2.png)
-
-[TODO] get oversight on figure and update (fix file). Fix demo to include appropriate channels
+![](figs/00_config_demo_nf_v3.png)
 
 !!! example "Download the example workflow"
 
@@ -58,15 +50,6 @@ We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatic
     git clone https://github.com/Sydney-Informatics-Hub/config-demo-nf.git
     ```
 
-### Where did my task actually run?
-
-Our first run used the local executor, which means all computation happened directly on the login node, the same machine where we typed the command.
-This is perfectly fine for quick tests or debugging, but not suitable for real workloads on HPC systems.
-
-On HPC, heavy computation should be handled by compute nodes managed by a job scheduler.
-
-To make that happen, we’ll use Nextflow configuration files.
-
 ## 1.5.3 Configuring for the scheduler
 
 If we were to run `nextflow run config-demo-nf/main.nf` right now without any parameters, the workflow would run entirely on the login node. As we've mentioned already, this is not good practice, and we should instead make sure that we are submitting jobs via the HPC scheduler. In Nextflow, we do this by specifying the **executor** in the Nextflow **configuration**.
@@ -75,10 +58,8 @@ A Nextflow configuration file (`nextflow.config` or files inside a `config/` dir
 
 ![](figs/00_config_diagram.png)
 
-It can specify: [TODO: update below for priority blocks, edit diagram to order you use in workshop]
-
-- Executor: Which system to use (e.g., local, slurm, pbspro).
-- Queue: Defines where jobs run within the scheduler (e.g., normal, highmem, gpu).
+- Executor: Which system to use (e.g., `local`, `slurm`, `pbspro`).
+- Queue: Defines where jobs run within the scheduler (e.g., `normal`, `highmem`, `gpu`).
 - Work Directory: Defines where intermediate files are stored so compute nodes can access them.
 - Resources: CPU, memory, and time per process.
 - Environment: Modules, containers, or conda environments to load.

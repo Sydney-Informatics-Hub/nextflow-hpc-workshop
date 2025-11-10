@@ -70,14 +70,14 @@ Finally, HPCs may have large amounts of computing resources, but they aren't inf
 
 For this workshop, we will be focussing on a common bioinformatics analysis workflow used in genomics to identify genetic variants (SNPs and indels) from short-read whole genome sequencing data. This workflow involves multiple processes and tools and is computationally intensive. At a high level, the general procedure is:
 
-![](figs/00_workflow_illustration.png)
-
 1. Quality control of raw sequences, e.g. filtering & trimming reads
 2. Alignment of reads to a reference genome
 3. Post alignment processing: sorting, marking duplicates, indexing
 4. Variant calling: call SNVs and indels for each sample against reference
 5. Joint genotyping: combining samples from a cohort into a single callset
 6. Reporting
+
+![](figs/00_workflow_illustration.png)
 
 Running this workflow end-to-end captures many challenges that running on HPC using Nextflow can solve:
 
@@ -87,13 +87,26 @@ Running this workflow end-to-end captures many challenges that running on HPC us
 
 Throughout the workshop we will implement and explore different parts of this workflow in slightly different ways in order to highlight the lessons being taught.
 
-!!! example "Discussion: why does this workflow need HPC?"
+!!! question "How does HPC help run this workflow?"
 
     Consider the workflow described above:
 
-    1. Which parts of the workflow are the most computationally expensive?
+    1. How does each stage use computational resources? What is the limiting factor of each stage?
     2. What would happen if we tried to run this workflow on a personal computer?
 
-## Conclusion
+    ??? note "Answer"
 
-TODO
+        Each stage of this workflow has different computational requirements, and many are quite intense:
+
+        | Stage | Limiting factor | Explanation |
+        | ----- | --------------- | ----------- |
+        | QC | Storage - I/O speed | Low CPU & memory requirements, but needs fast access to large files |
+        | Alignment | CPU | CPU speed determines how quickly reads can be aligned. Memory requirements are variable: reads can be aligned independently, can read in data in small chunks. |
+        | Post-alignment processing | CPU + memory | Both CPU and memory requirements are high as many reads need to be processed together |
+        | Variant calling | CPU + memory | CPU usage is high as lots of calculations need to be performed to determine how likely a variant is at each genomic position. All reads within a given region must be processed together, so memory use is also high. |
+        | Joint genotyping | CPU + memory | Need to read data from all samples into memory at once, so memory usage is high. CPU also high to make final variant calls for entire cohort. |
+        | Reporting | Storage - I/O speed | Low CPU & memory requirements as we only need to summarise the dataset. Fast access to large files creates storage bottleneck. |
+
+        On a standard laptop, this workflow would not get very far before failing due to running out of memory during the alignment or variant calling phases. Designing this workflow for HPC lets us take advantage of large numbers of CPUs, lots of memory, and parallel execution of tasks to considerably speed up each stage.
+
+Short variant calling is just one example of where HPCs can be utilised to more efficiently process bioinformatics data. Many bioinformatics workflows, such as RNA sequencing and proteomics data analysis, involve similarly large datasets whose analysis is computationally expensive yet often parallelisable. If you find that your workflows are starting to struggle on your laptop, or you find that it is difficult to scale up your workflows to multiple samples and larger datasets, then this is a good sign that they need to be moved to an HPC and possibly re-designed to take advantage of parallel computation.
