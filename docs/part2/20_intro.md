@@ -8,6 +8,40 @@
     vs. Nextflow, such as ease-of-use, flexibility, and performance
     - Understand why we need custom pipelines and configuration
 
+## 2.0.1 Log back in to your assigned HPC
+
+Log in to your assigned HPC with the user account and password provided to you on day 1:
+
+=== "Gadi"
+
+    ```bash
+    ssh username@gadi.nci.org.au
+    ```
+
+=== "Setonix"
+
+    ```bash
+    ssh username@setonix.pawsey.org.au
+    ```
+
+!!! note
+
+    Be sure substitute your assigned user name for `username` in the above code example.
+
+Navigate to the scratch space for the workshop project, then open your cloned part2 repository:
+
+=== "Gadi"
+
+    ```bash
+    cd /scratch/vp91/$USER/nextflow-on-hpc-materials/part2
+    ```
+
+=== "Setonix"
+
+    ```bash
+    cd /scratch/courses01/$USER/nextflow-on-hpc-materials/part2
+    ```
+
 ## Overview
 
 Introduce our workflow use case and lesson structure:
@@ -74,6 +108,10 @@ tree
 
 ### `main.nf` and `modules/`
 
+```bash
+cat main.nf
+```
+
 ```groovy title="main.nf"
 include { FASTQC } from './modules/fastqc'
 include { ALIGN } from './modules/align'
@@ -129,6 +167,8 @@ workflow {
 }
 ```
 
+[TODO]: add figure explaining below concept
+
 Set up as modules - a recurring theme is that there are Nextflow files that can
 be left as is, and some that need tweaking. This makes your pipelines portable,
 organised, reproducible, and easy to set up across different systems.
@@ -158,6 +198,10 @@ while maintaining reproducibility.
 
 We have defined one profile for each slurm and pbspro - this makes
 running this workshop across two HPCs possible!!
+
+```bash
+cat nextflow.config
+```
 
 ```groovy title="nextflow.config"
 // Define params
@@ -194,11 +238,11 @@ profiles {
       clusterOptions = "-P ${params.pbspro_account}"
       module = 'singularity'
     }
-    
+
     singularity {
       enabled = true
       autoMounts = true
-      cacheDir = "${projectDir}/singularity" 
+      cacheDir = "${projectDir}/singularity"
     }
     ```
 
@@ -213,11 +257,11 @@ profiles {
       clusterOptions = "--account=${params.slurm_account}"
       module = 'singularity/4.1.0-slurm'
     }
-    
+
     singularity {
       enabled = true
       autoMounts = true
-      cacheDir = "${projectDir}/singularity" 
+      cacheDir = "${projectDir}/singularity"
     }
     ```
 
