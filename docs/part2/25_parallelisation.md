@@ -18,7 +18,47 @@
 
 ## Multithreading
 
-bwa mem benchmarking results from part 1 suggests 2N threads is ideal
+Benchmarking results from Part 1 suggest that 4 threads is the most optimal
+setting for `bwa mem`, with diminishing returns observed at 6 and 8 threads.
+
+The `script` block for the `ALIGN` process is already configured to
+dynamically use the number of threads specified via `task.cpus`.
+
+Let's update our configuration so that the `ALIGN` process requests 4 CPUs
+and the memory proportional the CPU required.
+
+!!! question "Discussion"
+
+    Given we want the `ALIGN` process to consistently use 4 CPUs, what approaches
+    to configuration would you take on the system you are using?
+
+    Things to consider include:
+
+    - Which `.config` file would you want to use? (Consider whether this is
+    something that needs to be portable across systems vs. system specific)
+    - How much memory would you provide? (Consider the effective RAM/CPUs
+    proportion of the queue or partition).
+    - Based on the CPU and memory requirements, which directive would be
+    more suitable to use - `withLabel` or `withName`? (Consider whether
+    it matches an existing configuration)
+
+    === "Gadi (PBS)"
+
+        ??? note "Answers"
+
+            - `custom.config` to ensure it is tuned for the `normalbw` queue.
+            - 4 CPUs with 9 GB memory
+            - This is the same configuration as `FASTQC`, therefore `withLabel`
+            will be used
+
+    === "Setonix (Slurm)"
+
+        ??? note "Answers"
+
+            - `custom.config` to ensure it fits the `work` partition.
+            - 4 CPUs with 7 GB memory
+            - No other configuration are similar, therefore a new configuration
+            is needed using `withName`.
 
 !!! example "Exercise"
 
