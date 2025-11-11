@@ -1,4 +1,4 @@
-# Pipeline monitoring and reporting 
+# Pipeline monitoring and reporting
 
 !!! info "Learning objectives"
 
@@ -8,7 +8,7 @@
     - Know which fields help determine efficiency and HPC resource usage
     - Compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
 
-Once we get the workflow running without error on the scheduler, where can we optimise. 
+Once we get the workflow running without error on the scheduler, where can we optimise.
 
 !!! example "Exercise"
 
@@ -17,7 +17,7 @@ Once we get the workflow running without error on the scheduler, where can we op
 
     ```groovy title='nextflow.config'
      params.trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
-     
+
      trace {
          enabled = true
          overwrite = false
@@ -30,7 +30,26 @@ Once we get the workflow running without error on the scheduler, where can we op
     dag { enabled = true }
     ```
 
-    Run the workflow using `run.sh`
+    Run the workflow using
+    ```bash
+    ./run.sh
+    ```
+    Once the job completes, you should have a new folder called `runInfo`, where trace files are saved. Look at your first trace file:
+
+    ```bash
+    cat runInfo/trace-*.txt
+    ```
+
+    You should see something like this:
+    ```
+    name status exit duration realtime cpus %cpu memory %mem rss
+    FASTQC (fastqc on NA12877) COMPLETED 0 29.7s 4s 1 138.4% 2 GB 0.1% 251 MB
+    ALIGN (1) COMPLETED 0 29.7s 1s 1 99.8% 2 GB 0.0% 95 MB
+    GENOTYPE (1) COMPLETED 0 59.9s 30s 1 163.0% 2 GB 0.5% 1.3 GB
+    JOINT_GENOTYPE (1) COMPLETED 0 29.5s 7s 1 230.2% 2 GB 0.1% 400.9 MB
+    STATS (1) COMPLETED 0 29.8s 0ms 1 117.5% 2 GB 0.0% 2 MB
+    MULTIQC COMPLETED 0 29.9s 4.3s 1 79.0% 2 GB 0.0% 83.3 MB
+    ```
 
 Look at the report.html. Create a more informative trace file: https://www.nextflow.io/docs/latest/reports.html#trace-file.
 
@@ -70,7 +89,11 @@ and select ones that are not yet included. Things such as the `workDir`bb
         }
         ```
 
-    4. Save, and run the workflow using `run.sh`
+    4. Save, and run the workflow:
+    ```bash
+    ./run.sh
+    ```
+
     5. View the newly generate trace file under the `runInfo/` folder
 
 These added fields help you track down the scheduler job and work directories
