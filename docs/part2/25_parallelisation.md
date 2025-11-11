@@ -101,16 +101,16 @@ and the memory proportional the CPU required.
 
 We will parallelise the alignment step. Scatter-gathering in this step is widely
 used as whole genome data is large, time-consuming, and the reads can be mapped
-to a reference independently of each other. 
+to a reference independently of each other.
 
-This requires including the pre-defined modules: 
+This requires including the pre-defined modules:
 
 - `SPLIT_FASTQ`
 - `ALIGN_CHUNK`
 - `MERGE_BAMS`
 
 !!! example "Exercise"
-    
+
     Replace the module imports:
 
     _Before:_
@@ -133,7 +133,7 @@ This requires including the pre-defined modules:
     include { MERGE_BAMS } from './modules/merge_bams'
     include { GENOTYPE } from './modules/genotype'
     include { JOINT_GENOTYPE } from './modules/joint_genotype'
-    include { STATS } from './modules/stats' 
+    include { STATS } from './modules/stats'
     ```
 
 Next, we need to update our workflow scope to facilitate the scatter-gather.
@@ -202,7 +202,7 @@ to merge again correctly by sample.
                 [ sample_id, chunk_id, fq2 ]
             } }
         split_fqs = split_fqs_r1.join(split_fqs_r2, by: [0, 1])
-        
+
         ALIGN_CHUNK(split_fqs, bwa_index)
 
         // Gather all BAM chunks for a sample and run MERGE_BAMS
@@ -265,10 +265,75 @@ Lastly, add the `process_small` labels to each of the modules:
     For `SPLIT_FASTQ`:
 
     ```groovy title="modules/split_fastq.nf"
-         
-    ```
+    process SPLIT_FASTQ {
 
-    Repeat for `ALIGN_CHUNK` and `MERGE_BAMS`
+        tag "split fastqs for ${sample_id}"
+        container "quay.io/biocontainers/fastp:1.0.1--heae3180_0"
+        label "process_small"
+
+        input:
+        tuple val(sample_id), path(reads_1), path(reads_2), val(n)
+
+        output:
+        tuple val(sample_id), path("*.${sample_id}.R1.fq"), path("*.${sample_id}.R2.fq"), emit: split_fq
+
+        script:
+        """
+        fastp -Q -L -A -i $reads_1 -I $reads_2 -o ${sample_id}.R1.fq -O ${sample_id}.R2.fq -s $n
+        """
+    }
+    ```
+    For `MERGE_BAMS`:
+
+    ```groovy title="modules/split_fastq.nf"
+    process MERGE_BAMS {
+
+        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
+        publishDir "${params.outdir}/alignment"
+        label "process_small"
+
+        input:
+        tuple val(sample_id), path(bams), path(bais)
+
+        output:
+        tuple val(sample_id), path("${sample_id}.bam"), path("${sample_id}.bam.bai"), emit: aligned_bam
+
+        script:
+        """
+        samtools cat ${bams} | samtools sort -O bam -o ${sample_id}.bam
+        samtools index ${sample_id}.bam
+        """
+
+    }
+    ```
+    For `ALIGN_CHUNK`:
+
+    ```groovy title="modules/align_chunk.nf.nf"
+    process ALIGN_CHUNK {
+
+        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
+        label "process_small"
+
+        input:
+        tuple val(sample_id), val(chunk), path(reads_1), path(reads_2)
+        tuple val(ref_name), path(bwa_index)
+
+        output:
+        tuple val(sample_id), val(chunk), path("${sample_id}.${chunk}.bam"), path("${sample_id}.${chunk}.bam.bai"), emit: aligned_bam
+
+        script:
+        """
+        bwa mem -t $task.cpus -R "@RG\\tID:${sample_id}\\tPL:ILLUMINA\\tPU:${sample_id}\\tSM:${sample_id}\\tLB:${sample_id}\\tCN:SEQ_CENTRE" ${bwa_index}/${ref_name} $reads_1 $reads_2 | samtools sort -O bam -o ${sample_id}.${chunk}.bam
+        samtools index ${sample_id}.${chunk}.bam
+        """
+
+    }
+    ```
+    now run the parallelised pipeline
+    ```bash
+    ./run.sh
+
+    ```
 
 Run the pipeline!
 
@@ -300,8 +365,8 @@ appropriate queues/partitions.
 ## Summary
 
 Recall that we do not always want to parallelise everything. There are reasons
-to avoid this due to the data set or analysis requiring data be analysed as a 
-whole, or computational reasons where processes become less efficient. 
+to avoid this due to the data set or analysis requiring data be analysed as a
+whole, or computational reasons where processes become less efficient.
 
 These are some strategies to consider for your own pipelines. Run benchmarks,
 identify long-running or inefficent processes and consider which one of these
