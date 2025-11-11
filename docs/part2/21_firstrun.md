@@ -191,6 +191,12 @@ TODO brief explanation on "2 x 1" for Setonix - virtual cores for the partition
 We know that 2GB memory will be sufficient for this process. Let's explicitly
 configure that.
 
+## 2.1.2 Building a custom config
+
+![](figs/00_custom_configs.png)
+
+[TODO] update figure. Add explanation for why you're building out the pipeline like this
+
 !!! tip
 
     Note that different values are provided based on the specific, low-cost
