@@ -332,10 +332,31 @@ Lastly, add the `process_small` labels to each of the modules:
     now run the parallelised pipeline
     ```bash
     ./run.sh
-
     ```
 
-Run the pipeline!
+    Your output should look similar to this
+    ```groovy
+    [82/d867f8] FASTQC (fastqc on NA12877)             [100%] 1 of 1 ✔
+    [43/40bd7e] SPLIT_FASTQ (split fastqs for NA12877) [100%] 1 of 1 ✔
+    [0a/0ef899] ALIGN_CHUNK (2)                        [100%] 3 of 3 ✔
+    [c1/79d4cf] MERGE_BAMS (1)                         [100%] 1 of 1 ✔
+    [f8/c1663c] GENOTYPE (1)                           [100%] 1 of 1 ✔
+    [a7/a67522] JOINT_GENOTYPE (1)                     [100%] 1 of 1 ✔
+    [49/418d69] STATS (1)                              [100%] 1 of 1 ✔
+    [2e/1b5029] MULTIQC                                [100%] 1 of 1 ✔
+    Completed at: 11-Nov-2025 11:59:08
+    Duration    : 4m 31s
+    CPU hours   : (a few seconds)
+    Succeeded   : 10
+    ```
+
+    NOTE: The alignment module was updated to use a scatter-gather approach. Instead of aligning the entire FASTQ in one go with the ALIGN module, the workflow now:
+
+    1. Splits the FASTQ into 3 chunks (SPLIT_FASTQ).
+    2. Aligns each chunk in parallel (ALIGN_CHUNK, see the 3 of 3 completed).
+    3. Merges the aligned chunks into a single BAM (MERGE_BAMS).
+
+    This change optimises performance for large datasets by leveraging parallel processing.
 
 ## A note on dynamic resourcing
 
