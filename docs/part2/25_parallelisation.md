@@ -145,7 +145,7 @@ to merge again correctly by sample.
 
     _Before:_
 
-    ```groovy title="main.nf" hl_lines="7-8"
+    ```groovy title="main.nf" hl_lines="7-11"
     workflow {
     // truncated
 
@@ -170,7 +170,7 @@ to merge again correctly by sample.
 
     _After:_
 
-    ```groovy title="main.nf" hl_lines="7-32"
+    ```groovy title="main.nf" hl_lines="7-42"
     workflow {
     // truncated
 
@@ -183,16 +183,26 @@ to merge again correctly by sample.
         // Split FASTQs for each sample
         reads_to_split = reads
             .map { it + [ params.split_n ] }
-
         SPLIT_FASTQ(reads_to_split)
 
         // Extract the chunk ID from the split FASTQs and run ALIGN_CHUNK
-        // Extract sample ID, chunk ID, and FASTQ files from SPLIT_FASTQ output
-        split_fqs = SPLIT_FASTQ.out.split_fq
-            .map { sample_id, fq1, fq2 ->
+        // TODO: simplify
+        split_fqs_r1 = SPLIT_FASTQ.out.split_fq
+            .map { sample_id, fqs_1, _fqs_2 -> [ sample_id, fqs_1 ] }
+            .transpose()
+            .map { sample_id, fq1 -> {
                 def chunk_id = fq1.baseName.tokenize(".")[0]
-                [ sample_id, chunk_id, fq1, fq2 ]
-            }
+                [ sample_id, chunk_id, fq1 ]
+            } }
+        split_fqs_r2 = SPLIT_FASTQ.out.split_fq
+            .map { sample_id, _fqs_1, fqs_2 -> [ sample_id, fqs_2 ] }
+            .transpose()
+            .map { sample_id, fq2 -> {
+                def chunk_id = fq2.baseName.tokenize(".")[0]
+                [ sample_id, chunk_id, fq2 ]
+            } }
+        split_fqs = split_fqs_r1.join(split_fqs_r2, by: [0, 1])
+        
         ALIGN_CHUNK(split_fqs, bwa_index)
 
         // Gather all BAM chunks for a sample and run MERGE_BAMS
@@ -228,7 +238,7 @@ added.
 
     ??? note "Answer"
 
-        ```groovy title="nextflow.config"
+        ```groovy title="nextflow.config" hl_lines="12"
         // Define params
         params {
             samplesheet = "$projectDir/samplesheet_single.csv"
@@ -243,6 +253,22 @@ added.
             split_n = 3
         }
         ```
+
+Lastly, add the `process_small` labels to each of the modules:
+
+- `SPLIT_FASTQ`
+- `ALIGN_CHUNK`
+- `MERGE_BAMS`
+
+!!! example "Exercise"
+
+    For `SPLIT_FASTQ`:
+
+    ```groovy title="modules/split_fastq.nf"
+         
+    ```
+
+    Repeat for `ALIGN_CHUNK` and `MERGE_BAMS`
 
 Run the pipeline!
 
