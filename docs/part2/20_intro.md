@@ -8,6 +8,40 @@
     vs. Nextflow, such as ease-of-use, flexibility, and performance
     - Understand why we need custom pipelines and configuration
 
+## 2.0.1 Log back in to your assigned HPC
+
+Log in to your assigned HPC with the user account and password provided to you on day 1:
+
+=== "Gadi"
+
+    ```bash
+    ssh username@gadi.nci.org.au
+    ```
+
+=== "Setonix"
+
+    ```bash
+    ssh username@setonix.pawsey.org.au
+    ```
+
+!!! note
+
+    Be sure substitute your assigned user name for `username` in the above code example.
+
+Navigate to the scratch space for the workshop project, then open your cloned part2 repository:
+
+=== "Gadi"
+
+    ```bash
+    cd /scratch/vp91/$USER/nextflow-on-hpc-materials/part2
+    ```
+
+=== "Setonix"
+
+    ```bash
+    cd /scratch/courses01/$USER/nextflow-on-hpc-materials/part2
+    ```
+
 ## Overview
 
 Introduce our workflow use case and lesson structure:
@@ -43,6 +77,10 @@ Reasons for using custom pipeline:
 
 ## The pipeline file anatomy
 
+This follows the file structure outlined in our introductory
+[Nextflow for the life sciences](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part2/00_intro/#205-nextflowing-the-workflow)
+workshop.
+
 ```bash
 tree
 ```
@@ -69,6 +107,10 @@ tree
 ```
 
 ### `main.nf` and `modules/`
+
+```bash
+cat main.nf
+```
 
 ```groovy title="main.nf"
 include { FASTQC } from './modules/fastqc'
@@ -125,6 +167,8 @@ workflow {
 }
 ```
 
+[TODO]: add figure explaining below concept
+
 Set up as modules - a recurring theme is that there are Nextflow files that can
 be left as is, and some that need tweaking. This makes your pipelines portable,
 organised, reproducible, and easy to set up across different systems.
@@ -144,7 +188,7 @@ HPCs.
 ![](figs/schema.png)
 
 We start with basic preconfigured - executors, the default queues, and
-singularity enabled.
+singularity enabled, from Part 1.
 
 As well as the default parameters for the workflow to run.
 
@@ -154,6 +198,10 @@ while maintaining reproducibility.
 
 We have defined one profile for each slurm and pbspro - this makes
 running this workshop across two HPCs possible!!
+
+```bash
+cat nextflow.config
+```
 
 ```groovy title="nextflow.config"
 // Define params
@@ -182,13 +230,40 @@ profiles {
 === "Gadi (PBS)"
 
     ```groovy
+    params.pbspro_account = ""
 
+    process {
+      executor = 'pbspro'
+      queue = 'normal'
+      clusterOptions = "-P ${params.pbspro_account}"
+      module = 'singularity'
+    }
+
+    singularity {
+      enabled = true
+      autoMounts = true
+      cacheDir = "${projectDir}/singularity"
+    }
     ```
 
-=== "Pawsey (Slurm"
+=== "Setonix (Slurm)"
 
-TODO: snippet of starting `nextflow.config` and `conf/pbs-or-slurm.config`
+    ```groovy
+    params.slurm_account = ""
 
-- This is what we will be starting with, building up towards the optimised
-  pipeline by end of part 2
-- Show for pbspro and slurm
+    process {
+      executor = 'slurm'
+      queue = 'work'
+      clusterOptions = "--account=${params.slurm_account}"
+      module = 'singularity/4.1.0-slurm'
+    }
+
+    singularity {
+      enabled = true
+      autoMounts = true
+      cacheDir = "${projectDir}/singularity"
+    }
+    ```
+
+This is what we will be starting with, building up towards the optimised
+pipeline by end of part 2

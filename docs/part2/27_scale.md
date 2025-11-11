@@ -10,7 +10,7 @@ Now it has run successfully and efficiently on one, run on multiple samples in p
 
 Compare to things like removing the need for [loop optimisations](https://pawsey.atlassian.net/wiki/spaces/US/pages/51925998/Loop+Optimisations)
 
-This demonstrates another form of parallelisation, by sample
+This demonstrates another form of parallelisation, by sample.
 
 !!! example "Exercise"
 
