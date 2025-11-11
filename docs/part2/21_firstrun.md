@@ -16,59 +16,56 @@
     on login nodes.
 
     **However, this should not be done when developing and running your own
-    pipelines.**
+    pipelines on HPC systems.**
 
-    The main Nextflow job is a low-resource and long running job that schedules
-    the individual tasks to be run on a compute node. Running this on the login
-    node will result in your pipeline being killed prematurely.
+    When developing or running workflows with real data, you should follow your HPC's
+    recommended approach for long-running, low-resource jobs. This may include being
+    used in conjunction with terminal multiplexers such as `tmux` or `screen` within
+    these sessions to keep the job running when you log out or connection drops out.
+    
+    Alternatively, starting your Nextflow run within an **interactive job** is useful for testing and debugging 
+    workflows directly on compute nodes. If you instead schedule your Nextflow
+    job, ensure that your `run.sh` script includes the appropriate scheduler options.
 
-    TODO: WHY they get killed (e.g. max 30 mins, 4 GB). Throttling is standard
-    on any HPC
+    See the recommendations on running the head job for [Gadi](https://opus.nci.org.au/spaces/Help/pages/241926895/Persistent+Sessions) and [Setonix](https://pawsey.atlassian.net/wiki/spaces/US/pages/286097469/How+to+Run+Workflows+on+the+Workflow+Nodes)
 
-    When testing and developing your own pipeline, it is recommended to refer
-    back to the HPC's recommended way of running long-running, low-memory head
-    jobs. These could include persistent sessions with tools like `tmux` or
-    `screen` or dedicated workflow nodes.
+    Finally, be aware of **network access on compute nodes**. If Nextflow cannot locate
+    the container, it will attempt to pull from an online repository. This occurs during run time and will fail if the compute node does not have internet access. In these cases, you can pre-pull containers, or schedule the head job on a queue/partition with network access.
 
-    TODO: include links to these
+Before launching a full-scale analysis, it is important to optimise your pipeline using a small, representative subset of your data. This helps you:
 
-    Alternatively, interactive jobs are a useful option to run and debug your
-    workflows interactively. If you need to schedule your Nextflow job, **the
-    scheduling options should be included in the `run.sh` script**.
+- Estimate the computational requirements of each step
+- Configure your pipeline
+- Avoid wasting service units (SUs) during development
 
-    The last consideration should be whether the compute nodes have network
-    access or not. When using containers, it is like that these need to be pulled
-    when the process runs on a compute node. If compute nodes do not have network
-    access, this will fail to pull the container, and consequently the pipeline.
+In this case, we’re starting with the reads from a single individual (NA1287) from the cohort. This is a good proxy for the other two samples as they all contain the same subset of chromosomes (20, 21, and 22).
 
-We start with running things on a single sample. This should be representative
-of all the data we run i.e. we will be processing chromosomes 20, 21, 22.
+Once we’re confident everything works as intended, we can scale up to run on the full dataset.
 
-Then, continue to optimise and configure the pipeline with a single sample so
-that you can conserve SUs as you develop and benchmark.
+In real-world pipelines, throughput becomes a key consideration of how you choose to configure pipelines. It’s not just about how fast one sample runs, but how many samples can be processed concurrently. A well-optimised configuration ensures that your pipeline makes efficient use of the HPC resources available, reducing queue times, avoiding bottlenecks, and increasing the number of samples processed per unit time.
 
-Run the pipeline with bare bones configuration. Specify the correct `profile`
-for your system.
+The first step is to get our starting pipeline working on the HPC. This means running the head job to schedule the processes and executed on compute nodes.
 
 !!! example "Exercises"
 
-    First load the nextflow and singularity modules, following the same method we learnt yesterday:
+    First load the Nextflow and singularity modules, following the same method we learnt yesterday:
 
-    === "Gadi"
+    === "Gadi (PBS)"
         ```bash
         module load nextflow/24.04.5 singularity
         ```
-    === "Setonix"
+
+    === "Setonix (Slurm)"
         ```bash
         module load nextflow/24.10.0 singularity/4.1.0-slurm
         ```
 
-    Then execute your nextflow command:
+    Then execute your Nextflow command. **(Note: Your run may fail here - that's ok for this step!)**
 
     === "Gadi (PBS)"
 
         ```bash
-        nextflow run main.nf -profile pbspro
+        nextflow run main.nf -profile pbspro --pbspro_account vp91
         ```
 
         ??? abstract "Output"
@@ -103,7 +100,7 @@ for your system.
     === "Setonix (Slurm)"
 
         ```bash
-        nextflow run main.nf -profile slurm
+        nextflow run main.nf -profile slurm --slurm_account courses01
         ```
 
         ??? abstract "Output"
@@ -126,22 +123,34 @@ for your system.
             Succeeded   : 8
             ```
 
+The jobs were scheduled to run on the compute nodes successfully, indicated by the `executor > [name]`. However, the pipeline may have failed!
+
+!!! question "Zoom react!"
+
+    1. If your job has finished succesfully, react "Yes" on Zoom, and "No" if it returned an error
+    2. Similarly, react "Yes" if you are running it on Gadi, and "No" for Setonix
+
+A common reason that pipelines fail on HPC is due to improper configuration. Here, we have yet to configure the resources properly, to the default allocation from the system's queue or partition were used.
+
+Let's explore what resources were actually used and compare them to what was allocated, by inspecting the logs and system job information using the methods from Part 1.
+
 !!! example "Exercises"
 
-    Find the `GENOTYPE` job id from `.nextflow.log`
+    Find the Job ID of the failed or completed `GENOTYPE` process in your `.nextflow.log`:
 
     ```bash
     grep GENOTYPE .nextflow.log
     ```
 
-    Then, view the resources used vs. allocated:
+    Then, inspect the job resource usage:
 
     === "Gadi (PBS)"
+
+        Use `qstat -xf <job_id>` to query the job info and display the top 12 lines (there is no relevant information beyond the 12th line for this exercise).
 
         ```bash
         qstat -xf <job_id> | head -12
         ```
-
         ```console
         Job Id: 154038474.gadi-pbs
         Job_Name = nf-GENOTYPE_1
@@ -159,10 +168,11 @@ for your system.
 
     === "Setonix (Slurm)"
 
+        Use `sacct` with formatting to view key stats:
+
         ```bash
         sacct -j <job_id> --format=JobID,JobName,User,CPUTime,TotalCPU,NCPUS,Elapsed,State,MaxRSS,MaxVMSize,Partition
         ```
-
         ```console
         JobID           JobName      User    CPUTime   TotalCPU      NCPUS    Elapsed      State     MaxRSS  MaxVMSize  Partition
         ------------ ---------- --------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
@@ -171,25 +181,16 @@ for your system.
         34325657.ex+     extern             00:01:50  00:00.003          2   00:00:55  COMPLETED          0          0
         ```
 
-Note that we have not configured the resources, and default were used for that
-queue, or partition:
+In both cases, we can observe that the jobs were assigned the following resources:
 
-|         | CPU   | MEM    |
-| ------- | ----- | ------ |
-| Gadi    | 1     | 512 MB |
-| Setonix | 2 x 1 | 1.6 GB |
+|         | CPU   | Memory   |
+| ------- | ----- | -------- |
+| Gadi    | 1     | 512 MB   |
+| Setonix | 2     | 1.6 GB   |
 
-There are pros (you don't get allocated too many resources) and cons (the job
-fails). This both indicates that we need to be intentional how we need to be
-explicit with configuration, and being aware of differences to note when
-running on different systems.
+This is why **explicit resource configuration** is important. Even though the pipeline technically ran (or failed), these defaults are unsuitable for real data.
 
-- With "real" larger data sets, this will likely fail
-
-TODO brief explanation on "2 x 1" for Setonix - virtual cores for the partition
-
-We know that 2GB memory will be sufficient for this process. Let's explicitly
-configure that.
+In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory. Let's explicitly configure that in the next step.
 
 ## 2.1.2 Building a custom config
 

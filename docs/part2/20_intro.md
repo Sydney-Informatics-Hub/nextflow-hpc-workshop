@@ -52,7 +52,7 @@ Throughout this section, we’ll continue using the variant calling example to d
 
     In this section, we will continue using the small paired-end reads from Part 1 to demonstrate key concepts related to running and configuring workflows on HPC systems.
     
-    Because the data sets are deliberately small, the processes will run quickly and with minimal resource requirements. This helps illustrate how the workflow behaves, but it also means that:
+    Because the data is deliberately small, the processes will run quickly and with minimal resource requirements. This helps illustrate how the workflow behaves, but it also means that:
     
     - Some resource-related errors (e.g. out-of-memory, walltime exceeded) **will not occur**, even if your configuration is suboptimal.
     - Performance trade-offs (e.g. with different `cpus` or `memory` settings) may be **less noticeable** than with real-world data.
@@ -60,7 +60,7 @@ Throughout this section, we’ll continue using the variant calling example to d
     
     When running real data sets on HPC systems, you may encounter different behaviours, longer runtimes, and additional errors. 
 
-## 2.0.4 Why do you need custom pipelines?
+## 2.0.3 Why do you need custom pipelines?
 
 There are several reasons why you might need to develop or adapt your own
 Nextflow pipeline:
@@ -69,11 +69,15 @@ Nextflow pipeline:
 - **Gaps in available pipelienes** - Existing pipelines (e.g. nf-core) may not cover your use case, or a relevant pipeline may not exist at all.
 - **Resource optimisation** - nf-core pipelines are generalised by design and may be over-provisioned or misconfigured for your HPC environment. Although easier to get running out-of-the box, this could lead to inefficient use of HPC resources or being charged excess service units (SUs)!
 
-## 2.0.4 The pipeline file anatomy
+## 2.0.3 The scenario: variant calling on HPC
+
+TODO: Describe starting variant calling pipeline briefly
 
 ![](figs/00_workflow_illustration.png)
 
-TODO: Describe starting variant calling pipeline
+TODO: scenario for benchmarking and optimising
+
+## 2.0.4 The pipeline file anatomy
 
 This pipeline builds on the structure introduced in our introductory
 [Nextflow for the life sciences](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part2/00_intro/#205-nextflowing-the-workflow) workshop, where the workflow is separated into the 
@@ -246,7 +250,7 @@ Each profile brings in a system-specific config file from the `conf/` folder:
 
     process {
       executor = 'pbspro'
-      queue = 'normal'
+      queue = 'normalbw'
       clusterOptions = "-P ${params.pbspro_account}"
       module = 'singularity'
     }
@@ -280,7 +284,7 @@ Each profile brings in a system-specific config file from the `conf/` folder:
     }
     ```
 
-This setup makes it easy to test and run the same workflow in different environments. By the end of Part 2, we’ll have extended these configs to better reflect the performance characteristics of each system - improving efficiency without touching the pipeline logic itself.
+This setup makes it easy to test and run the same workflow in different environments. By the end of Part 2, we’ll have extended these configs to better reflect the characteristics of each system - improving efficiency without touching the pipeline logic itself.
 
 ## 2.0.5 Summary
 
