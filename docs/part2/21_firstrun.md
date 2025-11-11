@@ -316,7 +316,7 @@ resourcing.
         module load nextflow/24.04.5
         module load singularity
 
-        nextflow run main.nf -profile pbspro -c conf/custom.config
+        nextflow run main.nf -profile pbspro --pbspro_account vp91 -c conf/custom.config
         ```
 
     === "Setonix (Slurm)"
@@ -327,7 +327,7 @@ resourcing.
         module load nextflow/24.10.0
         module load singularity/4.1.0-slurm
 
-        nextflow run main.nf -profile slurm -c conf/custom.config
+        nextflow run main.nf -profile slurm --slurm_account courses01 -c conf/custom.config
         ```
 
     3. Save the run.sh file (Windows: Ctrl+S, macOS: Cmd+S).

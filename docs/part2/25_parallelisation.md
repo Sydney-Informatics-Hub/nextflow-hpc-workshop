@@ -11,21 +11,18 @@
     - Recall that faster jobs that use more resources are more efficient than
     long-running jobs with less resources
 
+Part 1.4 introduced parallelisation approaches with the goal of speeding up your jobs by utilising more resources. As your data gets larger, or more samples are required to be processed, it needs to run efficiently. In this lesson we will explore how Nextflow supports different forms of parallelisation to help you scale your workflows.
+
 ![](figs/00_benchmark_at_scale_theme.png)
 
 - Trade-offs between time x SUs x efficiency
 - recall we do not always want to provide more threads/split
 
-## Multithreading
+## Multithreading `bwa mem`
 
-Benchmarking results from Part 1 suggest that 4 threads is the most optimal
-setting for `bwa mem`, with diminishing returns observed at 6 and 8 threads.
+In Part 1, we explored multithreading using `bwa mem`, and saw that more threads can reduce runtime, with diminishing returns observed at 6 and 8 threads. Now that we know `bwa mem` performs best at 4 threds, we will formalise this into the pipeline configuration.
 
-The `script` block for the `ALIGN` process is already configured to
-dynamically use the number of threads specified via `task.cpus`.
-
-Let's update our configuration so that the `ALIGN` process requests 4 CPUs
-and the memory proportional the CPU required.
+TODO: recall more threads requires more cores requested.
 
 !!! question "Discussion"
 
@@ -35,9 +32,9 @@ and the memory proportional the CPU required.
     Things to consider include:
 
     - Which `.config` file would you want to use? (Consider whether this is
-    something that needs to be portable across systems vs. system specific)
-    - How much memory would you provide? (Consider the effective RAM/CPUs
-    proportion of the queue or partition).
+    something that needs to be portable across systems vs. system-specific)
+    - How much extra memory can you utilise if required? (Consider the effective RAM/CPUs
+    proportion of the queue or partition)
     - Based on the CPU and memory requirements, which directive would be
     more suitable to use - `withLabel` or `withName`? (Consider whether
     it matches an existing configuration)
@@ -60,6 +57,7 @@ and the memory proportional the CPU required.
             - 4 CPUs with 7 GB memory
             - No other configuration are similar, therefore a new configuration
             is needed using `withName`.
+            - TODO: confirm 4 CPUs with 6 GB memory vs. 4 CPUS with less GB
 
 !!! example "Exercise"
 
@@ -93,9 +91,15 @@ and the memory proportional the CPU required.
         }
         ```
 
-    Save your file and run with `./run.sh`.
+    Save your file and run with
+    
+    ```
+    ./run.sh
+    ```
 
-## Multi-processing with scatter-gather
+## Multi-processing with 'scatter-gather'
+
+TODO: Figure from part 1
 
 ![](figs/00_Scatter_gather_fig.png)
 
@@ -227,7 +231,11 @@ to merge again correctly by sample.
  <!--- If you run the workflow now, it will fail because params.split_n is
  not defined. Could be a troubleshooting exercise --->
 
-Lastly, a new parameter, `params.split_n` was defined. This needs to be
+!!! tip "Scatter-gather patterns"
+
+    How you implement the scatter-gather pattern in Nextflow will be highly dependent on your workflow structure, and input and output files. [Nextflow patterns](https://nextflow-io.github.io/patterns/) provides examples of commonly used patterns that support a range of different needs, such as splitting text and CSV files, and collecting outputs multiple outputs into a single file or groups.
+
+Lastly, a new parameter, `params.split_n` was defined in workflow logic. This needs to be
 added.
 
 !!! example "Exercise"
@@ -253,6 +261,8 @@ added.
             split_n = 3
         }
         ```
+
+**TODO: REPLACE LABELS IN CONFIG**
 
 Lastly, add the `process_small` labels to each of the modules:
 
