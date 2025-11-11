@@ -32,7 +32,7 @@ your own processes
 Different queues/partitions are intended for different types of jobs
 
 https://sydney-informatics-hub.github.io/usyd-gadi-onboarding-guide/notebooks/08_job_script.html#queue-selection-examples
-    
+
 Know how to set up system-specific config, how to ensure the resourcing aligns
 well with the setup of the infrastructure.
 
@@ -76,7 +76,7 @@ Example trace files we use to configure our resources.
     | GENOTYPE (1)               | COMPLETED | 0    | 44.9s    | 32s      | 2    | 156.7% | 2 GB   | 0.7% | 1.7 GB   |
     | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 20s      | 8s       | 2    | 227.5% | 2 GB   | 0.2% | 458.8 MB |
     | STATS (1)                  | COMPLETED | 0    | 10.3s    | 0ms      | 2    | 123.9% | 2 GB   | 0.0% | 2 MB     |
-    | MULTIQC                    | COMPLETED | 0    | 19s      | 5.1s     | 2    | 72.5%  | 2 GB   | 0.0% | 86.7 MB  | 
+    | MULTIQC                    | COMPLETED | 0    | 19s      | 5.1s     | 2    | 72.5%  | 2 GB   | 0.0% | 86.7 MB  |
 
 We will now configure our scheduler-specific configs so it fits the node
 infrastructure you are using. Recall that we specified extra CPUs to get
@@ -105,6 +105,7 @@ the workflow running:
 - https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits...#QueueLimits...-Broadwellqueuelimits
 
 TODO: Figure for MEM/CPU
+
 - How does this impact: scheduling time?
 - SUs?
 
@@ -120,7 +121,7 @@ process indivdually.
 In this case, `withName` will be used for processes `FASTQC` and `GENOTYPE`,
 where extra tuning is required.
 
-Note that there is redundancy between the now default `process` configuration 
+Note that there is redundancy between the now default `process` configuration
 and the `withLabel: 'process_small` configuration. This is useful to have when
 new processes/modules are being added, to be explicit what the default is vs.
 the ones we intentionally want with the default settings.
@@ -136,14 +137,14 @@ the ones we intentionally want with the default settings.
             // Default configuration for unconfigured processes
             cpus = 4 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
             memory = 2.GB
-        
+
             // Configuration for processes labelled as "process_small"
             withLabel: 'process_small' {
                 cpus = 4
                 memory = 2.GB
                 time = 2.minutes
             }
-        
+
             // GENOTYPE requires extra walltime
             withName: 'GENOTYPE' {
                 cpus = 4
@@ -174,7 +175,7 @@ the ones we intentionally want with the default settings.
                 memory = 2.GB
                 time = 2.minutes
             }
-        
+
             // GENOTYPE requires extra walltime
             withName: 'GENOTYPE' {
                 cpus = 2
@@ -202,7 +203,7 @@ to ensure that these resources are assigned:
 
 !!! example "Exercises"
 
-    On both Gadi and Setonix, add the following line at the end of the 
+    On both Gadi and Setonix, add the following line at the end of the
     process directives. An example is provided for `modules/align.nf`
     and `modules/stats.nf`:
 
@@ -236,7 +237,6 @@ to ensure that these resources are assigned:
     ```
 
     Ensure this is added to the remaining modules listed above.
-
 
 We will give `FASTQC` two CPUs to process each of the paired-end reads.
 According to the trace, it does not require much memory, so the limiting
@@ -287,14 +287,14 @@ Let's find the effective usable RAM/core.
             // Default configuration for all processes
             cpus = 4 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
             memory = 2.GB
-        
+
             // Configuration for processes labelled as "process_small"
             withLabel: 'process_small' {
                 cpus = 4
                 memory = 2.GB
                 time = 2.minutes
             }
-        
+
             // GENOTYPE requires extra walltime
             withName: 'GENOTYPE' {
                 cpus = 4
@@ -302,7 +302,7 @@ Let's find the effective usable RAM/core.
                 time = 5.minutes
             }
 
-            // Provide more memory for FASTQC 
+            // Provide more memory for FASTQC
             withName: 'FASTQC' {
                 cpus = 2
                 memory = 9.GB
@@ -324,7 +324,7 @@ Let's find the effective usable RAM/core.
                 memory = 2.GB
                 time = 2.minutes
             }
-        
+
             // GENOTYPE requires extra walltime
             withName: 'GENOTYPE' {
                 cpus = 2
@@ -348,7 +348,7 @@ Let's find the effective usable RAM/core.
     the memory to use as part of the `script` block.
 
     We will explore this with the `GENOTYPE` and `JOINT_GENOTYPE` processes.
-    
+
 Takeaway: Specifying the number of resources is the first step of
 ensuring you don't ask for resources you don't need. On systems with
 a lot of freedom (cloud instances, workstations) this is sufficient.
@@ -372,11 +372,11 @@ In this section we will "softcode" the requested values according to what
 we have defined in `conf/custom.config`. This provides several benefits:
 
 - Additional memory will be assigned automatically to that process
-when specified in a config file.
+  when specified in a config file.
 - If the process will exceed the memory requirement, it will cap and throw an
-error. This is useful to know so the appropriate memory can be specified.
+  error. This is useful to know so the appropriate memory can be specified.
 - If the process underutilises memory, this may reduce the scheduling time given
-less resources are requested.
+  less resources are requested.
 
 In this case the size of the data will not impact the memory usage drastically
 as the previous trace files show that both processes use less than 4 GB. In
@@ -399,7 +399,7 @@ added memory allocated, and reduce walltime.
 
         script:
         """
-        gatk --java-options "-Xmx${task.memory}g" HaplotypeCaller -R $ref_fasta -I $bam -O ${sample_id}.g.vcf.gz -ERC GVCF
+        gatk --java-options "-Xmx${task.memory.toGiga()}g" HaplotypeCaller -R $ref_fasta -I $bam -O ${sample_id}.g.vcf.gz -ERC GVCF
         """
 
     }
@@ -413,12 +413,12 @@ added memory allocated, and reduce walltime.
 
         output:
         tuple val(cohort_id), path("${cohort_id}.vcf.gz"), path("${cohort_id}.vcf.gz.tbi"), emit: vcf
-        
+
         script:
         variant_params = gvcfs.collect { f -> "--variant ${f}" }.join(" ")
         """
-        gatk --java-options "-Xmx${task.memory}g" CombineGVCFs -R $ref_fasta $variant_params -O cohort.g.vcf.gz
-        gatk --java-options "-Xmx${task.memory}g" GenotypeGVCFs -R $ref_fasta -V cohort.g.vcf.gz -O cohort.vcf.gz
+        gatk --java-options "-Xmx${task.memory.toGiga()}g" CombineGVCFs -R $ref_fasta $variant_params -O cohort.g.vcf.gz
+        gatk --java-options "-Xmx${task.memory.toGiga()}g" GenotypeGVCFs -R $ref_fasta -V cohort.g.vcf.gz -O cohort.vcf.gz
         """
     }
     ```
