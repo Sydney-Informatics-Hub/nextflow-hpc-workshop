@@ -11,32 +11,23 @@ As soon as we start using HPC, we’re working in a shared environment where we 
 
 !!! warning "No sudo for you!"
 
-    Unlike your laptop, you do not have administrative (`sudo`) privileges on HPC systems. On a laptop, you can install software however you like. On HPC, thousands of users share the same system, so unrestricted installs would break environments, cause version conflicts, and introduce security risks. That’s why HPC systems block `sudo`.
+    Unlike your laptop, you do not have administrative (`sudo`) privileges on HPC systems. This puts some restrictions on what software you can install and where. On a laptop, you can install software however you like. On HPC, thousands of users share the same system, so unrestricted installs would break environments, cause version conflicts, and introduce security risks. That’s why HPC systems block `sudo`.
 
 ## 1.2.1 Software installation is different on HPCs
 
-Bioinformatics workflows need software, and often many versions of it. Consider the tools we want to use in our mapping and variant calling workflow:
-
-- `fastqc v0.12.1`: For quality analysis of FASTQ reads
-- `bwa v0.7.18`: For aligning FASTQ reads to a reference genome
-- `samtools v1.20`: For analysis and handling of BAM alignment files
-- `bcftools v1.22`: For analysis and handling of VCF variant call files
-- `gatk v4.6.2.0`: A suite of tools for performing variant calling and analysis of genomic variants
-- `multiqc v1.19`: For constructing a final summary report of our analyses
-
-These tools don’t always play nicely together. Sometimes specific versions of a tool will have bugs or introduce new features that break a workflow. As such, we often want to exactly control the versions of each tool that we use to ensure our pipeline is reliable and reproducible. Another issue is that the dependencies of these tools and their specific versions can conflict with one another.
-
-This might seem like a pretty significant problem, but don't worry! You can still install and manage software for your own workflows, you just need to use HPC-approved methods. There are three main approaches:
+There are a few ways in which we can install and use software on HPCs. Some of these are more complex than others, and they each have their benefits and drawbacks:
 
 | Approach | Description | Pros | Cons |
 |----------|-------------|------|------|
+| **Pre-built executables** | Pre-built, ready-to-run executable files that you simply download and run | Easy to use - just download and run | Few tools provide pre-built executables on Linux; they must be built for the same operating system and CPU architecture that you are using |
+| **DIY installation** | Compiling and installing software yourself from open-source code | Full control over where the software gets installed | Not beginner-friendly; build times can be long; often requires lots of configuration and specific dependencies |
 | **Conda/Mamba environments** | User-managed Python/R environments | Flexible; easy for development; well-documented; lots of tutorials available | Slow installs; dependency conflicts common; not fully reproducible; can use up lots of storage space |
 | **Environment modules** | Pre-installed software provided by HPC admins, loaded with `module load` | Fast; easy to use; no setup required | Limited versions; may conflict with workflow needs; not every tool is available on every system |
 | **Containers** (Apptainer/Singularity) | Portable, isolated software environments | Reproducible; portable; avoids dependency issues; huge repositories of pre-built containers available | Requires container knowledge; introduces slightly more complexity into scripts and workflows |
 
 !!! note "Why we love containers" 
 
-    Of the three options described above, we highly recommend using containers for workflow development, especially when using workflow languages like Nextflow. Containers bundle up everything a tool needs, including, dependencies, libraries, OS layers, into a single portable image. This image is self-contained (hence the name!) and doesn't interact or conflict with any of the software installed on your computer. On HPC, that means:
+    Of the several options described above, we highly recommend using containers for workflow development, especially when using workflow languages like Nextflow. Containers bundle up everything a tool needs, including, dependencies, libraries, OS layers, into a single portable image. This image is self-contained (hence the name!) and doesn't interact or conflict with any of the software installed on your computer. On HPC, that means:
 
     - No dependency conflicts: every container runs in its own isolated environment, unaffected by other users or system modules
     - Reproducibility: the same container image can be used across clusters, clouds, or laptops, ensuring identical software behaviour everywhere
@@ -50,41 +41,16 @@ This might seem like a pretty significant problem, but don't worry! You can stil
 
     Note that there are cases where we may package up two very closely related tools into a single container and Nextflow process, either because they are part of a larger suite of software, or they are known to work well together, or it would introduce unnecessary complexity into our pipeline to separate them. However, this is the exception, not the rule.
 
-## 1.2.2 A simple script 
+## 1.2.2 A simple command 
 
-Let's start exploring HPC software with a simple script that runs `fastqc`. You should find this in the `scripts/` directory: 
-
-```bash title="scripts/fastqc.sh"
-#!/bin/bash
-
-SAMPLE_ID="NA12878_chr20-22"
-READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
-
-mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-fastqc \
-    --outdir "results/fastqc_${SAMPLE_ID}_logs" \
-    --format fastq ${READS_1} ${READS_2}
-```
-
-A small fastq dataset has also been provided:
-
-```bash
-ls ../data/fqs
-```
-
-```console
-NA12877_chr20-22.R1.fq.gz NA12878_chr20-22.R1.fq.gz NA12889_chr20-22.R1.fq.gz samplesheet.fq.csv
-NA12877_chr20-22.R2.fq.gz NA12878_chr20-22.R2.fq.gz NA12889_chr20-22.R2.fq.gz
-```
+Let's start exploring HPC software with a simple command: accessing the help page for `fastqc`.
 
 !!! example "Exercise: Try to run fastqc"
 
-    Try running the script:
+    Try running the following command:
 
     ```bash
-    chmod +x scripts/fastqc.sh
-    ./scripts/fastqc.sh
+    fastqc --help
     ```
 
 ??? question "Result..."
@@ -92,10 +58,10 @@ NA12877_chr20-22.R2.fq.gz NA12878_chr20-22.R2.fq.gz NA12889_chr20-22.R2.fq.gz
     You will see:
 
     ```console
-    ./fastqc.sh: line 9: fastqc: command not found
+    bash: fastqc: command not found
     ```
 
-    The command fails because `fastqc` is **not installed by default**.
+    The command fails because `fastqc` is **not available by default**.
     On HPC, you’ll need to either load a pre-installed module or use a container.
 
 ## 1.2.3 Using modules
@@ -112,7 +78,7 @@ Modules are the standard way to access centrally installed software on HPC syste
 
     The terminal will fill up with a long list of available modules:
    
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```console title="Available modules"
         -------------------------------------------------------------------- /opt/Modules/modulefiles ---------------------------------------------------------------------
@@ -126,7 +92,7 @@ Modules are the standard way to access centrally installed software on HPC syste
         abaqus/2021                gamess/2022-R2                 intel-dpct/2021.1.1              lammps/3Mar2020           openquake/3.11.2                              
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```console title="Available modules"
         ----------------------------------------------- /opt/cray/pe/lmod/modulefiles/mpi/gnu/12.0/ofi/1.0/cray-mpich/8.0 ------------------------------------------------
@@ -154,7 +120,7 @@ Note that the modules appear in a format of `<TOOL NAME>/<VERSION>`. Often, seve
     ```
 
     Load the module on your system and confirm the version: 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         module load fastqc
@@ -165,7 +131,7 @@ Note that the modules appear in a format of `<TOOL NAME>/<VERSION>`. Often, seve
         FastQC v0.12.1
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         module load fastqc/0.11.9--hdfd78af_1
@@ -176,17 +142,30 @@ Note that the modules appear in a format of `<TOOL NAME>/<VERSION>`. Often, seve
         FastQC v0.11.9
         ```
 
-    Once loaded, you can rerun the `fastqc.sh` script and verify that it now runs successfully.
+    Once loaded, you can rerun the `fastqc --help` command and verify that it now runs successfully.
 
     ```bash
-    ./scripts/fastqc.sh
+    fastqc --help
     ```
 
     ```console
-    Started analysis of NA12878_chr20-22.R1.fq.gz
-    Analysis complete for NA12878_chr20-22.R1.fq.gz
-    Started analysis of NA12878_chr20-22.R2.fq.gz
-    Analysis complete for NA12878_chr20-22.R2.fq.gz
+                FastQC - A high throughput sequence QC analysis tool
+
+    SYNOPSIS
+
+        fastqc seqfile1 seqfile2 .. seqfileN
+
+        fastqc [-o output dir] [--(no)extract] [-f fastq|bam|sam] 
+            [-c contaminant file] seqfile1 .. seqfileN
+
+    DESCRIPTION
+
+        FastQC reads a set of sequence files and produces from each one a quality
+        control report consisting of a number of different modules, each one of 
+        which will help to identify a different potential type of problem in your
+        data.
+
+    ...
     ```
 
 Modules are quick and convenient, but they depend on what your HPC administrators provide. As we saw above, Gadi and Setonix provided different versions of FastQC. Relying on administrators to install modules for you can be a barrier to running your workflows. 
@@ -213,13 +192,13 @@ Containers are portable software environments: they package everything your tool
 
     Singularity, like other software, is not loaded by default. On Gadi, there is just one default Singularity module, and can be simply loaded with `module load`. On Setonix, you can find the versions of Singularity available with `module avail`:
     
-    === "Gadi"
+    === "Gadi (PBS)"
   
         ```bash
         module load singularity
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         module avail singularity
@@ -239,21 +218,34 @@ To run a command or script inside a singularity container, you simply run `singu
 
 !!! example "Exercise: Run FastQC in a Singularity container"
 
-    You should find a pre-built container image for running the `fastqc` command at `singularity/fastqc.sif`.  
+    You should find a pre-built container image for running the `fastqc` command at `../singularity/fastqc.sif`.  
     
-    You can execute your script inside it with:
+    You can execute the `fastqc --help` inside it with:
 
     ```bash
-    singularity exec singularity/fastqc.sif ./fastqc.sh
+    singularity exec ../singularity/fastqc.sif fastqc --help
     ```
 
     The output should look familiar:
 
     ```console
-    Started analysis of NA12878_chr20-22.R1.fq.gz
-    Analysis complete for NA12878_chr20-22.R1.fq.gz
-    Started analysis of NA12878_chr20-22.R2.fq.gz
-    Analysis complete for NA12878_chr20-22.R2.fq.gz
+                FastQC - A high throughput sequence QC analysis tool
+
+    SYNOPSIS
+
+        fastqc seqfile1 seqfile2 .. seqfileN
+
+        fastqc [-o output dir] [--(no)extract] [-f fastq|bam|sam] 
+            [-c contaminant file] seqfile1 .. seqfileN
+
+    DESCRIPTION
+
+        FastQC reads a set of sequence files and produces from each one a quality
+        control report consisting of a number of different modules, each one of 
+        which will help to identify a different potential type of problem in your
+        data.
+
+    ...
     ```
 
-Later, when we set up Nextflow to run on the HPC, we will configure it to use singularity containers. Behind the scenes, this process of running a script within a container is essentially what Nextflow does for us.
+Later, when we set up Nextflow to run on the HPC, we will configure it to use singularity containers. Behind the scenes, this process of running a command within a container is essentially what Nextflow does for us.
