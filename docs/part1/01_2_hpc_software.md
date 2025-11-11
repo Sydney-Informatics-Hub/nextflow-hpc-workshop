@@ -218,12 +218,12 @@ To run a command or script inside a singularity container, you simply run `singu
 
 !!! example "Exercise: Run FastQC in a Singularity container"
 
-    You should find a pre-built container image for running the `fastqc` command at `singularity/fastqc.sif`.  
+    You should find a pre-built container image for running the `fastqc` command at `../singularity/fastqc.sif`.  
     
     You can execute the `fastqc --help` inside it with:
 
     ```bash
-    singularity exec singularity/fastqc.sif fastqc --help
+    singularity exec ../singularity/fastqc.sif fastqc --help
     ```
 
     The output should look familiar:

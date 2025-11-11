@@ -22,89 +22,91 @@ Before we get started, it's important to understand how Nextflow prioritises con
 
 Furthermore, when using the `-c` option, multiple configuration files can be provided, separated by commas, and are prioritised from lowest to highest in the order they are specified.
 
-Consider the following (very basic) Nextflow file:
+!!! example "Example: A very simple layered configuration"
 
-```groovy title="example.nf"
-params.value = "hello"
+    Consider the following (very basic) Nextflow file:
 
-workflow {
-    println params.value
-}
-```
+    ```groovy title="example.nf"
+    params.value = "hello"
 
-If we run this 'workflow', it will print the contents of the `value` parameter, i.e. "hello":
+    workflow {
+        println params.value
+    }
+    ```
 
-```bash
-nextflow run example.nf
-```
+    If we run this 'workflow', it will print the contents of the `value` parameter, i.e. "hello":
 
-```console title="Output"
+    ```bash
+    nextflow run example.nf
+    ```
 
- N E X T F L O W   ~  version 24.10.5
+    ```console title="Output"
 
-Launching `example.nf` [tender_kay] DSL2 - revision: 573919f401
+    N E X T F L O W   ~  version 24.10.5
 
-hello
-```
+    Launching `example.nf` [tender_kay] DSL2 - revision: 573919f401
 
-Now suppose we create a `nextflow.config` file and set `value` to something different:
+    hello
+    ```
 
-```groovy title="nextflow.config"
-params.value = "bye"
-```
+    Now suppose we create a `nextflow.config` file and set `value` to something different:
 
-Now, the workflow will print "bye"
+    ```groovy title="nextflow.config"
+    params.value = "bye"
+    ```
 
-```bash
-nextflow run example.nf
-```
+    Now, the workflow will print "bye"
 
-```console title="Output"
+    ```bash
+    nextflow run example.nf
+    ```
 
- N E X T F L O W   ~  version 24.10.5
+    ```console title="Output"
 
-Launching `example.nf` [tender_kay] DSL2 - revision: 573919f401
+    N E X T F L O W   ~  version 24.10.5
 
-bye
-```
+    Launching `example.nf` [tender_kay] DSL2 - revision: 573919f401
 
-If we create another config file, define `params.value` in there, and layer it on top, that value will be used:
+    bye
+    ```
 
-```groovy title="custom.config"
-params.value = "seeya"
-```
+    If we create another config file, define `params.value` in there, and layer it on top, that value will be used:
 
-```bash
-nextflow run example.nf -c custom.config
-```
+    ```groovy title="custom.config"
+    params.value = "seeya"
+    ```
 
-```console title="Output"
+    ```bash
+    nextflow run example.nf -c custom.config
+    ```
 
- N E X T F L O W   ~  version 24.10.5
+    ```console title="Output"
 
-Launching `example.nf` [tender_kay] DSL2 - revision: 573919f401
+    N E X T F L O W   ~  version 24.10.5
 
-seeya
-```
+    Launching `example.nf` [tender_kay] DSL2 - revision: 573919f401
 
-And if we create a second custom config, define yet another value for `params.value`, and layer it on top as well, that value will be used:
+    seeya
+    ```
 
-```groovy title="another_custom.config"
-params.value = "ciao"
-```
+    And if we create a second custom config, define yet another value for `params.value`, and layer it on top as well, that value will be used:
 
-```bash
-nextflow run example.nf -c custom.config,another_custom.config
-```
+    ```groovy title="another_custom.config"
+    params.value = "ciao"
+    ```
 
-```console title="Output"
+    ```bash
+    nextflow run example.nf -c custom.config,another_custom.config
+    ```
 
- N E X T F L O W   ~  version 24.10.5
+    ```console title="Output"
 
-Launching `example.nf` [tender_kay] DSL2 - revision: 573919f401
+    N E X T F L O W   ~  version 24.10.5
 
-ciao
-```
+    Launching `example.nf` [tender_kay] DSL2 - revision: 573919f401
+
+    ciao
+    ```
 
 Process directives, such as CPU and memory requirements, can be configured in a number of ways, and these too are evaluated in a particular order by Nextflow. Briefly, they are prioritised in the following order, from lowest to highest priority:
 
@@ -113,21 +115,23 @@ Process directives, such as CPU and memory requirements, can be configured in a 
 3. Process configuration settings within a matching `withLabel` selector
 4. Process configuration settings within a matching `withName` selector
 
-Consider the following `process {}` scope within a configuration file:
+!!! example "Example: Configuring default resources and using process selectors"
 
-```groovy
-process {
-    cpus = 4
-    withLabel: hello { cpus = 8 }
-    withName: bye { cpus = 16 }
-}
-```
+    Consider the following `process {}` scope within a configuration file:
 
-This configuration will have the following consequences:
+    ```groovy
+    process {
+        cpus = 4
+        withLabel: hello { cpus = 8 }
+        withName: bye { cpus = 16 }
+    }
+    ```
 
-- By default, all processes will be given 4 CPUs, unless their process definitions contain a `cpus` directive
-- Any process given the `label` "hello" will instead be given 8 CPUs
-- Any process named "bye" will be given 16 CPUs
+    This configuration will have the following consequences:
+
+    - By default, all processes will be given 4 CPUs, unless their process definitions contain a `cpus` directive
+    - Any process given the `label` "hello" will instead be given 8 CPUs
+    - Any process named "bye" will be given 16 CPUs
 
 ## 2.4.2 Optimising `nf-core/sarek` for our data
 
@@ -135,18 +139,18 @@ This configuration will have the following consequences:
 
     Start by creating a new blank file within the `config/` folder called `custom.config` and open it up in VSCode.
 
-    We have four distinct processes that we want to fine-tune:
+    We have eight distinct processes that we want to fine-tune:
 
     - `TABIX_BGZIPTABIX_INTERVAL_COMBINED`
-    - `GATK4_CREATESEQUENCEDICTIONARY`
-    - `GATK4_MARKDUPLICATES`
+    - `FASTQC`
+    - `FASTP`
+    - `BWAMEM1_MEM`
+    - `MERGE_BAM`
+    - `INDEX_MERGE_BAM`
+    - `BAM_TO_CRAM_MAPPING`
     - `MULTIQC`
 
-    From the trace file we received from the previous run of `sarek`, we saw that the processes were requesting between 1 and 6 CPUs, and up to 36 GB of memory for the `GATK4_CREATESEQUENCEDICTIONARY` process. For our example dataset, these values are overkill. Instead, we can get away with just 1 CPU and 1GB of memory for each task. We'll also give each task just 2 minutes to complete, which is more than enough time.
-
-    !!! note "Some tools are greedy!"
-
-        You might have seen from our previous trace file that the `GATK4_MARKDUPLICATES` processes used several gigabytes of memory each (as reported in the `rss` column). So how come we can give them just 1GB now? GATK is a bit of a greedy tool and will often expand to use up lots of memory if is allowed to, so the values reported by the trace file aren't necessarily representative of how much memory the tool really needs. Optimising resources for tools therefore requires a bit of trial and error.
+    From the trace file we received from the previous run of `sarek`, we saw that the processes were requesting between 1 and 24 CPUs, and up to 30 GB of memory for the `GATK4_CREATESEQUENCEDICTIONARY` process. For our example dataset, these values are overkill. Instead, we can get away with just 1-2 CPUs and 1-2GB of memory for each task. We'll also give each task just 2 minutes to complete, which is more than enough time.
 
     Let's translate this into the Nextflow configuration format:
 
@@ -159,13 +163,37 @@ This configuration will have the following consequences:
             time = 2.min
         }
 
-        withName: 'GATK4_CREATESEQUENCEDICTIONARY' {
+        withName: 'FASTQC' {
             cpus = 1
             memory = 1.GB
             time = 2.min
         }
 
-        withName: 'GATK4_MARKDUPLICATES' {
+        withName: 'FASTP' {
+            cpus = 2
+            memory = 2.GB
+            time = 2.min
+        }
+
+        withName: 'BWAMEM1_MEM' {
+            cpus = 1
+            memory = 1.GB
+            time = 2.min
+        }
+
+        withName: 'MERGE_BAM' {
+            cpus = 1
+            memory = 1.GB
+            time = 2.min
+        }
+
+        withName: 'INDEX_MERGE_BAM' {
+            cpus = 1
+            memory = 1.GB
+            time = 2.min
+        }
+
+        withName: 'BAM_TO_CRAM_MAPPING' {
             cpus = 1
             memory = 1.GB
             time = 2.min
@@ -180,7 +208,9 @@ This configuration will have the following consequences:
     }
     ```
 
-    Now that we have our custom configuration file created, we need to update our run script one final time and add the new file to the `-c` option:
+    We are now giving most tasks 1 CPU and 1 GB of memory, except for `FASTP`, which we'll give 2 CPUs and 2 GB of memory. When running `sarek`, giving `FASTP` multiple CPUs causes it to also split the FASTQ up, thereby implementing a scatter-gather pattern. So, in this case, we are scattering our input FASTQ into two chunks and aligning them individually.
+
+    Now that we have our custom configuration file created, we need to update our run script once again and add the new file to the `-c` option:
 
     === "Gadi (PBS)"
 
@@ -191,15 +221,17 @@ This configuration will have the following consequences:
         module load singularity
 
         nextflow run sarek/main.nf \
-            --input ../data/bams/samplesheet.csv \
+            --input ../data/fqs/samplesheet.single.csv \
             --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
             --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
-            --step markduplicates \
-            --skip_tools baserecalibrator,mosdepth,samtools \
+            --dict ../data/ref/Hg38.subsetchr20-22.dict \
+            --bwa ../data/ref \
+            --step mapping \
+            --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
             --outdir results \
             --no_intervals true \
             --igenomes_ignore true \
-            -c config/hpc.config,config/custom.config \
+            -c config/gadi.config,config/custom.config \
             -resume
         ```
 
@@ -212,15 +244,17 @@ This configuration will have the following consequences:
         module load singularity/4.1.0-slurm
 
         nextflow run sarek/main.nf \
-            --input ../data/bams/samplesheet.csv \
+            --input ../data/fqs/samplesheet.single.csv \
             --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
             --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
-            --step markduplicates \
-            --skip_tools baserecalibrator,mosdepth,samtools \
+            --dict ../data/ref/Hg38.subsetchr20-22.dict \
+            --bwa ../data/ref \
+            --step mapping \
+            --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
             --outdir results \
             --no_intervals true \
             --igenomes_ignore true \
-            -c config/hpc.config,config/custom.config \
+            -c config/setonix.config,config/custom.config \
             -resume
         ```
 
@@ -230,21 +264,80 @@ This configuration will have the following consequences:
     ./run.sh
     ```
 
-    After a few minutes, the pipeline should finish. We can again inspect the trace file from the run to see how much memory was requested and used:
+    After a few minutes, the pipeline should finish. We can again inspect the trace file from the run to see how much CPU and memory was requested and used:
 
     ```bash
     # Your trace file will have a unique name based on the time it was run
-    cat runInfo/trace-2025-11-18_14-15-16.txt
+    cut -f 1,6,8,10 runInfo/trace-2025-11-18_14-15-16.txt
     ```
 
     ```console title="Output"
-    name	status	exit	duration	realtime	cpus	%cpu	memory	%mem	rss
-    NFCORE_SAREK:PREPARE_INTERVALS:TABIX_BGZIPTABIX_INTERVAL_COMBINED (no_intervals)	COMPLETED	0	58s	0ms	1	40.9%	1 GB	0.0%	3.1 MB
-    NFCORE_SAREK:PREPARE_GENOME:GATK4_CREATESEQUENCEDICTIONARY (Hg38.subsetchr20-22.fasta)	COMPLETED	0	1m 12s	10s	1	78.7%	1 GB	0.2%	326.5 MB
-    NFCORE_SAREK:SAREK:BAM_MARKDUPLICATES:GATK4_MARKDUPLICATES (test_sample3)	COMPLETED	0	1m 9s	9s	1	93.6%	1 GB	0.5%	602.8 MB
-    NFCORE_SAREK:SAREK:BAM_MARKDUPLICATES:GATK4_MARKDUPLICATES (test_sample1)	COMPLETED	0	1m 19s	12s	1	81.9%	1 GB	0.4%	597.3 MB
-    NFCORE_SAREK:SAREK:BAM_MARKDUPLICATES:GATK4_MARKDUPLICATES (test_sample2)	COMPLETED	0	1m 11s	8s	1	94.5%	1 GB	0.5%	600.2 MB
-    NFCORE_SAREK:SAREK:MULTIQC	COMPLETED	0	1m 20s	8.7s	1	67.4%	1 GB	0.2%	420.9 MB
+    name    cpus    memory  peak_rss
+    NFCORE_SAREK:SAREK:FASTP (test_sample1-all)     2       2 GB    2 MB
+    NFCORE_SAREK:SAREK:FASTQC (test_sample1-all)    1       1 GB    218.8 MB
+    NFCORE_SAREK:PREPARE_INTERVALS:TABIX_BGZIPTABIX_INTERVAL_COMBINED (no_intervals)        1       1 GB    2 MB
+    NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  1       1 GB    2 MB
+    NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  1       1 GB    2 MB
+    NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:MERGE_BAM (test_sample1)    1       1 GB    4 MB
+    NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:INDEX_MERGE_BAM (test_sample1)      1       1 GB    2 MB
+    NFCORE_SAREK:SAREK:BAM_TO_CRAM_MAPPING (test_sample1)   1       1 GB    18.3 MB
+    NFCORE_SAREK:SAREK:MULTIQC      1       1 GB    686.6 MB
     ```
 
-    We can see that most of the processes are now using a larger proportion of the memory assigned to them (in this case 300-600MB out of a total 1GB), so we are much more efficiently using our resources. We could probably fine-tune this even further, but we'd get diminishing returns and risk some samples failing.
+    We can see that `FASTQC` and `MULTIQC` are now using a much larger proportion of the memory assigned to them (in this case 200-700MB out of a total 1GB), so we are much more efficiently using our resources for these jobs. The other jobs are still only using a few MB of memory to run, but for such small jobs there isn't too much utility in optimising these any further; from a cost perspective, these jobs are already under-utilising memory per CPU, so there would be no benefit to reducing the request furhter; and we could also start running into failures due to fluctuations in the memory used between runs.
+
+## 2.4.3 Scaling up to multiple samples
+
+    Now that we have a fully-functioning run script and custom configuration, we can try scaling up to multiple samples.
+
+    !!! example "Exercise: Run mapping on multiple samples"
+
+        Update the `run.sh` script to use the full samplesheet with all three test samples:
+
+        === "Gadi (PBS)"
+
+            ```bash title="run.sh"
+            #!/bin/bash
+
+            module load nextflow/24.04.5
+            module load singularity
+
+            nextflow run sarek/main.nf \
+                --input ../data/fqs/samplesheet.fq.csv \
+                --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
+                --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
+                --dict ../data/ref/Hg38.subsetchr20-22.dict \
+                --bwa ../data/ref \
+                --step mapping \
+                --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
+                --outdir results \
+                --no_intervals true \
+                --igenomes_ignore true \
+                -c config/gadi.config \
+                -resume
+            ```
+
+        === "Setonix (Slurm)"
+
+            ```bash title="run.sh"
+            #!/bin/bash
+
+            module load nextflow/24.10.0
+            module load singularity/4.1.0-slurm
+
+            nextflow run sarek/main.nf \
+                --input ../data/fqs/samplesheet.fq.csv \
+                --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
+                --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
+                --dict ../data/ref/Hg38.subsetchr20-22.dict \
+                --bwa ../data/ref \
+                --step mapping \
+                --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
+                --outdir results \
+                --no_intervals true \
+                --igenomes_ignore true \
+                -c config/setonix.config \
+                -resume
+            ```
+
+        Go ahead and re-run the script. The `-resume` flag will mean that the previously-run tasks for the first sample (`FASTQC`, `FASTP`, `BWAMEM1_MEM`, etc.) will not be re-run, but instead their outputs will be reused. Only the new samples will be run through these processes. `MULTIQC` will re-run at the end of the pipeline as it needs to summarise the results from all three samples.

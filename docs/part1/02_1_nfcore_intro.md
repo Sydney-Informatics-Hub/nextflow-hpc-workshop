@@ -128,21 +128,18 @@ Let's take a few minutes to explore the `sarek/` directory and understand the st
     nextflow.config
     nf-test.config
     README.md
-    singularity/
     subworkflows/
     tests/
     tower.yml
     workflows/
     ```
 
-    First, note that the `singularity/` directory isn't part of the `sarek` pipeline, but is instead something we created at the start of the day in our setup script. This holds the singularity images that we will be using later on.
-
-    Next, you'll see that there are quite a lot of files and folders. Some of these are simply housekeeping like the `LICENCE`, `CHANGELOG.md`, `CITATIONS.md`, and `CODE_OF_CONDUCT.md` files. The most important files and folders that we are interested in are described below:
+    You will see that there are quite a lot of files and folders. Some of these are simply housekeeping like the `LICENCE`, `CHANGELOG.md`, `CITATIONS.md`, and `CODE_OF_CONDUCT.md` files. The most important files and folders that we are interested in are described below:
 
     | File/folder | Description |
     | ----------- | ----------- |
-    | main.nf | This is the entry point to workflow and the actual script that needs to be run to execute the pipeline |
-    | workflows/ | This folder houses the main `sarek` workflow |
+    | main.nf | This is the entry point to workflow and the actual script that needs to be run to execute the pipeline. It is used primarily to define and initialise various parameters relevant to the pipeline. |
+    | workflows/ | This folder houses the actual `sarek` workflow, which is called from `main.nf` |
     | subworkflows/ | This folder houses smaller, self-contained, modular workflows that are called within the greater `sarek` pipeline |
     | modules/ | This houses Nextflow files that define individual processes. Breaking up your processes into modules like this is considered best practice. |
     | conf/ | This houses configuration files specific to various modules in the pipeline |
@@ -165,57 +162,69 @@ Let's take a few minutes to explore the `sarek/` directory and understand the st
 
     Any modules and sub-workflows that originated from the [nf-core GitHub repository](https://github.com/nf-core/modules) will be placed in the `nf-core` sub-folder, and typically represent common tools and workflows that are useful in many pipelines. The `local` sub-folders, on the other hand, are for processes that were developed specificially for the current pipeline.
 
+    ![](./figs/00_nfcore-structure.png)
+
 As you can see, nf-core pipelines can be quite complex. This is due to the attempt to heavily standardise and modularise these workflows. There are significant benefits to this, primarily in that it gives everyone a common template to work from and helps to break down the workflows into smaller, more manageable and maintainable chunks. However, it can also make it difficult to analyse and troubleshoot the code when developing them.
 
-!!! example "Exercise: review the configuration files"
+The configuration for `nf-core/sarek` is split up into many different files. The main configuration file, `nextflow.config`, is set up to:
 
-    Let's next have a look at the default configuration file: `nextflow.config`. Open it up in VSCode. You will see that it is quite long: 481 lines!
+- Define and set the defaults for various parameters, including input files and the reference genome.
+- Define several **profiles** that specify groups of settings important for various backends like docker, singularity, and conda. There are also several test profiles defined.
+- Import module-specific configuration files.
 
-    ![sarek nextflow.config preview](./figs/02_01_nextflow_config.png)
+One of the major configuration files that is importedby `nextflow.config` is `conf/base.config`. This file defines the default resources for processes, as well as resources that are applied to many processes at once with the `withLabel` and `withName` selectors:
 
-    At line 9, you will see a `params` section with numerous parameters being defined, along with default settings for each one.
+```groovy title="Default resource configuration in conf/base.config" linenums="11"
+process {
 
-    Further down, at line 142, there is a `profiles` section. Profiles are a convenient way for setting groups of related parameters and options for running a pipeline at once, and are selected at the command line with the `nextflow run -profile <profile_name> ...` syntax. For example, lines 182-191 define the `singularity` profile, which enables singularity and disables other, mutually-exclusive backends like docker and conda.
+    // TODO nf-core: Check the defaults for all processes
+    cpus   = { 1      * task.attempt }
+    memory = { 6.GB   * task.attempt }
+    time   = { 4.h    * task.attempt }
+```
 
-    ![sarek profile definitions](./figs/02_01_sarek_profiles.png)
+```groovy title="Specific resource configuration for FASTP in conf/base.config" linenums="66"
+withName: 'FASTP'{
+    cpus   = { 12   * task.attempt }
+    memory = { 4.GB * task.attempt }
+}
+```
 
-    Most of the rest of the `nextflow.config` file is dedicated to importing additional configuration files from the `conf/` folder; in this way, configurations are modularised like the pipeline itself, and help to break up the large set of parameters and options into more easily readable and maintainable chunks. We'll quickly take a look at one of these imported configuration files: on line 140, the `conf/base.config` file is imported, which defines a lot of the default resource requirements for the pipeline. In VSCode, open up `conf/base.config`:
+```groovy title="Resource configuration fo the 'process_medium' label in conf/base.config" linenums="42"
+withLabel:process_medium {
+    cpus   = { 6     * task.attempt }
+    memory = { 36.GB * task.attempt }
+    time   = { 8.h   * task.attempt }
+}
+```
 
-    ![sarek base config](./figs/02_01_sarek_base_config.png)
+This highlights the **layered** nature of Nextflow's configuration; initially, sensible default values for CPUs, memory, and walltime are defined, followed by more specific values for jobs that have different computational requirements, e.g. more CPUs but less memory for the `FASTP` process.
 
-    At the top, the file defines the default number of CPUs, amount of RAM, and wall time required by each process:
+!!! example "Advanced content: Configuring resources dynamically"
 
-    ```groovy linenums="11"
-    process {
+    Note the use of the curly braces and the `* task.attempt` in each line. This is an example of a **dynamically calculated resource**. Nextflow keeps track of how many times a given task has been attempted and stores it in the variable `task.attempt`; this can be used in case of a failure to increase the required resources on the next try. In this case, by default, jobs will be given 1 CPU, 6GB of memory, and 4h of walltime on the first try; on the second try, they will get 2 CPUs, 12GB of memory, and 8h of time. `conf/base.config` also sets `maxRetries = 1`, so this will only happen the one time, and failures won't cause an infinite loop of retries.
 
-        // TODO nf-core: Check the defaults for all processes
-        cpus   = { 1      * task.attempt }
-        memory = { 6.GB   * task.attempt }
-        time   = { 4.h    * task.attempt }
-    ```
+    !!! warning "The pros and cons of task.attempt"
 
-    Note the use of the curly braces and the `* task.attempt` in each line. This is an example of a **dynamically calculated resource**. Nextflow keeps track of how many times a given task has been attempted; this can be used in case of a failure to increase the required resources on the next try. In this case, by default, jobs will be given 1 CPU, 6GB of memory, and 4h of walltime on the first try; on the second try, they will get 2 CPUs, 12GB of memory, and 8h of time. Line 20 sets `maxRetries = 1`, so this will only happen the one time, and failures won't cause an infinite loop of retries.
+        While `task.attempt` can be very useful for re-trying a process with more resources when it fails, it is a somewhat crude method of doing so. Doubling your resources upon failure will also double the cost of running the job. Where possible, you should try to be more nuanced with such dynamic requests and identify during development which resources are the limiting factors for a process. You can also try different approaches to increasing a resource with each attempt, such as adding a small amount each time, rather than doubling:
 
-    Further down in the file, we see examples of overriding the default resources based on process names and labels. Nextflow processes can be specifically configured based on their name by using the `process.withName` scope. For example:
+        `memory = { 32.GB + 4.GB * task.attempt }`
 
-    ```groovy linenums="66"
-    withName: 'FASTP'{
-        cpus   = { 12   * task.attempt }
-        memory = { 4.GB * task.attempt }
-    }
-    ```
+        A more advanced method is to calculate the size of input files within the process definition and adjust the resources required accordingly:
 
-    This chunk of code specifies that the `FASTQC` process will get 12 CPUs and 4GB of memory (multiplied by the attempt number). This overrides the defaults defined at the top of the file. Since `time` isn't specified here, the default run time of 4 hours is kept the same.
+        ```groovy
+        process TEST {
 
-    The `process.withLabel` scope similarly lets us override parameters for any process that has a given label assigned to it. Labels are a Nextflow directive that can be applied to any process, and multiple labels can be applied to a single process. This is very useful for tasks that have very similar resource requirements: instead of individually specifying their resources with the `process.withName` scope, we can simply assign each process the same label, and then define the resources for that label. For example, any process that was labelled as `process_medium` will get 6 CPUs, 36GB memory, and 8h walltime:
+            // Get the input file size (in bytes) and add a 1 GB buffer
+            memory { x.size().B + 1.GB }
 
-    ```groovy linenums="42"
-    withLabel:process_medium {
-        cpus   = { 6     * task.attempt }
-        memory = { 36.GB * task.attempt }
-        time   = { 8.h   * task.attempt }
-    }
-    ```
+            input:
+            path x
+
+            ...
+
+        }
+        ```
 
 Now we have seen what a typical nf-core pipeline looks like, in the next section we will write a script to try and run it!
 

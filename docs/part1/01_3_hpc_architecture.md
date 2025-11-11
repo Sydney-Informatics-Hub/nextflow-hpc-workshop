@@ -126,7 +126,7 @@ To start getting familiar with working with the scheduler and submitting jobs, w
     READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
     mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-    singularity exec singularity/fastqc.sif \
+    singularity exec ../singularity/fastqc.sif \
     fastqc \
         --outdir "results/fastqc_${SAMPLE_ID}_logs" \
         --format fastq ${READS_1} ${READS_2}
@@ -144,13 +144,13 @@ To start getting familiar with working with the scheduler and submitting jobs, w
     READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
     mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-    singularity exec singularity/fastqc.sif \
+    singularity exec ../singularity/fastqc.sif \
     fastqc \
         --outdir "results/fastqc_${SAMPLE_ID}_logs" \
         --format fastq ${READS_1} ${READS_2}
     ```
 
-The script does a few things. First, it loads the `singularity` module; we'll need this to run the `fastqc` command when the job gets submitted to the compute node. Next, it defines a few bash variables that point to the input FASTQ data. It then creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`. And finally, it runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec singularity/fastqc.sif`. Note that we have already pre-loaded the `fastqc` singularity container image at `singularity/fastqc.sif`.
+The script does a few things. First, it loads the `singularity` module; we'll need this to run the `fastqc` command when the job gets submitted to the compute node. Next, it defines a few bash variables that point to the input FASTQ data. It then creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`. And finally, it runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec ../singularity/fastqc.sif`. Note that we have already pre-loaded the `fastqc` singularity container image at `../singularity/fastqc.sif`.
 
 This is everything we need to run the job; we just have to submit the script to the HPC scheduler. In doing so, we will provide the following details to the scheduler:
 
@@ -292,7 +292,7 @@ The above command is quite long, and would be a pain to write out every time you
         READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
         mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec singularity/fastqc.sif \
+        singularity exec ../singularity/fastqc.sif \
         fastqc \
             --outdir "results/fastqc_${SAMPLE_ID}_logs" \
             --format fastq ${READS_1} ${READS_2}
@@ -320,7 +320,7 @@ The above command is quite long, and would be a pain to write out every time you
         READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
         mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec singularity/fastqc.sif \
+        singularity exec ../singularity/fastqc.sif \
         fastqc \
             --outdir "results/fastqc_${SAMPLE_ID}_logs" \
             --format fastq ${READS_1} ${READS_2}

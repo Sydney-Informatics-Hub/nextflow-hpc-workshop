@@ -139,9 +139,29 @@ config/    README.md scripts/
     ./scripts/pull_sarek.slurm.sh
     ```
 
-This script will pull the `nf-core/sarek` code from GitHub that we will use in the second half of today's session, and will also pull all of the relevant files required to run it.
+This script will pull the `nf-core/sarek` code from GitHub that we will use in the second half of today's session.
 
-Once the script completes, our working directory is fully set up.
+Once the `sarek` pipeline has been pulled from GitHub, there is one more script to run.
+
+=== "Gadi (PBS)"
+
+    The `scripts/` directory contains another file called `setup_singularity.pbs.sh`. Go ahead and run this as well:
+
+    ```bash
+    ./scripts/setup_singularity.pbs.sh
+    ```
+
+=== "Setonix (Slurm)"
+
+    The `scripts/` directory contains another file called `setup_singularity.slurm.sh`. Go ahead and run this as well:
+
+    ```bash
+    ./scripts/setup_singularity.slurm.sh
+    ```
+
+This script will copy all of the singularity files required by our exercises today and tomorrow.
+
+Once the scripts have completed, our working directory is fully set up.
 
 As a final step, go to VSCode's "File" menu and select "Open Folder...". Enter the full path to the `part1` directory in the text box:
 
