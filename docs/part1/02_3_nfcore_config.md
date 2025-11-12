@@ -59,7 +59,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     We also want to set some limits to how many jobs can be submitted at once and how frequently they get submitted. These settings are important, because many large pipelines can create potentially hundreds of jobs that may overwhelm the system. Most HPCs will set a limit for how many jobs a user can submit at once, and your pipeline may fail if it tries to submit more than this limit.
 
-    For our purposes, we will keep our queued job limit to 30, and limit the number of jobs we can submit at once to 20 per minute. We will also tell Nextflow to request for status updates on our jobs once every 5 seconds.
+    For our purposes, we will keep our queued job limit to 30, and limit the number of jobs we can submit at once to 20 per minute. We will also tell Nextflow to request for status updates on our jobs once every 15 seconds.
 
     === "Gadi (PBS)"
 
@@ -71,8 +71,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
         ```
 
@@ -86,18 +86,18 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
         ```
 
     Now we have defined our executor and some relevant settings for it, we will need to tell Nextflow to actually use this new configuration file; by default, Nextflow will only use the `nextflow.config` file in the project directory, and will only load other configuration files when explicitly told to do so.
 
-    In the `run.sh` script, add the following highlighted line to the `nextflow run` command:
+    In the `run.sh` script, update the following highlighted lines by adding a ` \` to the end of the old command and adding the new configuration file with the `-c` option:
 
     === "Gadi (PBS)"
 
-        ```bash title="run.sh" linenums="1" hl_lines="17"
+        ```bash title="run.sh" linenums="1" hl_lines="16-17"
         #!/bin/bash
 
         module load nextflow/24.04.5
@@ -114,8 +114,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
             --outdir results \
             --no_intervals true \
             --igenomes_ignore true \
-            -c config/gadi.config \
-            -resume
+            -c config/gadi.config
         ```
 
     === "Setonix (Slurm)"
@@ -137,8 +136,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
             --outdir results \
             --no_intervals true \
             --igenomes_ignore true \
-            -c config/setonix.config \
-            -resume
+            -c config/setonix.config
         ```
 
     The new line adds the `-c <config>` option to the `nextflow run` command. We provide the path to our new configuration file which tells Nextflow to load it and merge it with the existing configuration set up by the `nextflow.config` file. Note that the settings in configuration files provided by the `-c` command will take precedence over those set in the `nextflow.config` file, so if any options are specified in both files, the setting in `config/gadi.config` or `config/setonix.config` will be used. We will explore layering configurations further in the next section of the workshop.
@@ -253,8 +251,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -273,8 +271,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -296,8 +294,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -317,8 +315,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -357,8 +355,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -380,8 +378,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -404,8 +402,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -434,8 +432,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -459,8 +457,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -491,8 +489,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -516,8 +514,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -544,8 +542,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -578,8 +576,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {

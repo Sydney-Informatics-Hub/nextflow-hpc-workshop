@@ -126,6 +126,17 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
     3. The executor used (`pbspro` or `slurm`)
     4. The process that was executed once, which means there is one task. The line starts with a unique hexadecimal value, and ends with the task completion information
 
+!!! warning "Note: We typically don't run nextflow on the login node"
+
+    We've made a point to avoid Nextflow running the individual processes on the login node, but we're still running `nextflow run` on the login node. This is OK for tiny workflows like this, and we're doing it this way for clarity and simplicity for the purposes of the workshop. However, there are a few reasons to avoid doing this:
+
+    1. While not a computationally-intensive process, the main Nextflow script is still a long-running job that uses up some login node resources.
+    2. Long-running jobs will get killed when you log out of the HPC, unless you use additional tools like `nohup`, `screen` or `tmux` to keep them running in the background. But, large HPC systems often have multiple login nodes that you will be randomly assigned to, and not all let you specify the exact one to connect to, meaning background jobs can get 'lost'.
+
+    Both Gadi and Setonix provide a solution to this. Gadi has a special service called [persistent sessions](https://opus.nci.org.au/spaces/Help/pages/241927941/Persistent+Sessions...) that let you create long-running jobs like Nextflow workflows, leave them running in the background (again, with tools like `screen` and `tmux`), disconnect, and reconnect at a later time to check up on their progress. Similarly, Setonix has [workflow nodes](https://pawsey.atlassian.net/wiki/spaces/US/pages/286097469/How+to+Run+Workflows+on+the+Workflow+Nodes).
+
+    When running your own real-world workflows, you will need to use these nodes to ensure you pipelines don't get killed and don't eat up valuable login node resources.
+
 ### Task directories and the `work/` folder
 
 When you run a Nextflow pipeline, it automatically creates a `work/` directory. This is where all computation happens behind the scenes.

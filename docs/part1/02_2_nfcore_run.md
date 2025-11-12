@@ -151,16 +151,13 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
     ```bash title="run.sh" linenums="14"
         --outdir results \
         --no_intervals true \
-        --igenomes_ignore true \
-        -resume
+        --igenomes_ignore true
     ```
 
     The `--no_intervals true` parameter tells `sarek` that we don't want to worry about splitting our data up into distinct genomic intervals. Intervals are a very useful feature for large datasets, as it lets us parallelise large genomic sequencing data into chunks that can be processed simultaneously - and takes advantage of the parallel nature of HPCs! However, in our very small example here, it would actually cause things to run slower by adding more jobs and waiting for them to start and finish.
 
     The next line, `--igenomes_ignore true` stops the pipeline from downloading some additional files from public databases; again, this can be useful in a proper run, but for our purposes it is more of a nuisance.
 
-    Finally, the `-resume` flag tells Nextflow to use the outputs of previously successful tasks where it is appropriate, rather than running them again every time we run the pipeline.
-    
     At the end, the `run.sh` script should look like the following:
 
     === "Gadi (PBS)"
@@ -181,8 +178,7 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
             --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
             --outdir results \
             --no_intervals true \
-            --igenomes_ignore true \
-            -resume
+            --igenomes_ignore true
         ```
 
     === "Setonix (Slurm)"
@@ -203,8 +199,7 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
             --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
             --outdir results \
             --no_intervals true \
-            --igenomes_ignore true \
-            -resume
+            --igenomes_ignore true
         ```
 
 ## 2.2.3 Not quite ready!
