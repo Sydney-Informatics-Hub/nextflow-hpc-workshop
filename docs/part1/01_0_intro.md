@@ -31,6 +31,52 @@ In the first part of this workshop, we will familarise ourselves with some found
 
 If you haven't already done so, follow the [setup instructions](../setup.md) to set up VSCode and log in to your assigned HPC with the user account and password provided to you.
 
+!!! warning "Make sure you are logged in with your training account credentials!"
+
+    If you have previously had an account on either Gadi or Setonix, it is possible that you may have those accounts set up in you SSH configuration file (by default this is `~/.ssh/config`, where `~` is your home directory). In this case, you might have duplicate entries for your HPC hostname, causing you to accidentally log in with those credentials rather than your provided training credentials.
+
+    When you log in to your assigned account and access the terminal in VSCode (`Ctrl + J` (Windows/Linux) / `Cmd + J` (Mac)), you should see your username in the prompt:
+
+    === "Gadi (PBS)"
+        
+        ```console
+        [aaa000@gadi-login-01 ~]$
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```console
+        cou001@setonix-01:~> 
+        ```
+
+    If you see a different user name, close the window and try re-connecting to the HPC. If you find that you keep logging in to the wrong user account, you can also try editing your SSH config file and removing the old account details:
+
+    === "Gadi (PBS)"
+        
+        ```title="Duplicate entries for gadi.nci.org.au in ~/.ssh/config"
+        Host gadi.nci.org.au
+            HostName gadi.nci.org.au
+            User aaa000
+
+        Host gadi.nci.org.au
+            HostName gadi.nci.org.au
+            User oldusername
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```title="Duplicate entries for setonix.pawsey.org.au in ~/.ssh/config"
+        Host setonix.pawsey.org.au
+            HostName setonix.pawsey.org.au
+            User cou001
+
+        Host setonix.pawsey.org.au
+            HostName setonix.pawsey.org.au
+            User oldusername
+        ```
+
+    If you see duplicate entires like this, delete the old entry and try logging in again.
+
 For this workshop, we will be working within the scratch storage system of the HPCs. Navigate to the scratch space for the workshop project.
 
 1. In the left-hand side bar, click on the "Explorer" tab (an icon that looks like two sheets of paper).
@@ -70,88 +116,25 @@ ls
 You should see a few folders and files inside here:
 
 ```console title="Output"
-data/      part1/     part2/     README.md
+README.md        part1/           setup.gadi.sh
+data/            part2/           setup.setonix.sh
 ```
 
-Next, look at the contents of the `data/` folder. You will see a few sub-folders containing the data we will be using for this workshop:
-
-```bash
-ls data/
-```
-
-```console title="Output"
-bams/ fqs/  ref/
-```
-
-If you navigate into the `ref/` subfolder, you will see a file called `Hg38.subsetchr20-22.tar.gz`. This is a compressed archive of our reference genome data that we will need for this workshop:
-
-```bash
-cd data/ref/
-ls
-```
-
-```console title="Output"
-Hg38.subsetchr20-22.tar.gz
-```
-
-Run the following command to extract the reference data:
-
-```bash
-tar -xzf Hg38.subsetchr20-22.tar.gz
-```
-
-After a few seconds, the command should complete, and if you list the directory contents again, you will see the full reference data present in the folder:
-
-```bash
-ls
-```
-
-```console title="Output"
-Hg38.subsetchr20-22.dict      Hg38.subsetchr20-22.fasta.ann Hg38.subsetchr20-22.fasta.pac
-Hg38.subsetchr20-22.fasta     Hg38.subsetchr20-22.fasta.bwt Hg38.subsetchr20-22.fasta.sa
-Hg38.subsetchr20-22.fasta.amb Hg38.subsetchr20-22.fasta.fai Hg38.subsetchr20-22.tar.gz
-```
-
-Navigate back up and into the `part1/` directory:
-
-```bash
-cd ../../part1/
-ls
-```
-
-```console title="Output"
-config/    README.md scripts/
-```
-
-Within the `scripts/` directory is an executable file called `pull_sarek.sh`. Go ahead and run this from the current directory:
-
-```bash
-./scripts/pull_sarek.sh
-```
-
-This script will pull the `nf-core/sarek` code from GitHub that we will use in the second half of today's session.
-
-Once the `sarek` pipeline has been pulled from GitHub, there is one more script to run.
+There are two scripts in the main directory: `setup.gadi.sh` and `setup.setonix.sh`, one for each HPC we are using in this workshop. These scripts set up the workspace and pull a few additional git repositories that we will be using throughout the workshop. Go ahead and run the relevant script for your system:
 
 === "Gadi (PBS)"
 
-    The `scripts/` directory contains another file called `setup_singularity.pbs.sh`. Go ahead and run this as well:
-
     ```bash
-    ./scripts/setup_singularity.pbs.sh
+    ./setup.gadi.sh
     ```
 
 === "Setonix (Slurm)"
 
-    The `scripts/` directory contains another file called `setup_singularity.slurm.sh`. Go ahead and run this as well:
-
     ```bash
-    ./scripts/setup_singularity.slurm.sh
+    ./setup.setonix.sh
     ```
 
-This script will copy all of the singularity files required by our exercises today and tomorrow.
-
-Once the scripts have completed, our working directory is fully set up.
+Once completed, the script will print out "Setup complete" to confirm everything has successfully been set up.
 
 As a final step, go to VSCode's "File" menu and select "Open Folder...". Enter the full path to the `part1` directory in the text box:
 
