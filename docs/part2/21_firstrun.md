@@ -16,59 +16,56 @@
     on login nodes.
 
     **However, this should not be done when developing and running your own
-    pipelines.**
+    pipelines on HPC systems.**
 
-    The main Nextflow job is a low-resource and long running job that schedules
-    the individual tasks to be run on a compute node. Running this on the login
-    node will result in your pipeline being killed prematurely.
+    When developing or running workflows with real data, you should follow your HPC's
+    recommended approach for long-running, low-resource jobs. This may include being
+    used in conjunction with terminal multiplexers such as `tmux` or `screen` within
+    these sessions to keep the job running when you log out or connection drops out.
+    
+    Alternatively, starting your Nextflow run within an **interactive job** is useful for testing and debugging 
+    workflows directly on compute nodes. If you instead schedule your Nextflow
+    job, ensure that your `run.sh` script includes the appropriate scheduler options.
 
-    TODO: WHY they get killed (e.g. max 30 mins, 4 GB). Throttling is standard
-    on any HPC
+    See the recommendations on running the head job for [Gadi](https://opus.nci.org.au/spaces/Help/pages/241926895/Persistent+Sessions) and [Setonix](https://pawsey.atlassian.net/wiki/spaces/US/pages/286097469/How+to+Run+Workflows+on+the+Workflow+Nodes)
 
-    When testing and developing your own pipeline, it is recommended to refer
-    back to the HPC's recommended way of running long-running, low-memory head
-    jobs. These could include persistent sessions with tools like `tmux` or
-    `screen` or dedicated workflow nodes.
+    Finally, be aware of **network access on compute nodes**. If Nextflow cannot locate
+    the container, it will attempt to pull from an online repository. This occurs during run time and will fail if the compute node does not have internet access. In these cases, you can pre-pull containers, or schedule the head job on a queue/partition with network access.
 
-    TODO: include links to these
+Before launching a full-scale analysis, it is important to optimise your pipeline using a small, representative subset of your data. This helps you:
 
-    Alternatively, interactive jobs are a useful option to run and debug your
-    workflows interactively. If you need to schedule your Nextflow job, **the
-    scheduling options should be included in the `run.sh` script**.
+- Estimate the computational requirements of each step
+- Configure your pipeline
+- Avoid wasting service units (SUs) during development
 
-    The last consideration should be whether the compute nodes have network
-    access or not. When using containers, it is like that these need to be pulled
-    when the process runs on a compute node. If compute nodes do not have network
-    access, this will fail to pull the container, and consequently the pipeline.
+In this case, we’re starting with the reads from a single individual (NA1287) from the cohort. This is a good proxy for the other two samples as they all contain the same subset of chromosomes (20, 21, and 22).
 
-We start with running things on a single sample. This should be representative
-of all the data we run i.e. we will be processing chromosomes 20, 21, 22.
+Once we’re confident everything works as intended, we can scale up to run on the full dataset.
 
-Then, continue to optimise and configure the pipeline with a single sample so
-that you can conserve SUs as you develop and benchmark.
+In real-world pipelines, throughput becomes a key consideration of how you choose to configure pipelines. It’s not just about how fast one sample runs, but how many samples can be processed concurrently. A well-optimised configuration ensures that your pipeline makes efficient use of the HPC resources available, reducing queue times, avoiding bottlenecks, and increasing the number of samples processed per unit time.
 
-Run the pipeline with bare bones configuration. Specify the correct `profile`
-for your system.
+The first step is to get our **custom pipeline running on the HPC**. This means running the head job so that the tasks are scheduled properly on the compute nodes.
 
 !!! example "Exercises"
 
-    First load the nextflow and singularity modules, following the same method we learnt yesterday:
+    First load the Nextflow and singularity modules, following the same method we learnt yesterday:
 
-    === "Gadi"
+    === "Gadi (PBS)"
         ```bash
         module load nextflow/24.04.5 singularity
         ```
-    === "Setonix"
+
+    === "Setonix (Slurm)"
         ```bash
         module load nextflow/24.10.0 singularity/4.1.0-slurm
         ```
 
-    Then execute your nextflow command:
+    Then execute your Nextflow command. **(Note: Your run may fail here - that's ok for this step!)**
 
     === "Gadi (PBS)"
 
         ```bash
-        nextflow run main.nf -profile pbspro
+        nextflow run main.nf -profile pbspro --pbspro_account vp91
         ```
 
         ??? abstract "Output"
@@ -103,7 +100,7 @@ for your system.
     === "Setonix (Slurm)"
 
         ```bash
-        nextflow run main.nf -profile slurm
+        nextflow run main.nf -profile slurm --slurm_account courses01
         ```
 
         ??? abstract "Output"
@@ -126,22 +123,44 @@ for your system.
             Succeeded   : 8
             ```
 
+The jobs were scheduled to run on the compute nodes successfully, indicated by the `executor > [name]`. However, the pipeline may have failed!
+
+!!! question "Zoom react!"
+
+    1. If your job has finished succesfully, react "Yes" on Zoom, and "No" if it returned an error
+    2. Similarly, react "Yes" if you are running it on Gadi, and "No" for Setonix
+
+A common reason that pipelines fail on HPC is due to improper configuration. Here, we have yet to configure the resources properly, to the default allocation from the system's queue or partition were used.
+
+Let's explore what resources were actually used and compare them to what was allocated, by inspecting the logs and system job information using the methods from Part 1.
+
+We will use the respective job scheduler introspection tools to observe the resources used on both both systems.
+
 !!! example "Exercises"
 
-    Find the `GENOTYPE` job id from `.nextflow.log`
+    Find the Job ID of the failed or completed `GENOTYPE` process in your `.nextflow.log`:
 
     ```bash
-    grep GENOTYPE .nextflow.log
+    grep GENOTYPE .nextflow.log | grep jobId
     ```
 
-    Then, view the resources used vs. allocated:
+    The output should look something like:
+    ```console
+    Nov-11 12:26:17.249 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [PBSPRO] submitted process GENOTYPE (1) > jobId: 154278383.gadi-pbs; workDir: /scratch/ad78/fj9712/nextflow-on-hpc-materials/part2/work/0b/465f7eacfa500698687ff12df65060
+    Nov-11 12:27:47.144 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobI d: 154278383.gadi-pbs; id: 5; name: GENOTYPE (1); status: COMPLETED; exit: 0; error: -; workDir: /scratch/a d78/fj9712/nextflow-on-hpc-materials/part2/work/0b/465f7eacfa500698687ff12df65060 started: 1762828007140; exited: 2025-11-11T02:27:35Z; ]
+    ```
+
+    The value we need in this example is `154278383` - this corresponds to the job id that was scheduled.
+
+    Then, inspect the job resource usage. There are different tools used for different schedulers.
 
     === "Gadi (PBS)"
+
+        Use `qstat -xf <job_id>` from above to query the job info and display the top 12 lines (we only need the resource usage information).
 
         ```bash
         qstat -xf <job_id> | head -12
         ```
-
         ```console
         Job Id: 154038474.gadi-pbs
         Job_Name = nf-GENOTYPE_1
@@ -159,10 +178,11 @@ for your system.
 
     === "Setonix (Slurm)"
 
+        Use `sacct` with formatting to view key stats elated to resource usage:
+
         ```bash
         sacct -j <job_id> --format=JobID,JobName,User,CPUTime,TotalCPU,NCPUS,Elapsed,State,MaxRSS,MaxVMSize,Partition
         ```
-
         ```console
         JobID           JobName      User    CPUTime   TotalCPU      NCPUS    Elapsed      State     MaxRSS  MaxVMSize  Partition
         ------------ ---------- --------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
@@ -171,36 +191,53 @@ for your system.
         34325657.ex+     extern             00:01:50  00:00.003          2   00:00:55  COMPLETED          0          0
         ```
 
-Note that we have not configured the resources, and default were used for that
-queue, or partition:
+In both cases, we can observe that the jobs were assigned the following resources:
 
-|         | CPU   | MEM    |
-| ------- | ----- | ------ |
-| Gadi    | 1     | 512 MB |
-| Setonix | 2 x 1 | 1.6 GB |
+|         | CPU   | Memory   |
+| ------- | ----- | -------- |
+| Gadi    | 1     | 512 MB   |
+| Setonix | 2     | 1.6 GB   |
 
-There are pros (you don't get allocated too many resources) and cons (the job
-fails). This both indicates that we need to be intentional how we need to be
-explicit with configuration, and being aware of differences to note when
-running on different systems.
+This is why **explicit resource configuration** is important. Even though the pipeline technically ran (or failed), these defaults are unsuitable for real data.
 
-- With "real" larger data sets, this will likely fail
+In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory. Let's explicitly configure that in the next step.
 
-TODO brief explanation on "2 x 1" for Setonix - virtual cores for the partition
-
-We know that 2GB memory will be sufficient for this process. Let's explicitly
-configure that.
-
-## 2.1.2 Building a custom config
+## 2.1.2 Why do we have so many configuration files?
 
 ![](figs/00_custom_configs.png)
 
-[TODO] update figure. Add explanation for why you're building out the pipeline like this
+[TODO] update figure
 
-!!! tip
+We use three different configuration files to keep our Nextflow workflows reproducible, modular, and portable across different systems. 
+This setup not only ensures consistency when running the same pipeline in different environments, but also allows reuse of configuration components across multiple pipelines.
 
-    Note that different values are provided based on the specific, low-cost
-    queue and partition.
+Each configuration file serves a distinct purpose:
+
+- `nextflow.config` is the main configuration file that defines the core behaviour of the workflow itself (e.g. main.nf). It includes parameters (params), and references to profiles. To maintain reproducibility, **this file should not be modified during system-specific tuning**. It should only change if the underlying workflow logic changes - that is, what gets run.
+
+- `conf/pbspro.config` and `conf/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS or SLURM), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting.
+
+- `conf/custom.config` is where we bring it all together. This file contains system-specific process settings such as CPU and memory requests. It links what the workflow does with how it runs on a specific system. When developing or adapting a custom pipeline for an HPC environment, this is typically where most tuning happens to fit the specific node architecture, queue constraints, and resource optimisation.
+
+While this structure is a useful starting point, it is not the only way to structure your configuration. The nf-core community have their own set of standards with some presets for some instutitions (there are ones available for Gadi and Setonix!). However, it is important to double check that these configs are suitable and optimal for your purposes. For more information see [nf-core/configs](https://nf-co.re/configs/)
+
+## 2.1.3 Minimal configuration to run on HPC
+
+We will continue to get the pipeline running with a minimum viable configuration. This serves as a baseline to confirm everything is working correctly (such as scheduling, containers are enabled, etc.), prior to any fine tuning. We want to ensure that:
+
+- Jobs are being scheduled correctly
+- All process tasks and the pipeline complete successfully
+
+TODO scheduler specific configs, instead of system-specifc configs.
+
+!!! note
+
+    In Part 2 we will use the same queues and partitions:
+
+    - The `normalbw` queue on Gadi
+    - The `work` partition on Pawsey
+
+    These are low-cost queues suitable for general compute jobs.
 
     Here we assign the average number of cores available based on memory
     requirements. This will be revisited in the resourcing section.
@@ -219,8 +256,8 @@ configure that.
 
         ```groovy title='custom.config'
         process {
-            cpu = 4 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
-            memory = 2.GB
+            cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6 OR 9.1
+            memory = 4.GB
         }
         ```
 
@@ -228,16 +265,18 @@ configure that.
 
         ```groovy title='custom.config'
         process {
-            cpu = 2 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
             memory = 2.GB
         }
         ```
 
-Next, add the additional options from part 1.
+Recall from Part 1 that Nextflow's executor is the part of the workflow engine that talks to the computing environment (whether it's a laptop or HPC). When running on a shared HPC system, these settings are important to include so you don't overwhelm the system (`queueSize`, `pollInterval`, `queueStatInterval`), or generate duplicated files in excess (`cache`, `stageInMode`), or run things in the wrong place (`` options).
 
-- Institutional config
+TODO queue rate limit
 
 !!! example "Exercises"
+
+    TODO: Instructions to edit
 
     === "Gadi (PBS)"
 
@@ -245,13 +284,14 @@ Next, add the additional options from part 1.
         singularity {
             enabled = true
             autoMounts = true
-            cacheDir = "$projectDir/singularity"
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
 
         executor {
-            queueSize = 300
-            pollInterval = '30 sec'
-            queueStatInterval = '30 sec'
+            // For high-throughput jobs, these values should be higher
+            queueSize = 30
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
         }
 
         process {
@@ -271,13 +311,14 @@ Next, add the additional options from part 1.
         singularity {
             enabled = true
             autoMounts = true
-            cacheDir = "$projectDir/singularity"
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
 
         executor {
-            queueSize = 300
-            pollInterval = '30 sec'
-            queueStatInterval = '30 sec'
+            // For high-throughput jobs, these values should be higher
+            queueSize = 30
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
         }
 
         process {
@@ -290,12 +331,7 @@ Next, add the additional options from part 1.
         }
         ```
 
-Nextflow is powerful for HPC vs. serially running pbs/slurm scripts.
-
-Next we will wrap this up in a run script.
-
-We will add the new custom configs using `-c`. This will be revisited in
-resourcing.
+While we could manually run the Nextflow command each time, using a run script can reduce human error (missing a flag, typos) and is easier to re-run. This is especially useful in the testing and benchmarking stages.
 
 !!! example "Exercises"
 
@@ -315,7 +351,7 @@ resourcing.
         module load nextflow/24.04.5
         module load singularity
 
-        nextflow run main.nf -profile pbspro -c conf/custom.config
+        nextflow run main.nf -profile pbspro --pbspro_account vp91 -c conf/custom.config
         ```
 
     === "Setonix (Slurm)"
@@ -326,7 +362,7 @@ resourcing.
         module load nextflow/24.10.0
         module load singularity/4.1.0-slurm
 
-        nextflow run main.nf -profile slurm -c conf/custom.config
+        nextflow run main.nf -profile slurm --slurm_account courses01 -c conf/custom.config
         ```
 
     3. Save the run.sh file (Windows: Ctrl+S, macOS: Cmd+S).
@@ -344,6 +380,7 @@ resourcing.
         On both Gadi and Setonix, both runs should now be successful and
         executed on the respective scheduler.
 
+
         === "Gadi (PBS)"
 
             ```bash
@@ -354,7 +391,7 @@ resourcing.
 
             Launching `main.nf` [determined_picasso] DSL2 - revision: 5e5c4f57e0
 
-            executor >  <scheduler> (6)
+            executor >  pbspro (6)
             [7b/16f7c2] FASTQC (fastqc on NA12877) | 1 of 1 ✔
             [ec/5fd924] ALIGN (1)                  | 1 of 1 ✔
             [17/803fe5] GENOTYPE (1)               | 1 of 1 ✔
@@ -388,6 +425,6 @@ resourcing.
             Succeeded   : 6
             ```
 
-qstat/sacct each job is inefficient, especially with pipelines with more
-processes, and running on more than one sample. The next section will introduce
-how this can be automated using Nextflow's in-built monitoring features.
+## Summary
+
+You’ve now built the scaffolding needed to begin fine-tuning your resource requests and exploring monitoring and optimisation techniques. In the next section, we'll start measuring actual resource usage and configuring processes more precisely for efficient use for the specific HPC system.

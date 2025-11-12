@@ -1,67 +1,36 @@
-# Overcoming performance bottlenecks with HPC optimisation strategies
+# Optimising for HPC
 
 !!! info "Learning objectives"
 
     - Understand how HPC resource requests affect job scheduling and performance
     - Identify process and configuration bottlenecks in trace reports
-    
-## Overview on optimisation strategies
 
-Recap on Part 1.4 Work smarter, not harder
+## Overview
 
-Key strategies:
+Our configuraiton is now functional! The workflow runs sucessfully with scheduler-specific settings and outputs useful trace files showing resource usage.
 
-1. Right sizing: match resources to what the process actually uses (CPU, memory, time)
-2. Multi-threading
-3. Multi-processing
+Now, we shift focus from making it run, to making it efficient.
 
-## Identifying process and configuration bottlenecks
+TODO: figure benchmarking progress e.g. it runs, it runs well, it scales
 
-!!! example "Exercise"
+Optimisation depends on several key factors, such as:
 
-    TODO Review trace files, identify processes that are hitting close to 100% CPU/memory usage.
+- The specific HPC system (e.g. queue limits, node sizes, charging model)
+- The characteristics of your data (e.g. file size, sample number, processing steps)
+- The type of processes your workflow runs (e.g. high-memory)
 
-    TODO Any tools that support multithreading? Is it always good to apply?
+The same principles can be applied to any HPC environment, but in this workshop, we’ll focus on NCI Gadi and Pawsey Setonix as practical examples.
 
-    TODO Review workflow structure - can anything be broken down and run in parallel?
+Each HPC has different hardware and node architectures and it is up to the user to understand how their workflow fits within the limits. 
 
-!!! question "Poll"
+Small inefficiencies for small, or infreuqently-run workflows may not make a large impact. Many users run nf-core pipelines on HPCs successfully, using the default configuration.
+     
+However, if you are running high-throughput workflows that consume a considerable amount of service units, it is worthwhile to benchmark and optimise your workflow for the HPC you will run it on.
 
-    ??? info "Tips"
+## 
 
-        - [MultiQC: Optimising run time](https://docs.seqera.io/multiqc/getting_started/config#optimising-run-time)
-        https://www.nextflow.io/docs/latest/reports.html#trace-fields
+For the remainder of Part 2 we will apply the various optimisation strategies introduced in Part 1. We'll build off the benchmarks to configure our custom pipeline for HPC.
 
-    Have a blank table, ask attendees to put "dots" on processes that can be
-    optimised? PollEv interactive image with regions
-
-    | Process        | Resourcing       | Multi-threading | Multi-processing (scatter-gather) |
-    | -------------- | ---------------- | --------------- | --------------------------------- |
-    | FASTQC         | Yes              | Yes - but..     | Yes                               |
-    | ALIGN          | Yes              | Yes             | Yes                               |
-    | MULTIQC        | Yes              | No              | No                                |
-
-
-### The false positive and negative answers
-
-Discuss!
-
-### The No's
-
-- MULTIQC cannot be split
-    - 1. Biology: Variants need to be called across all samples in the cohort in the scaling up section
-    - 2. Technical: MULTIQC needs all the files to compile the report
-- Multi-threading is not supported by all tools.
-
-### The Yes'
-
-- Resourcing is extremely important when working on HPC:
-    1. it fits the requirements for the system infrastructure(queues or partitions)
-    2. so you jobs are scheduled quickly
-    3. so your jobs are run efficiently and request the right number of resources
-
-- For the ones that support multi-threading... should we..? how many threads?
-
-- FASTQC-ALIGN can be scattered, done in parallel (leveraging HPC resources, lowering walltime), and brought back together
-
-These three points will be revisited in the next sections sequentially.
+1. Right resourcing for each process, to fit your assigned HPC
+2. multithreading bwa mem
+3. Multiprocessing alignment using scatter-gather patterns in Nextflow
