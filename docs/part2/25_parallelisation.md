@@ -15,14 +15,11 @@ Part 1.4 introduced parallelisation approaches with the goal of speeding up your
 
 ![](figs/00_benchmark_at_scale_theme.png)
 
-- Trade-offs between time x SUs x efficiency
-- recall we do not always want to provide more threads/split
+Recall that parallelisation requires benchmarking to find the right balance between the walltime, CPU efficiency, and service unit consumption. We want to avoid over-parallelising our workflows.
 
 ## Multithreading `bwa mem`
 
-In Part 1, we explored multithreading using `bwa mem`, and saw that more threads can reduce runtime, with diminishing returns observed at 6 and 8 threads. Now that we know `bwa mem` performs best at 4 threds, we will formalise this into the pipeline configuration.
-
-TODO: recall more threads requires more cores requested.
+Recall that multithreading spawns `n` tasks for a single job on the one data set. In Part 1, we explored multithreading using `bwa mem`, and saw that more threads can reduce runtime, with diminishing returns observed at 6 and 8 threads. Now that we know `bwa mem` performs best at 4 threads, we will formalise this into the pipeline configuration.
 
 !!! question "Discussion"
 
@@ -31,8 +28,7 @@ TODO: recall more threads requires more cores requested.
 
     Things to consider include:
 
-    - Which `.config` file would you want to use? (Consider whether this is
-    something that needs to be portable across systems vs. system-specific)
+    - Which `.config` file would you want to use? (`nextflow.config` - workflow-specific, system-agnostic; `custom.config` - workflow-specific, system-specific)
     - How much extra memory can you utilise if required? (Consider the effective RAM/CPUs
     proportion of the queue or partition)
     - Based on the CPU and memory requirements, which directive would be
@@ -97,21 +93,32 @@ TODO: recall more threads requires more cores requested.
     ./run.sh
     ```
 
-## Multi-processing with 'scatter-gather'
+Remember to review the tools in your workflow to see if they support multithreading.
 
-TODO: Figure from part 1
+## Multi-processing with 'scatter-gather'
 
 ![](figs/00_Scatter_gather_fig.png)
 
-We will parallelise the alignment step. Scatter-gathering in this step is widely
+One of the core benefits of running bioinformatics workflows on HPC is access to better processing power and hardware. By leveraging multi-processing on HPC, if configured correctly, we can run many jobs simultaneously and reduce the overall walltime required to run the workflow. 
+
+Recall that multi-processing runs multiple, indpendent jobs. 
+
+!!! note
+
+    - Need to consider the biology - can this be split
+    - What can't be split - e.g. structural variant calling
+
+We will multi-process the alignment step. Scatter-gathering in this step is widely
 used as whole genome data is large, time-consuming, and the reads can be mapped
 to a reference independently of each other.
 
-This requires including the pre-defined modules:
+This requires replacing several modules:
 
-- `SPLIT_FASTQ`
-- `ALIGN_CHUNK`
-- `MERGE_BAMS`
+| Before | After       | Notes                                                            |
+| ------ | ----------- | ---------------------------------------------------------------- |
+| -      | SPLIT_FASTQ | Takes the paired-end FASTQ files and splits them into `n` chunks |
+| ALIGN  | ALIGN_CHUNK | Align reads to the reference genome                              |
+| -      | MERGE_BAMS  | Combines aligned BAM files into a single one                     | 
 
 !!! example "Exercise"
 
@@ -140,6 +147,10 @@ This requires including the pre-defined modules:
     include { STATS } from './modules/stats'
     ```
 
+!!! note
+
+    Recall that modules are useful to keep things modular and avoid cluttering our main.nf! It is far easier to swap out the module imports, in comparison to deleting the process definitions or commenting them out. We may want to reuse our revert back to our original processes too. Modules, combined with the workflow definition and groovy operators are what allow applying scatter-gather patterns (multiprocessing) to your Nextflow with ease.
+
 Next, we need to update our workflow scope to facilitate the scatter-gather.
 
 TODO: Note some key parts. e.g. getting chunk_id, .groupTuple().map{}.MERGE_BAMS()
@@ -148,6 +159,8 @@ to merge again correctly by sample.
 !!! example "Exercise"
 
     _Before:_
+
+    TODO: untruncated for easier copying
 
     ```groovy title="main.nf" hl_lines="7-11"
     workflow {
@@ -235,8 +248,7 @@ to merge again correctly by sample.
 
     How you implement the scatter-gather pattern in Nextflow will be highly dependent on your workflow structure, and input and output files. [Nextflow patterns](https://nextflow-io.github.io/patterns/) provides examples of commonly used patterns that support a range of different needs, such as splitting text and CSV files, and collecting outputs multiple outputs into a single file or groups.
 
-Lastly, a new parameter, `params.split_n` was defined in workflow logic. This needs to be
-added.
+Lastly, a new parameter, `params.split_n` was defined in workflow logic. This determines how many "chunks" each paired-end FASTQ will be split into, and importantly determines how many processes will run in parallel.
 
 !!! example "Exercise"
 
@@ -368,19 +380,31 @@ Lastly, add the `process_small` labels to each of the modules:
 
     This change optimises performance for large datasets by leveraging parallel processing.
 
+!!! What about multiple samples?
+
+    You have now applied a multi-processing approach on a single-sample. As processes are run independently of each other this does not always need to apply to single sample that is split. Running multiple samples is also a form of multi-processing and comes shipped with Nextflow's dataflow model. Once your pipeline is configured to run well with a single sample, [queue channels](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part1/05_inputs/#queue-channels) make adding additional samples relatively easy.
+
+    We will revisit this in the next section.
+
 ## A note on dynamic resourcing
 
-Since our data is small, this will not make an impact. These are nice strategies
-when you need to process data that require unequal CPUs, memory, or walltime.
-For example, if we were to process all the chromosomes which considerably vary
-in size.
+Since our data is small and similar-sized, we can apply the same resource configurations within the same process and it will still run successfully. However, it is common that we need to **run the same process with input data of widely variying sizes**. For example, if we were to run variant calling with reads from the whole genome, human chromosome 1 is nearly 4x larger than chromosome 20.
 
-Two approaches:
+One option may be to configure the resource usage so it runs on the largest data (chr. 1). This will ensure all processes run sucessfully at the cost of **vastly underutilising the resources you have requested** on the smaller data:
+
+- Excess resources will be reserved other users could access
+- Your jobs stay in queue for longer
+- You can be charged more SUs than required
+
+The alternative would be to take a dynamic approach when you need to process data that require unequal CPUs, memory, or walltime.
+
+Two approaches - 
 
 | Directive | Closure Example             | Attempt 1 (Initial Run) | Attempt 2 (First Retry) |
 | --------- | --------------------------- | ----------------------- | ----------------------- |
 | `memory`  | `{ 2.GB * task.attempt }`   | 2 GB                    | 4 GB                    |
 | `time`    | `{ 1.hour * task.attempt }` | 1 hour                  | 2 hours                 |
+
 
 ```groovy
 process {
@@ -391,7 +415,7 @@ process {
 ```
 
 The same concepts of configuring resources will apply here, aim to fit the
-appropriate queues/partitions.
+appropriate queues/partitions, but will require addtional benchmarking. This is worthwhile if developing and running high-throughput workflows.
 
 ## Summary
 

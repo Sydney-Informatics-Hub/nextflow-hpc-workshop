@@ -85,7 +85,7 @@ TODO: check these values are correct i.e. 230GB/256, not 230GB/128 normalbw
     
 The reason for these values come down to requesting a balanced amount of memory, relative to your CPU.
 
-TODO: Add node CPU/MEM figure from part 1
+![](../part1/figs/00_smarter_multi_diagram.png)
 
 Most HPC systems allocate jobs to nodes based on both CPU and memory requests, where each queue or partition is associated with a specific type of node with: 
 
@@ -122,6 +122,10 @@ Let's find the effective usable memory per CPU for the `normalbw` queue on Gadi,
             - 4.6GB x 2 CPU required = 9.2
             - 9 GB memory
 
+            OR
+
+            - 18 GB to fit 256GB nodes
+
     === "Setonix (Slurm)"
 
         Review [partitions](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix)
@@ -140,15 +144,17 @@ Let’s look at the trade-offs.
 If we request:
 
 - 2 CPUs and 4 GB memory (on the Setonix `work` partition), this takes advantage of all the memory you’re entitled to, but `FASTQC` won't actually use that memory. So you're not getting any extra performance and may lengthen the time in queue.
-- 2 CPUs and 2 GB memory, on the other hand, still gives `FASTQC` enough to run, and because you're requesting less RAM, your job may be scheduled faster - as it can fit into more available nodes.
+- 2 CPUs and 1 GB memory, on the other hand, still gives `FASTQC` enough to run, and because you're requesting less RAM, your job may be scheduled faster - as it can fit into more available nodes. This is more memory efficient too.
 
-TODO: What's the decision?
+We will proceed with the 2 CPUs 1 GB memory option for `FASTQC`
+
+TODO Gadi equivalent
 
 ### Configuring `withLabel` and `withName`
 
 TODO: More explanation
 
-Now that we have decided the process, we will configure it.
+Now that we have decided how many process, we will configure it. As we are tuning for a specific HPC this will go into the `custom.config`.
 
 Processes that require the same resources are recommended to be
 configured using the `withLabel` process directive. This let's you
@@ -169,11 +175,13 @@ the ones we intentionally want with the default settings.
 
     === "Gadi (PBS)"
 
+        **TODO: Revise**
+
         ```groovy title="conf/custom.config"
         process {
             // Default configuration for all processes
-            cpus = 4 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
-            memory = 2.GB
+            cpus = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
+            memory = 4.GB
 
             // Configuration for processes labelled as "process_small"
             withLabel: 'process_small' {
@@ -363,14 +371,14 @@ You should see no major changes in memory usage or efficiency - but now your scr
 
 !!! info "Writing efficient custom scripts"
 
-Beyond resource flags, it's also important to write efficient code inside your processes. If you're writing custom scripts (e.g. in Python or R):
+    Beyond resource flags, it's also important to write efficient code inside your processes. If you're writing custom scripts (e.g. in Python or R):
 
-- Prefer vectorised operations over loops
-- Use optimised libraries like `numpy` for Python scripts
-- Consider parallelisation strategies (e.g. OpenMP)
-- Avoid holding large objects in memory unnecessarily
+    - Prefer vectorised operations over loops
+    - Use optimised libraries like `numpy` for Python scripts
+    - Consider parallelisation strategies (e.g. OpenMP)
+    - Avoid holding large objects in memory unnecessarily
 
-While these are outside the scope of this workshop, they’re essential if you want to scale up workflows on HPC.
+    While these are outside the scope of this workshop, they’re essential if you want to scale up workflows on HPC.
 
 ## Summary
 
