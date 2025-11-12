@@ -228,10 +228,16 @@ We will continue to get the pipeline running with a minimum viable configuration
 - Jobs are being scheduled correctly
 - All process tasks and the pipeline complete successfully
 
+TODO scheduler specific configs, instead of system-specifc configs.
+
 !!! note
 
-    Note that different values are provided based on the specific, low-cost
-    queue and partition.
+    In Part 2 we will use the same queues and partitions:
+
+    - The `normalbw` queue on Gadi
+    - The `work` partition on Pawsey
+
+    These are low-cost queues suitable for general compute jobs.
 
     Here we assign the average number of cores available based on memory
     requirements. This will be revisited in the resourcing section.
@@ -264,8 +270,9 @@ We will continue to get the pipeline running with a minimum viable configuration
         }
         ```
 
-Recall from Part 1 that Nextflow's executor is the part of the workflow engine that talks to the computing environment (whether it's a laptop or HPC).
-It controls how jobs are submitted, monitored, and cleaned up. When running on a shared HPC system, these settings are important to include so you don't overwhelm the system, or generate duplicated files in excess, or run things in the wrong place.
+Recall from Part 1 that Nextflow's executor is the part of the workflow engine that talks to the computing environment (whether it's a laptop or HPC). When running on a shared HPC system, these settings are important to include so you don't overwhelm the system (`queueSize`, `pollInterval`, `queueStatInterval`), or generate duplicated files in excess (`cache`, `stageInMode`), or run things in the wrong place (`` options).
+
+TODO queue rate limit
 
 !!! example "Exercises"
 
@@ -281,8 +288,8 @@ It controls how jobs are submitted, monitored, and cleaned up. When running on a
         }
 
         executor {
-            queueSize = 30
             // For high-throughput jobs, these values should be higher
+            queueSize = 30
             pollInterval = '5 sec'
             queueStatInterval = '5 sec'
         }
@@ -323,13 +330,6 @@ It controls how jobs are submitted, monitored, and cleaned up. When running on a
             clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
         }
         ```
-
-Nextflow is powerful for HPC vs. serially running pbs/slurm scripts.
-
-Next we will wrap this up in a run script.
-
-We will add the new custom configs using `-c`. 
-
 
 While we could manually run the Nextflow command each time, using a run script can reduce human error (missing a flag, typos) and is easier to re-run. This is especially useful in the testing and benchmarking stages.
 
