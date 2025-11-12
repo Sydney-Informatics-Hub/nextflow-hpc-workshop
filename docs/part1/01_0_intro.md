@@ -123,21 +123,11 @@ ls
 config/    README.md scripts/
 ```
 
-=== "Gadi (PBS)"
+Within the `scripts/` directory is an executable file called `pull_sarek.sh`. Go ahead and run this from the current directory:
 
-    Within the `scripts/` directory is an executable file called `pull_sarek.pbs.sh`. Go ahead and run this from the current directory:
-
-    ```bash
-    ./scripts/pull_sarek.pbs.sh
-    ```
-
-=== "Setonix (Slurm)"
-
-    Within the `scripts/` directory is an executable file called `pull_sarek.slurm.sh`. Go ahead and run this from the current directory:
-
-    ```bash
-    ./scripts/pull_sarek.slurm.sh
-    ```
+```bash
+./scripts/pull_sarek.sh
+```
 
 This script will pull the `nf-core/sarek` code from GitHub that we will use in the second half of today's session.
 
