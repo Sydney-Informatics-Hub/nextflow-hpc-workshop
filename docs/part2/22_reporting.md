@@ -4,7 +4,6 @@
 
     - Inspect workflow performance and resource usage utilising Nextflow's
     in-built monitoring features
-    - Recognise the importance of benchmarking to request appropriate resources (e.g. CPUs, memory, time) when scheduling jobs on HPC
     - Know which fields help determine efficiency and HPC resource usage
     - Compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
 
@@ -43,15 +42,15 @@ Once we get the workflow running without error on the scheduler, where can we op
     ```
 
     You should see something like this:
-    ```
-    name status exit duration realtime cpus %cpu memory %mem rss
-    FASTQC (fastqc on NA12877) COMPLETED 0 29.7s 4s 1 138.4% 2 GB 0.1% 251 MB
-    ALIGN (1) COMPLETED 0 29.7s 1s 1 99.8% 2 GB 0.0% 95 MB
-    GENOTYPE (1) COMPLETED 0 59.9s 30s 1 163.0% 2 GB 0.5% 1.3 GB
-    JOINT_GENOTYPE (1) COMPLETED 0 29.5s 7s 1 230.2% 2 GB 0.1% 400.9 MB
-    STATS (1) COMPLETED 0 29.8s 0ms 1 117.5% 2 GB 0.0% 2 MB
-    MULTIQC COMPLETED 0 29.9s 4.3s 1 79.0% 2 GB 0.0% 83.3 MB
-    ```
+
+    | name                       | status     | exit | duration | realtime | cpus | %cpu   | memory | %mem | rss     |
+    |----------------------------|------------|------|----------|----------|------|--------|--------|------|---------|
+    | FASTQC (fastqc on NA12877) | COMPLETED  | 0    | 29.7s    | 4s       | 1    | 138.4% | 2 GB   | 0.1% | 251 MB  |
+    | ALIGN (1)                  | COMPLETED  | 0    | 29.7s    | 1s       | 1    | 99.8%  | 2 GB   | 0.0% | 95 MB   |
+    | GENOTYPE (1)               | COMPLETED  | 0    | 59.9s    | 30s      | 1    | 163.0% | 2 GB   | 0.5% | 1.3 GB  |
+    | JOINT_GENOTYPE (1)         | COMPLETED  | 0    | 29.5s    | 7s       | 1    | 230.2% | 2 GB   | 0.1% | 400.9 MB|
+    | STATS (1)                  | COMPLETED  | 0    | 29.8s    | 0ms      | 1    | 117.5% | 2 GB   | 0.0% | 2 MB    |
+    | MULTIQC                    | COMPLETED  | 0    | 29.9s    | 4.3s     | 1    | 79.0%  | 2 GB   | 0.0% | 83.3 MB |
 
 Explain why we want these fields - tie in with benchmarking and HPC resource
 allocation.

@@ -44,7 +44,7 @@ Once we’re confident everything works as intended, we can scale up to run on t
 
 In real-world pipelines, throughput becomes a key consideration of how you choose to configure pipelines. It’s not just about how fast one sample runs, but how many samples can be processed concurrently. A well-optimised configuration ensures that your pipeline makes efficient use of the HPC resources available, reducing queue times, avoiding bottlenecks, and increasing the number of samples processed per unit time.
 
-The first step is to get our starting pipeline working on the HPC. This means running the head job to schedule the processes and executed on compute nodes.
+The first step is to get our **custom pipeline running on the HPC**. This means running the head job so that the tasks are scheduled properly on the compute nodes.
 
 !!! example "Exercises"
 
@@ -223,8 +223,10 @@ While this structure is a useful starting point, it is not the only way to struc
 
 ## 2.1.3 Minimal configuration to run on HPC
 
-We will continue to get the pipeline running with a minimum viable configuration. This serves as a baseline to confirm everything is working correctly (such as scheduling, containers are enabled, etc.), prior to fine tuning.
+We will continue to get the pipeline running with a minimum viable configuration. This serves as a baseline to confirm everything is working correctly (such as scheduling, containers are enabled, etc.), prior to any fine tuning. We want to ensure that:
 
+- Jobs are being scheduled correctly
+- All process tasks and the pipeline complete successfully
 
 !!! note
 
@@ -262,16 +264,13 @@ We will continue to get the pipeline running with a minimum viable configuration
         }
         ```
 
-Next, add the additional options from part 1.
-
-- Institutional configs
-- What's the point of this? So you don't overload the queue
-- The queue
-- Highlight lines
+Recall from Part 1 that Nextflow's executor is the part of the workflow engine that talks to the computing environment (whether it's a laptop or HPC).
+It controls how jobs are submitted, monitored, and cleaned up. When running on a shared HPC system, these settings are important to include so you don't overwhelm the system, or generate duplicated files in excess, or run things in the wrong place.
 
 !!! example "Exercises"
 
-    Next, edit either
+    TODO: Instructions to edit
+
     === "Gadi (PBS)"
 
         ```groovy title="conf/pbspro.config"
@@ -379,7 +378,7 @@ While we could manually run the Nextflow command each time, using a run script c
     ??? note "Results"
 
         On both Gadi and Setonix, both runs should now be successful and
-        executed on the respective scheduler.configuration, then tune.
+        executed on the respective scheduler.
 
 
         === "Gadi (PBS)"
