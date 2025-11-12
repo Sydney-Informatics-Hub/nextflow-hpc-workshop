@@ -10,6 +10,7 @@
 
 Once we get the workflow running without error on the scheduler, where can we optimise.
 
+
 !!! example "Exercise"
 
     Enable all trace reporting available, with default/minimal settings.
@@ -22,9 +23,10 @@ Once we get the workflow running without error on the scheduler, where can we op
          enabled = true
          overwrite = false
          file = "./runInfo/trace-${params.trace_timestamp}.txt"
-         fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,rss'
+         fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss'
      }
 
+    // TODO: ADD path to runInfo
     timeline { enabled = true }
     report { enabled = true }
     dag { enabled = true }
@@ -51,13 +53,13 @@ Once we get the workflow running without error on the scheduler, where can we op
     MULTIQC COMPLETED 0 29.9s 4.3s 1 79.0% 2 GB 0.0% 83.3 MB
     ```
 
-Look at the report.html. Create a more informative trace file: https://www.nextflow.io/docs/latest/reports.html#trace-file.
-
 Explain why we want these fields - tie in with benchmarking and HPC resource
 allocation.
 
 Addition of timestamp and overwrite = false - helps with benchmarking when you
-need to compare settings before vs. after e.g. optimisation
+need to compare settings e.g. before vs. after configuration.
+
+All saved into it's own folder for neatness
 
 ## Customising the trace file
 
@@ -65,8 +67,6 @@ Currently, the trace file reports on the resources used per task. However,
 when a tasks errors or produces an unexpected result, it is recommended to
 view the work directory, or view the job run information with `qstat` or
 `sacct`.
-
-and select ones that are not yet included. Things such as the `workDir`bb
 
 !!! example "Exercise"
 
@@ -85,7 +85,7 @@ and select ones that are not yet included. Things such as the `workDir`bb
             enabled = true
             overwrite = false
             file = "./runInfo/trace-${params.trace_timestamp}.txt"
-            fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,rss,workdir,native_id'
+            fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss,workdir,native_id'
         }
         ```
 
@@ -95,6 +95,8 @@ and select ones that are not yet included. Things such as the `workDir`bb
     ```
 
     5. View the newly generate trace file under the `runInfo/` folder
+
+    _Bonus: feel free to include several different fields and re-run your pipeline. However, ensure the fields between `name` through to `peak_rss` are included before proceeding to the next lessons._
 
 These added fields help you track down the scheduler job and work directories
 for debugging.

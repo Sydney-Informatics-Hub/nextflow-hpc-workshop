@@ -134,19 +134,29 @@ A common reason that pipelines fail on HPC is due to improper configuration. Her
 
 Let's explore what resources were actually used and compare them to what was allocated, by inspecting the logs and system job information using the methods from Part 1.
 
+We will use the respective job scheduler introspection tools to observe the resources used on both both systems.
+
 !!! example "Exercises"
 
     Find the Job ID of the failed or completed `GENOTYPE` process in your `.nextflow.log`:
 
     ```bash
-    grep GENOTYPE .nextflow.log
+    grep GENOTYPE .nextflow.log | grep jobId
     ```
 
-    Then, inspect the job resource usage:
+    The output should look something like:
+    ```console
+    Nov-11 12:26:17.249 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [PBSPRO] submitted process GENOTYPE (1) > jobId: 154278383.gadi-pbs; workDir: /scratch/ad78/fj9712/nextflow-on-hpc-materials/part2/work/0b/465f7eacfa500698687ff12df65060
+    Nov-11 12:27:47.144 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobI d: 154278383.gadi-pbs; id: 5; name: GENOTYPE (1); status: COMPLETED; exit: 0; error: -; workDir: /scratch/a d78/fj9712/nextflow-on-hpc-materials/part2/work/0b/465f7eacfa500698687ff12df65060 started: 1762828007140; exited: 2025-11-11T02:27:35Z; ]
+    ```
+
+    The value we need in this example is `154278383` - this corresponds to the job id that was scheduled.
+
+    Then, inspect the job resource usage. There are different tools used for different schedulers.
 
     === "Gadi (PBS)"
 
-        Use `qstat -xf <job_id>` to query the job info and display the top 12 lines (there is no relevant information beyond the 12th line for this exercise).
+        Use `qstat -xf <job_id>` from above to query the job info and display the top 12 lines (we only need the resource usage information).
 
         ```bash
         qstat -xf <job_id> | head -12
@@ -168,7 +178,7 @@ Let's explore what resources were actually used and compare them to what was all
 
     === "Setonix (Slurm)"
 
-        Use `sacct` with formatting to view key stats:
+        Use `sacct` with formatting to view key stats elated to resource usage:
 
         ```bash
         sacct -j <job_id> --format=JobID,JobName,User,CPUTime,TotalCPU,NCPUS,Elapsed,State,MaxRSS,MaxVMSize,Partition
@@ -192,13 +202,31 @@ This is why **explicit resource configuration** is important. Even though the pi
 
 In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory. Let's explicitly configure that in the next step.
 
-## 2.1.2 Building a custom config
+## 2.1.2 Why do we have so many configuration files?
 
 ![](figs/00_custom_configs.png)
 
-[TODO] update figure. Add explanation for why you're building out the pipeline like this
+[TODO] update figure
 
-!!! tip
+We use three different configuration files to keep our Nextflow workflows reproducible, modular, and portable across different systems. 
+This setup not only ensures consistency when running the same pipeline in different environments, but also allows reuse of configuration components across multiple pipelines.
+
+Each configuration file serves a distinct purpose:
+
+- `nextflow.config` is the main configuration file that defines the core behaviour of the workflow itself (e.g. main.nf). It includes parameters (params), and references to profiles. To maintain reproducibility, **this file should not be modified during system-specific tuning**. It should only change if the underlying workflow logic changes - that is, what gets run.
+
+- `conf/pbspro.config` and `conf/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS or SLURM), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting.
+
+- `conf/custom.config` is where we bring it all together. This file contains system-specific process settings such as CPU and memory requests. It links what the workflow does with how it runs on a specific system. When developing or adapting a custom pipeline for an HPC environment, this is typically where most tuning happens to fit the specific node architecture, queue constraints, and resource optimisation.
+
+While this structure is a useful starting point, it is not the only way to structure your configuration. The nf-core community have their own set of standards with some presets for some instutitions (there are ones available for Gadi and Setonix!). However, it is important to double check that these configs are suitable and optimal for your purposes. For more information see [nf-core/configs](https://nf-co.re/configs/)
+
+## 2.1.3 Minimal configuration to run on HPC
+
+We will continue to get the pipeline running with a minimum viable configuration. This serves as a baseline to confirm everything is working correctly (such as scheduling, containers are enabled, etc.), prior to fine tuning.
+
+
+!!! note
 
     Note that different values are provided based on the specific, low-cost
     queue and partition.
@@ -220,8 +248,8 @@ In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory
 
         ```groovy title='custom.config'
         process {
-            cpu = 4 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
-            memory = 2.GB
+            cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6 OR 9.1
+            memory = 4.GB
         }
         ```
 
@@ -229,30 +257,35 @@ In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory
 
         ```groovy title='custom.config'
         process {
-            cpu = 2 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
             memory = 2.GB
         }
         ```
 
 Next, add the additional options from part 1.
 
-- Institutional config
+- Institutional configs
+- What's the point of this? So you don't overload the queue
+- The queue
+- Highlight lines
 
 !!! example "Exercises"
 
+    Next, edit either
     === "Gadi (PBS)"
 
         ```groovy title="conf/pbspro.config"
         singularity {
             enabled = true
             autoMounts = true
-            cacheDir = "$projectDir/singularity"
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
 
         executor {
-            queueSize = 300
-            pollInterval = '30 sec'
-            queueStatInterval = '30 sec'
+            queueSize = 30
+            // For high-throughput jobs, these values should be higher
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
         }
 
         process {
@@ -272,13 +305,14 @@ Next, add the additional options from part 1.
         singularity {
             enabled = true
             autoMounts = true
-            cacheDir = "$projectDir/singularity"
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
 
         executor {
-            queueSize = 300
-            pollInterval = '30 sec'
-            queueStatInterval = '30 sec'
+            // For high-throughput jobs, these values should be higher
+            queueSize = 30
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
         }
 
         process {
@@ -295,8 +329,10 @@ Nextflow is powerful for HPC vs. serially running pbs/slurm scripts.
 
 Next we will wrap this up in a run script.
 
-We will add the new custom configs using `-c`. This will be revisited in
-resourcing.
+We will add the new custom configs using `-c`. 
+
+
+While we could manually run the Nextflow command each time, using a run script can reduce human error (missing a flag, typos) and is easier to re-run. This is especially useful in the testing and benchmarking stages.
 
 !!! example "Exercises"
 
@@ -343,7 +379,8 @@ resourcing.
     ??? note "Results"
 
         On both Gadi and Setonix, both runs should now be successful and
-        executed on the respective scheduler.
+        executed on the respective scheduler.configuration, then tune.
+
 
         === "Gadi (PBS)"
 
@@ -355,7 +392,7 @@ resourcing.
 
             Launching `main.nf` [determined_picasso] DSL2 - revision: 5e5c4f57e0
 
-            executor >  <scheduler> (6)
+            executor >  pbspro (6)
             [7b/16f7c2] FASTQC (fastqc on NA12877) | 1 of 1 ✔
             [ec/5fd924] ALIGN (1)                  | 1 of 1 ✔
             [17/803fe5] GENOTYPE (1)               | 1 of 1 ✔
@@ -389,6 +426,6 @@ resourcing.
             Succeeded   : 6
             ```
 
-qstat/sacct each job is inefficient, especially with pipelines with more
-processes, and running on more than one sample. The next section will introduce
-how this can be automated using Nextflow's in-built monitoring features.
+## Summary
+
+You’ve now built the scaffolding needed to begin fine-tuning your resource requests and exploring monitoring and optimisation techniques. In the next section, we'll start measuring actual resource usage and configuring processes more precisely for efficient use for the specific HPC system.
