@@ -59,7 +59,7 @@ This demonstrates another form of parallelisation, by sample.
         [82/38ccb6] SPLIT_FASTQ (split fastqs for NA12877) [100%] 3 of 3 ✔
         [e2/7a1203] ALIGN_CHUNK (2)                        [100%] 9 of 9 ✔
         [48/38ee62] MERGE_BAMS (3)                         [100%] 3 of 3 ✔
-        [28/88ea07] GENOTYPE (1)                           [100%] 1 of 1 ✔
+        [28/88ea07] GENOTYPE (1)                           [100%] 3 of 3 ✔
         [31/bff8ce] JOINT_GENOTYPE (1)                     [100%] 1 of 1 ✔
         [e0/2769b4] STATS (1)                              [100%] 1 of 1 ✔
         [de/544e91] MULTIQC                                [100%] 1 of 1 ✔
@@ -81,7 +81,7 @@ This demonstrates another form of parallelisation, by sample.
         [f0/fadc47] SPLIT_FASTQ (split fastqs for NA12878) [100%] 3 of 3 ✔
         [74/bced2a] ALIGN_CHUNK (6)                        [100%] 9 of 9 ✔
         [84/1bd560] MERGE_BAMS (1)                         [100%] 3 of 3 ✔
-        [2f/2d96be] GENOTYPE (1)                           [100%] 1 of 1 ✔
+        [2f/2d96be] GENOTYPE (1)                           [100%] 3 of 3 ✔
         [b8/f88205] JOINT_GENOTYPE (1)                     [100%] 1 of 1 ✔
         [6e/165917] STATS (1)                              [100%] 1 of 1 ✔
         [65/432772] MULTIQC                                [100%] 1 of 1 ✔
