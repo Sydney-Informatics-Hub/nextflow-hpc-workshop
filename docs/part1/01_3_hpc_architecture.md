@@ -30,194 +30,42 @@ Because queues are mapped to distinct sets of compute nodes, requesting the righ
 
 Queue names and limits differ across infrastructure providers but some common examples include:
 
-| Queue type        | Description                           | Typical limits                                         |
-| ----------------- | ------------------------------------- | ------------------------------------------------------ |
-| Normal/work       | Default queue for most batch jobs     | Moderate walltime (e.g. 24–48 h), general-purpose CPUs |
-| Express/short     | Prioritised for rapid turnaround      | Small jobs, short walltime                             |
-| Large/high memory | For jobs requiring many CPUs or nodes | Long walltime, higher resource requests                |
-| GPU               | Access to GPU-enabled nodes           | GPU-specific workloads only                            |
+| Queue type        | Description                             | Typical limits                                           |
+| ----------------- | --------------------------------------- | -------------------------------------------------------- |
+| Normal/work       | Default queue for most batch jobs       | Moderate walltime (e.g. 24–48 h), general-purpose CPUs   |
+| Express/short     | Prioritised for rapid turnaround        | Small jobs, short walltime                               |
+| Large/high memory | For jobs requiring many CPUs or nodes   | Long walltime, higher resource requests                  |
+| Copy              | For copying data to and from the system | Low CPU and RAM availability, moderate walltime (10-48h) |
+| GPU               | Access to GPU-enabled nodes             | GPU-specific workloads only                              |
 
 For details about queue limits and scheduling policies on systems used today, see:
 
 - [Setonix (Slurm) – Running Jobs on Setonix (Pawsey)](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix)
 - [Gadi (PBS Pro) – Queue Limits (NCI)](https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits)
 
-!!! example "Exercise: Where are my Jobs running? - Login vs compute nodes"
+### Internet access on compute nodes
 
-    First, run the `hostname` command where you're working from; this is the login node, and its name varies depending on the infrastructure provider.
+Often, a workflow may need access to resources on the internet, such as Singularity container images and large reference databases. This can become an issue on HPCs, as some systems restrict internet access on the compute nodes. While on Setonix, all compute nodes are given internet access and can be used for downloading such resources, on Gadi, most of the compute nodes are kept offline; instead, only the compute nodes that make up the `copyq` queue are allowed to access the internet. Furthermore, this queue has a few important constraints, primarily that it only allows single CPU jobs and a maximum walltime of 10 hours. As such, when designing your workflows, you need to make sure you are working within these constraints.
 
-    === "Gadi (PBS)"
+As a general rule of thumb, it is always best to have as much as possible of your workflow's input data pre-downloaded, as in any case, downloading data from the internet can be a major bottleneck. Where possible, running your workflow 'offline' is best practice.
 
-        ```bash
-        hostname
-        ```
+!!! warning "Mind your Qs"
 
-        You will see the name of the node you ran your command on
+    Make sure you are using the right queue for the right job! Requesting the wrong queue can lead to long wait times due to other jobs getting higher priority, or to failures or outright rejection from the scheduler due to invalid resource requests. Always **consult the documentation** specific to your system before designing, configuring, and running your workflow.
 
-        ```console
-        gadi-login-05.gadi.nci.org.au
-        ```
-        
-        Gadi uses descriptive hostnames that include the infrastructure name (gadi-login-XX).
+    Later on in this workshop, we will see some simple examples of how we can **dynamically** request the queue for Nextflow processes based on the resources they require.
 
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        hostname
-        ```
-        You will see the name of the node you ran your command on
-
-        ```console
-        setonix-01
-        ```
-        
-        Setonix opts for simpler hostnames, often just setonix-XX.
-
-    Next, we'll submit a simple job to the scheduler to run the same command on a compute node. Different HPCs have distinct sets of commands for submitting, monitoring, and managing jobs, so it is important to know the relevant commands for your system:
-
-    === "Gadi (PBS)"
-
-        On Gadi, you submit jobs to the cluster with the `qsub` command. Let's try submitting the `hostname` command to Gadi's queue:
-
-        ```bash
-        echo hostname | qsub
-        ```
-
-        PBS will return a job ID like:
-
-        ```console
-        123456.gadi-pbs
-        ```
-
-    === "Setonix (Slurm)"
-
-        On Setonix, you submit jobs to the cluster with the `sbatch` command. Let's try submitting the `hostname` command to Setonix's queue:
-
-        ```bash
-        sbatch --wrap="hostname"
-        ```
-
-        Slurm will return a message containing the job ID like:
-
-        ```console
-        Submitted batch job 123456
-        ```
-
-    Once the job finishes, check the output file to confirm it ran on a compute node. Node names will differ from login nodes and vary by infrastructure.
-
-    === "Gadi (PBS)"
-
-        ```bash
-        cat STDIN.o123456
-        ```
-
-        ```console
-        gadi-cpu-clx-0534.gadi.nci.org.au
-
-        ======================================================================================
-                    Resource Usage on 2025-11-03 11:54:04:
-        Job Id:             123456.gadi-pbs
-        Project:            [project_id]
-        Exit Status:        0
-        Service Units:      0.00
-        NCPUs Requested:    1                      NCPUs Used: 1
-                                                CPU Time Used: 00:00:00
-        Memory Requested:   500.0MB               Memory Used: 7.09MB
-        Walltime requested: 00:01:00            Walltime Used: 00:00:01
-        JobFS requested:    100.0MB                JobFS used: 0B
-        ======================================================================================
-        ```
-
-        Note: On PBS systems like Gadi, a job file is automatically generated with detailed resource usage information and appended to the end of the job output file. This is not common on Slurm systems.
-
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        cat slurm-123456.out
-        ```
-
-        ```console
-        nid002024
-        ```
-
-        Slurm does not generate a detailed job file by default, only a basic output file unless configured otherwise.
-
-
-    This confirms that compute jobs are executed on separate compute nodes, not the login nodes.
+Remember to **always consult the documentation** specific to your HPC before writing and running workflows!
 
 ## Shared storage
 
 All nodes are connected to a shared parallel filesystem. This is a large, high-speed storage system where input data, reference files and workflow outputs are kept. Because it is shared across all users, it enables collaborative research and scalable workflows. However, it also introduces constraints around file organisation and performance, which is why workflows must be careful about how they read and write data here.
 
-!!! example "Exercise: Hello from the other side - shared filesystems"
-
-    Both login and compute nodes share the same file systems (e.g., `/scratch`).
-    You can demonstrate this by writing to a file from the login node and then appending to it from a compute node.
-
-    First, on the **login node**, create a simple file:
-
-    ```bash
-    echo "hello from " $(hostname) > ./shared_storage_system.txt
-    cat shared_storage_system.txt
-    ```
-
-    ```console
-    hello from gadi-login-05.gadi.nci.org.au
-    ```
-
-    This created a file in the current directory (./shared_storage_system.txt) and wrote the hostname of the login node into it.
-
-    Next, submit a job that appends a new line from the compute node:
-
-    === "Gadi (PBS)"
-
-        ```bash
-        echo "echo 'hello from' \$(hostname) >> $(pwd)/shared_storage_system.txt" | qsub
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        sbatch --wrap="echo 'hello from' \$(hostname) >> ./shared_storage_system.txt"
-        ```
-
-    This submitted a job to a compute node, which appended its own hostname to the same file.
-
-    After the job completes, check the contents of the file again:
-
-    === "Gadi (PBS)"
-
-        ```bash
-        cat shared_storage_system.txt
-        ```
-
-        ```console
-        hello from gadi-login-05.gadi.nci.org.au
-        hello from gadi-cpu-clx-0134.gadi.nci.org.au
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        cat shared_storage_system.txt
-        ```
-
-        ```console
-        hello from setonix-01
-        hello from nid002041
-        ```
-
-    The first entry in the file reflects the login node’s hostname, while the second entry corresponds to the compute node on which the job ran. Repeating the job may produce a different compute node name. This demonstrates that both login and compute nodes can access and modify the same file, confirming that they share a common storage system.
-
 !!! warning "Overwriting Files in Shared Filesystems"
 
     Because the filesystem is shared, multiple jobs or users writing to the same file, especially if it has a common name, can accidentally overwrite each other’s data or cause [race conditions](https://en.wikipedia.org/wiki/Race_condition).
 
-    In the example above, we safely added a line to a file using a method that appends without deleting what's already there.
-
-    However, in real workflows, most tools and scripts write to files in a way that replaces the entire file. On shared systems like /scratch, where many users and jobs access the same space, this can lead to conflicts or data loss.
+    Most tools and scripts write to files in a way that replaces the entire file. On shared systems like /scratch, where many users and jobs access the same space, this can lead to conflicts or data loss.
 
     It’s good practice to:
 
@@ -264,68 +112,47 @@ Schedulers like PBS Pro and Slurm use queues to group jobs that share similar re
 
 ## Submitting scripts to the scheduler
 
-We've already seen how we can submit a very simple command to the HPC scheduler, but how do we submit more complex scripts and explicitly request the resources they require?
+To start getting familiar with working with the scheduler and submitting jobs, we will once again use `fastqc` as an example. We have an example script for running `fastqc` in the `scripts/` directory:
 
-Let's return to our `fastqc` example from the [previous section](./01_2_hpc_software.md):
+=== "Gadi (PBS)"
 
-```bash title="scripts/fastqc.sh"
-#!/bin/bash
+    ```bash title="scripts/fastqc.pbs.sh"
+    #!/bin/bash
 
-SAMPLE_ID="NA12878_chr20-22"
-READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
+    module load singularity
 
-mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-fastqc \
-    --outdir "results/fastqc_${SAMPLE_ID}_logs" \
-    --format fastq ${READS_1} ${READS_2}
-```
+    SAMPLE_ID="NA12878_chr20-22"
+    READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
+    READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
-Previously, we ran this on the login node with a tiny dataset, but this is actually quite a bad practice! We should be submitting this job to the scheduler so that it can run on a proper compute node.
+    mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
+    singularity exec ../singularity/fastqc.sif \
+    fastqc \
+        --outdir "results/fastqc_${SAMPLE_ID}_logs" \
+        --format fastq ${READS_1} ${READS_2}
+    ```
 
-Before we submit anything, we will need to slightly modify our `scripts/fastqc.sh` script. Previously, we interactively loaded the Singularity module, then ran the whole script within a Singularity container. However, to simplify things for job submission, we will load the Singularity module as a command within the script, and just use Singularity to run the `fastqc` command. Open the `scripts/fastqc.sh` script in VSCode and make the following changes:
+=== "Setonix (Slurm)"
 
-!!! example "Exercise: Update the scripts/fastqc.sh script to load and use Singularity"
+    ```bash title="scripts/fastqc.slurm.sh"
+    #!/bin/bash
 
-    === "Gadi"
+    module load singularity/4.1.0-slurm
 
-        ```bash title="scripts/fastqc.sh" hl_lines="3 10"
-        #!/bin/bash
+    SAMPLE_ID="NA12878_chr20-22"
+    READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
+    READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
-        module load singularity
+    mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
+    singularity exec ../singularity/fastqc.sif \
+    fastqc \
+        --outdir "results/fastqc_${SAMPLE_ID}_logs" \
+        --format fastq ${READS_1} ${READS_2}
+    ```
 
-        SAMPLE_ID="NA12878_chr20-22"
-        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
+The script does a few things. First, it loads the `singularity` module; we'll need this to run the `fastqc` command when the job gets submitted to the compute node. Next, it defines a few bash variables that point to the input FASTQ data. It then creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`. And finally, it runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec ../singularity/fastqc.sif`. Note that we have already pre-loaded the `fastqc` singularity container image at `../singularity/fastqc.sif`.
 
-        mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec singularity/fastqc.sif \
-        fastqc \
-            --outdir "results/fastqc_${SAMPLE_ID}_logs" \
-            --format fastq ${READS_1} ${READS_2}
-        ```
-
-    === "Setonix"
-
-        ```bash title="scripts/fastqc.sh" hl_lines="3 10"
-        #!/bin/bash
-
-        module load singularity/4.1.0-slurm
-
-        SAMPLE_ID="NA12878_chr20-22"
-        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
-
-        mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec singularity/fastqc.sif \
-        fastqc \
-            --outdir "results/fastqc_${SAMPLE_ID}_logs" \
-            --format fastq ${READS_1} ${READS_2}
-        ```
-
-    We have added two lines. The first new line (line 3) simply loads the singularity module within the script. The second new line (line 10) prefixes our `fastqc` command with `singularity exec singularity/fastqc.sif`; that is, we are now running the `fastqc` command through the `fastqc.sif` container. Note the trailing backslash `\` on line 10, indicating that the command continues on the next line.
-
-Now we are ready to submit the updated job to the HPC. In doing so, we will provide the following details to the scheduler:
+This is everything we need to run the job; we just have to submit the script to the HPC scheduler. In doing so, we will provide the following details to the scheduler:
 
 - Project name: This is the HPC project that we want to run our job under, used to determine which filesystems we have access to and what project to bill to.
 - Job name: A name to give our job, to help distinguish it from others we or other people may be running; we will call our job `fastqc`
@@ -334,7 +161,7 @@ Now we are ready to submit the updated job to the HPC. In doing so, we will prov
 - Amount of memory: The amount of RAM that our job requires to run; we will request 1 gigabyte.
 - Walltime: The time our job needs to complete; we will request 1 minute.
 
-!!! example "Exercise: Submitting scripts/fastqc.sh to the HPC"
+!!! example "Exercise: Submitting the fastqc script to the HPC"
 
     === "Gadi (PBS)"
 
@@ -348,7 +175,7 @@ Now we are ready to submit the updated job to the HPC. In doing so, we will prov
             -l walltime=00:01:00 \
             -l storage=scratch/$PROJECT \
             -l wd \
-            scripts/fastqc.sh
+            scripts/fastqc.pbs.sh
         ```
 
         Let's deconstruct this command:
@@ -375,7 +202,7 @@ Now we are ready to submit the updated job to the HPC. In doing so, we will prov
             --cpus-per-task=1 \
             --mem=1GB \
             --time=00:01:00 \
-            scripts/fastqc.sh
+            scripts/fastqc.slurm.sh
         ```
 
         Let's deconstruct this command:
@@ -389,13 +216,13 @@ Now we are ready to submit the updated job to the HPC. In doing so, we will prov
 
     Once submitted, you can monitor the progress of your job with the following command:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         qstat -u ${USER}
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         squeue -u ${USER}
@@ -403,7 +230,7 @@ Now we are ready to submit the updated job to the HPC. In doing so, we will prov
 
     This will output a list of all running jobs and their status:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```console title="Output"
         gadi-pbs: 
@@ -415,7 +242,7 @@ Now we are ready to submit the updated job to the HPC. In doing so, we will prov
 
         The `S` column near the end shows the status of the job, with typical codes being `Q` for queued, `R` for running, and `E` for finished or ending jobs.
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```console title="Output"
         JOBID        USER ACCOUNT                   NAME   EXEC_HOST ST     REASON START_TIME       END_TIME  TIME_LEFT NODES   PRIORITY       QOS
@@ -445,7 +272,7 @@ The above command is quite long, and would be a pain to write out every time you
 
     Update your `fastqc.sh` script with the following header comments:
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash title="fastqc.sh" hl_lines="2-9"
         #!/bin/bash
@@ -465,7 +292,7 @@ The above command is quite long, and would be a pain to write out every time you
         READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
         mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec singularity/fastqc.sif \
+        singularity exec ../singularity/fastqc.sif \
         fastqc \
             --outdir "results/fastqc_${SAMPLE_ID}_logs" \
             --format fastq ${READS_1} ${READS_2}
@@ -473,7 +300,7 @@ The above command is quite long, and would be a pain to write out every time you
 
         Note how we need to explicitly state the project name for both the `-P` and `-l storage` parameters.
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash title="fastqc.sh" hl_lines="2-9"
         #!/bin/bash
@@ -493,7 +320,7 @@ The above command is quite long, and would be a pain to write out every time you
         READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
         mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec singularity/fastqc.sif \
+        singularity exec ../singularity/fastqc.sif \
         fastqc \
             --outdir "results/fastqc_${SAMPLE_ID}_logs" \
             --format fastq ${READS_1} ${READS_2}
@@ -503,13 +330,13 @@ The above command is quite long, and would be a pain to write out every time you
 
     With the script updated, you can simply run your HPC submission command without any of the previously supplied parameters. We will also redirect the output of the submission command (which prints a message containing the job ID) to a file called `run_id.txt` for use in the next lesson.
 
-    === "Gadi"
+    === "Gadi (PBS)"
 
         ```bash
         qsub fastqc.sh > run_id.txt
         ```
 
-    === "Setonix"
+    === "Setonix (Slurm)"
 
         ```bash
         sbatch fastqc.sh > run_id.txt
