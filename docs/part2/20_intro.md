@@ -1,4 +1,4 @@
-# 2.0 Introduction 
+# 2.0 Introduction
 
 !!! info "Learning objectives"
 
@@ -51,14 +51,14 @@ Throughout this section, we’ll continue using the variant calling example to d
 !!! warning "We will be using small data sets!"
 
     In this section, we will continue using the small paired-end reads from Part 1 to demonstrate key concepts related to running and configuring workflows on HPC systems.
-    
+
     Because the data is deliberately small, the processes will run quickly and with minimal resource requirements. This helps illustrate how the workflow behaves, but it also means that:
-    
+
     - Some resource-related errors (e.g. out-of-memory, walltime exceeded) **will not occur**, even if your configuration is suboptimal.
     - Performance trade-offs (e.g. with different `cpus` or `memory` settings) may be **less noticeable** than with real-world data.
     - HPC scheduling behaviour may differ slightly - smaller jobs are often scheduled more quickly and occupy less system space.
-    
-    When running real data sets on HPC systems, you may encounter different behaviours, longer runtimes, and additional errors. 
+
+    When running real data sets on HPC systems, you may encounter different behaviours, longer runtimes, and additional errors.
 
 ## 2.0.3 Why do you need custom pipelines?
 
@@ -80,7 +80,7 @@ TODO: scenario for benchmarking and optimising
 ## 2.0.4 The pipeline file anatomy
 
 This pipeline builds on the structure introduced in our introductory
-[Nextflow for the life sciences](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part2/00_intro/#205-nextflowing-the-workflow) workshop, where the workflow is separated into the 
+[Nextflow for the life sciences](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part2/00_intro/#205-nextflowing-the-workflow) workshop, where the workflow is separated into the
 **data processing logic**, and **system-specific configuration**. This layout helps keep things reproducible, easy
 to maintain, and simple to adapt across different environments - like moving from your laptop to an HPC!
 
@@ -89,6 +89,7 @@ At a glance:
 ```bash
 tree
 ```
+
 ```console
 # (some folders are truncated)
 .
@@ -113,27 +114,29 @@ The core workflow logic lives in `main.nf` and the `modules/` directory. This is
 
 In this part, we **don’t edit the module files directly**. Instead, we focus on configuring _how and where_ these steps run on HPCs, using separate config files. This separation makes it easy to test a pipeline locally and later scale it up on a system like Gadi or Setonix, without rewriting processes.
 
-[TODO]: add figure explaining below concept
-
 !!! tip "Why modules?"
 
     Nextflow pipelines are often set up using modules, which help keep things clean and organised.
-    The key idea is that some files can stay the same no matter where you run them, 
-    while others are easily tweaked to match the system you're using. 
-    This is especially useful when you're testing a pipeline locally first, 
-    then moving to run it on an HPC - something many researchers do. 
-    
-    If everything were hardcoded, you'd end up changing lots of lines across multiple 
+    The key idea is that some files can stay the same no matter where you run them,
+    while others are easily tweaked to match the system you're using.
+    This is especially useful when you're testing a pipeline locally first,
+    then moving to run it on an HPC - something many researchers do.
+
+    ![](figs/00_Nf_modules.png)
+
+
+    If everything were hardcoded, you'd end up changing lots of lines across multiple
     files, which can quickly get messy and error-prone. By using modules, you only
     need to configure how and where things run, without rewriting the pipeline a
-    itself. It also makes it easier to reuse parts of a pipeline or swap out tools 
+    itself. It also makes it easier to reuse parts of a pipeline or swap out tools
     later on, without starting from scratch.
 
     For more information, see ["What's in `modules/`"](https://sydney-informatics-hub.github.io/template-nf-guide/notebooks/modules.html).
-    
+
 ```bash
 cat main.nf
 ```
+
 ```groovy title="main.nf"
 include { FASTQC } from './modules/fastqc'
 include { ALIGN } from './modules/align'
@@ -212,6 +215,7 @@ Here's what the `nextflow.config` file looks like:
 ```bash
 cat nextflow.config
 ```
+
 ```groovy title="nextflow.config"
 // Define params
 params {
