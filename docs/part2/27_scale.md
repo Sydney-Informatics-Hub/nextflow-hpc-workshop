@@ -6,7 +6,11 @@
     - Understand and compare sample-level and within-sample parallelism
     - Recall best practices for running multi-sample data with samplesheets
 
-Now it has run successfully and efficiently on one, run on multiple samples in parallel. Explain sample-level paralellism. Refer back to smarter not harder lesson in HPC foundations.
+TODO: Figure for benchmarking process single sample -> optimise and benchmark -> multi sample
+
+Now that we have a pipeline that has run successfully and efficiently on one, we will no run it on multiple samples in parallel. Explain sample-level paralellism. Refer back to smarter not harder lesson in HPC foundations.
+
+TODO: 
 
 Compare to things like removing the need for [loop optimisations](https://pawsey.atlassian.net/wiki/spaces/US/pages/51925998/Loop+Optimisations)
 
@@ -90,3 +94,5 @@ This demonstrates another form of parallelisation, by sample.
         CPU hours   : (a few seconds)
         Succeeded   : 22
         ```
+
+Dynamic resourcing important to implement here too.
