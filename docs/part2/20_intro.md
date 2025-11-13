@@ -46,7 +46,7 @@ Part 2 of this workshop builds on the foundational HPC and Nextflow configuratio
 
 To keep the focus on configuration, the pipeline code and logic are provided for you and will not be reviewing the contents of input and output files in detail, beyond configuration needs. 
 
-!!! note
+!!! info "Learn to build custom Nextflow workflows"
 
     See our Nextflow For the [Life Sciences materials](https://sydney-informatics-hub.github.io/hello-nextflow-2025/) for an introduction to building Nextflow workflows. This workshop builds on Nextflow for the Life Sciences.   
 
