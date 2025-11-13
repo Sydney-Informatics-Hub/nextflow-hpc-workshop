@@ -71,11 +71,15 @@ Nextflow pipeline:
 
 ## 2.0.3 The scenario: variant calling on HPC
 
-TODO: Describe starting variant calling pipeline briefly
+Our use case for today is taking raw DNA sequence data from a number of human patients and using a number of data processing steps to obtain a final results file containing genetic variants for each patient. 
+
+Remember, it does not matter if you are unfamiliar with the biology or the tools used; the focus is on learning how to efficiently run Nextflow pipelines on HPC.
+
+We start with an unoptimised and minimally configured pipeline (like something that was developed and run on a laptop), and run through the entire workflow on a single sample. We will then explore optimisation strategies, implement them, and finally scale up the workflow to handle multiple samples efficiently.
+
+The diagram below shows a high level overview of the workflow we will be creating, starting with the raw data for each patient, mapping it against a human reference genome file, and then identifying and summarising the genetic variants found in the input data.  
 
 ![](figs/00_workflow_illustration.png)
-
-TODO: scenario for benchmarking and optimising
 
 ## 2.0.4 The pipeline file anatomy
 
