@@ -42,16 +42,13 @@ Awareness of these factors can help you make decisions about the optimisation ap
 For the remainder of Part 2 we will apply the strategies introduced from Part 1 to optimise our custom workflow. In particular, we will:
 
 1. Assign appropriate resources for each per process
+    - Use trace files to fine-tune `cpus`, `memory`, and `time`
+    - Tune these to fit with the architecutre of your HPC
 
-- Use trace files to fine-tune `cpus`, `memory`, and `time`
-- Tune these to fit with the architecutre of your HPC
-
-2. Enable multithreading for BWA MEM
-
-- Increase speed of alignment by using multiple threads
+2. Enable multi-threading for BWA MEM
+    - Increase speed of alignment by using multiple threads
 
 3. Parallelise alignment using scatter-gather
-
-- Split our FASTQ files, align "simultaneously", and combine again
+    - Split our FASTQ files, align "simultaneously", and combine again
 
 These same principles can be applied to any HPC environment, but in this workshop, we’ll focus on NCI Gadi and Pawsey Setonix as practical examples.
