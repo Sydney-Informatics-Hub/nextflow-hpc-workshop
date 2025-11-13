@@ -356,7 +356,7 @@ This is why **explicit resource configuration** is important. Even though the pi
 
 In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory. Let's explicitly configure that in the next step.
 
-## 2.1.4 Why do we have so many configuration files?
+## 2.1.3 Why do we have so many configuration files?
 
 ![](figs/00_custom_configs.png)
 
@@ -375,7 +375,7 @@ Each configuration file serves a distinct purpose:
 
 While this structure is a useful starting point, it is not the only way to structure your configuration. The nf-core community have their own set of standards with some presets for some instutitions (there are ones available for Gadi and Setonix!). However, it is important to double check that these configs are suitable and optimal for your purposes. For more information see [nf-core/configs](https://nf-co.re/configs/)
 
-## 2.1.5 Minimal configuration to run on HPC
+## 2.1.4 Minimal configuration to run on HPC
 
 We will continue to get the pipeline running with a minimum viable configuration. This serves as a baseline to confirm everything is working correctly (such as scheduling, containers are enabled, etc.), prior to any fine tuning. We want to ensure that:
 
