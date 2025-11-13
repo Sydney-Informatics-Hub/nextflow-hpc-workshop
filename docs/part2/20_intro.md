@@ -97,8 +97,8 @@ to maintain, and simple to adapt across different environments - like moving fro
 
 Recall the demo Nextflow workflow we explored in [lesson 1.5.2](../part1/01_5_nf_hpc.md). Our custom workflow will extend on this by introducing some new features that help us stay organised. This includes: 
 
-- `conf` to house our custom configuration files
-- `modules`to house our process files as `.nf` files
+- `conf/` to house our custom configuration files
+- `modules/`to house our process files as `.nf` files
 
 TODO diagram including `conf/` and `modules/` showing how they connect to nextflow.config and main.nf, extending on docs/part1/figs/00_config_demo_nf_v2.excalidraw
 
@@ -222,12 +222,12 @@ workflow {
 
 We have used:  
 
-* `include { process } from './modules/process-name'` to pull in processes from `modules/`  
-* Input channels (e.g. `reads`, `bwa_index`, `ref`) to define how data moves between processes   
-* Channel operators (e.g. `.map()`, `.groupTuple()`, `.mix()`, `.collect()`) to transform and combine data streams dynamically  
-* Parameterised inputs (e.g. `params.ref_fasta`, `params.samplesheet`) so the workflow can be reused on different datasets without having to edit the code
+- `include { process } from './modules/process-name'` to pull in processes from `modules/`  
+- Input channels (e.g. `reads`, `bwa_index`, `ref`) to define how data moves between processes   
+- Channel operators (e.g. `.map()`, `.groupTuple()`, `.mix()`, `.collect()`) to transform and combine data streams dynamically  
+- Parameterised inputs (e.g. `params.ref_fasta`, `params.samplesheet`) so the workflow can be reused on different datasets without having to edit the code
 
-This structure makes it easier to swap in alternative tools and processes, especially later when working with scatter-gather patterns - all without cluttering `main.nf` or compromising reproducibility.
+This structure makes it easier to swap in alternative tools and processes, especially later when working with scatter-gather patterns without cluttering `main.nf` or compromising reproducibility.
 
 ### 2.0.4.2 `nextflow.config` and `conf/`
 
@@ -261,7 +261,13 @@ profiles {
 }
 ```
 
-Nextflow’s configuration files define how and where each process runs, including what resources to request, which job scheduler to use, and whether to run using containers.
+We have used: 
+
+- `params {...}` blocks to centralise all user-controlled parameters
+- `profiles {...}` for profile definitions to enable us to run different configurations 
+- `includeConfig "conf/name.config"` directives to pull in separate configuration files from `conf/`
+
+Nextflow’s configuration files define how and where each process runs, including what resources to request, which job scheduler to use, and how to execute software.
 
 In the context of HPCs, this means specifying:
 
@@ -269,17 +275,12 @@ In the context of HPCs, this means specifying:
 - The appropriate **executor** (e.g. PBS on Gadi or SLURM on Setonix)
 - The default **queue/partition** and optional account/project codes
 - Whether and how to use Singularity containers
-- Plus many other useful features
 
-These settings are defined in the main `nextflow.config`, and extended using config profiles - one for each target system. This separation allows you to **run the same pipeline across different HPCs just by switching profiles, without modifying the core workflow.**
+These settings are defined in the main `nextflow.config`, and extended using config profiles. This separation will allow us to run the same pipeline across different HPCs just by switching profiles, without modifying the core workflow.
 
-Here's what the `nextflow.config` file looks like:
+Let's take a look at the system-specific  configuration files in `conf/`:
 
-It contains the default parameters required for `main.nf`, and the profiles for Gadi (PBS) and Setonix (Slurm).
-
-Each profile brings in a system-specific config file from the `conf/` folder:
-
-=== "Gadi (PBS)"
+=== "Gadi (PBSpro)"
 
     ```bash
     cat conf/pbspro.config
@@ -323,8 +324,14 @@ Each profile brings in a system-specific config file from the `conf/` folder:
     }
     ```
 
-This setup makes it easy to test and run the same workflow in different environments. By the end of Part 2, we’ll have extended these configs to better reflect the characteristics of each system - improving efficiency without touching the pipeline logic itself.
+This setup makes it easy for us to run the same workflow in different environments. By the end of Part 2, we’ll have extended these configs to better reflect the characteristics of each system, improving efficiency without touching the workflow logic itself.
+
+!!! note "Configuration imagination"
+    While we are using custom configs to allow us to make our pipeline "portable" so it can run on NCI Gadi and Pawsey Setonix HPCs, you can also use custom configurations to tailor your pipeline to many other scenarios. For example: 
+
+    - Different datasets requiring more/less memory 
+    - Testing vs production runs 
 
 ## 2.0.5 Summary
 
-This section introduced the basic structure of the custom variant calling Nextflow pipeline for the remainder of Part 2, emphasising the separation between workflow logic (`main.nf`, `modules/`) and system-specific configuration (`nextflow.config`, `conf/`). We reviewed how this separation supports portability, reproducibility, and ease of adaptation across environments, such as when transitioning from local testing to running on HPC systems like Gadi (PBS) and Setonix (Slurm).
+This section introduced the basic structure of the custom variant calling Nextflow pipeline for the remainder of Part 2, emphasising the separation between workflow logic (`main.nf`, `modules/`) and system-specific configuration (`nextflow.config`, `conf/`). We reviewed how this separation supports portability, reproducibility, and ease of adaptation across environments, such as when transitioning from local testing to running on HPC systems like Gadi (PBSpro) and Setonix (Slurm).
