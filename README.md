@@ -22,5 +22,19 @@ This workshop is designed for researchers and technical users (bioinformaticians
 
 # For developers 
 
-To render docs 
- 
+To render docs: 
+
+1. Install mkdocs
+
+```
+pip install mkdocs
+mkdocs --version # confirm install
+```
+
+2. Render docs locally at http://127.0.0.1:8000/: 
+
+```
+mkdocs serve
+```
+
+All content merged to main will be rendered at github.io pages by [`mkdocs_deploy.yml`](https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop/blob/main/.github/workflows/mkdocs_deploy.yml) github action.  
