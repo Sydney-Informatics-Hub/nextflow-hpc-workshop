@@ -9,28 +9,18 @@
     - Know how to find and specify system-dependent HPC values such as queues/partitions
     - Recall how Nextflow interacts with HPC components
 
-!!! warning Running the head job on the correct node
+!!! warning "Testing and developing in the right environment"
 
     For the workshop, we have pre-pulled containers and use them from the cache,
     and as data is small and the workflow runs quickly, we will be running them
     on login nodes.
-
-    **However, this should not be done when developing and running your own
-    pipelines on HPC systems.**
-
-    When developing or running workflows with real data, you should follow your HPC's
-    recommended approach for long-running, low-resource jobs. This may include being
-    used in conjunction with terminal multiplexers such as `tmux` or `screen` within
-    these sessions to keep the job running when you log out or connection drops out.
     
-    Alternatively, starting your Nextflow run within an **interactive job** is useful for testing and debugging 
-    workflows directly on compute nodes. If you instead schedule your Nextflow
-    job, ensure that your `run.sh` script includes the appropriate scheduler options.
+    We recommend using **interactive jobs** for testing and debugging 
+    workflows directly on compute nodes instead of the login nodes. Alternatively, 
+    if you want to schedule your Nextflow head job, ensure that your `run.sh` 
+    script includes the appropriate scheduler options.
 
-    See the recommendations on running the head job for [Gadi](https://opus.nci.org.au/spaces/Help/pages/241926895/Persistent+Sessions) and [Setonix](https://pawsey.atlassian.net/wiki/spaces/US/pages/286097469/How+to+Run+Workflows+on+the+Workflow+Nodes)
-
-    Finally, be aware of **network access on compute nodes**. If Nextflow cannot locate
-    the container, it will attempt to pull from an online repository. This occurs during run time and will fail if the compute node does not have internet access. In these cases, you can pre-pull containers, or schedule the head job on a queue/partition with network access.
+    See the recommendations on running the head job for [Gadi](https://opus.nci.org.au/spaces/Help/pages/241926895/Persistent+Sessions) and [Setonix](https://pawsey.atlassian.net/wiki/spaces/US/pages/286097469/How+to+Run+Workflows+on+the+Workflow+Nodes).
 
 Before launching a full-scale analysis, it is important to optimise your pipeline using a small, representative subset of your data. This helps you:
 
