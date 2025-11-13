@@ -235,46 +235,29 @@ Note that we add them to the config file, and not the modules. This keeps the wo
 
         ```groovy title="conf/custom.config"
         process {
-            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+    
+        withName: /FASTQC|ALIGN|JOINT_GENOTYPE/ {
+            cpus = 2
+            memory = 1.GB
+            time = 2.minutes
+        }
+    
+        withName: /STATS|MULTIQC/ {
+            cpus = 1
             memory = 2.GB
+            time = 2.minutes
+        }
+    
+        // GENOTYPE requires extra walltime and mem
+        withName: GENOTYPE {
+            cpus = 2
+            memory = 2.GB
+            time = 5.minutes
+        }
 
-            // Configuration for processes labelled as "process_small"
-            // STATS and multiqc
-            withLabel: 'process_small' {
-                cpus = 1
-                memory = 2.GB
-                time = 2.minutes
-            }
+        cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+        memory = 2.GB
 
-            // ALIGN AND JOINT GENOTYPE AND FASTQC
-            withLabel: 'process_2cpus' {
-                cpus = 2
-                memory = 1.GB
-                time = 2.minutes
-            }
-
-            // GENOTYPE requires extra walltime and mem
-            withName: 'GENOTYPE' {
-                cpus = 2
-                memory = 2.GB
-                time = 5.minutes
-            }
-
-            withName: 'STATS' {
-                label = "process_small"
-            }
-
-            withName: 'MULTIQC' {
-                label = "process_small"
-            }
-
-            withName: 'ALIGN' {
-                label = "process_2cpus"
-            }
-  
-            withName: 'JOINT_GENOTYPE' {
-                label = "process_2cpus"
-            }
         }
         ```
     
@@ -284,15 +267,23 @@ Note that we add them to the config file, and not the modules. This keeps the wo
     ./run.sh
     ```
 
-Specifying the number of resources is the first step of
-ensuring you don't ask for resources you don't need. On systems with
-a lot of freedom (cloud instances, workstations) this is sufficient.
+Review the new trace file. What has changed? What happened to our FASTQC process? Faster or slower?
 
-However on shared HPC systems, we need to be more explicit with what
-we can use. Providing the extra resources can provide extra processing
-power for supported tools, in comparison to being stringent.
+=== "Gadi (PBS)"
 
-Whilst the way the data is processed stays the same, it is important to review how your tools work (read their documentation!) and whether they can utilise extra resources. 
+    TODO
+
+=== "Setonix (Slurm)"
+
+    | name                       | status    | exit | duration | realtime | cpus | %cpu   | memory | %mem | peak_rss | 
+    | -------------------------- | --------- | ---- | -------- | -------- | ---- | ------ | ------ | ---- | -------- | 
+    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 14s      | 4s       | 2    | 145.9% | 1 GB   | 0.1% | 259 MB   | 
+    | ALIGN (1)                  | COMPLETED | 0    | 14.1s    | 1s       | 2    | 139.3% | 1 GB   | 0.0% | 2 MB     | 
+    | GENOTYPE (1)               | COMPLETED | 0    | 44.8s    | 28s      | 2    | 164.0% | 2 GB   | 0.5% | 1.3 GB   | 
+    | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 19.4s    | 9s       | 2    | 211.3% | 1 GB   | 0.1% | 343.3 MB | 
+    | STATS (1)                  | COMPLETED | 0    | 14.5s    | 0ms      | 1    | 132.7% | 2 GB   | 0.0% | 2 MB     | 
+    | MULTIQC                    | COMPLETED | 0    | 15.3s    | 4.3s     | 1    | 77.6%  | 2 GB   | 0.0% | 76.4 MB  | 
+
 
 ## Passing allocated resources into process scripts
 
@@ -382,4 +373,12 @@ You should see no major changes in memory usage or efficiency - but now your scr
 
 ## Summary
 
-TODO
+Specifying the number of resources is the first step of
+ensuring you don't ask for resources you don't need. On systems with
+a lot of freedom (cloud instances, workstations) this is sufficient.
+
+However on shared HPC systems, we need to be more explicit with what
+we can use. Providing the extra resources can provide extra processing
+power for supported tools, in comparison to being stringent.
+
+Whilst the way the data is processed stays the same, it is important to review how your tools work (read their documentation!) and whether they can utilise extra resources.
