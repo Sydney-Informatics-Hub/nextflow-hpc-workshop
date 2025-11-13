@@ -71,9 +71,9 @@ Throughout this section, we’ll continue using the variant calling example to d
 There are several reasons why you might need to develop or adapt your own
 Nextflow pipeline:
 
-- **Tailored to your specific needs** - Custom pipelines give you full control over input/output formats, tool parameters, workflow logic, and configuration options.
-- **Gaps in available pipelienes** - Existing pipelines (e.g. nf-core) may not cover your use case, or a relevant pipeline may not exist at all.
-- **Resource optimisation** - nf-core pipelines are generalised by design and may be over-provisioned or misconfigured for your HPC environment. Although easier to get running out-of-the box, this could lead to inefficient use of HPC resources or being charged excess service units (SUs)!
+- **Tailored to your specific needs**: custom pipelines give you full control over input/output formats, tool parameters, workflow logic, and configuration options.
+- **Gaps in available pipelienes**: existing pipelines (e.g. nf-core) may not cover your use case, or a relevant pipeline may not exist at all.
+- **Resource optimisation**: nf-core pipelines are generalised by design and may be over-provisioned or misconfigured for your HPC environment. Although easier to get running out-of-the box, this could lead to inefficient use of HPC resources or being charged excess service units (SUs)!
 
 ## 2.0.3 The scenario: variant calling on HPC
 
@@ -85,7 +85,8 @@ We start with an unoptimised and minimally configured pipeline (like something t
 
 The diagram below shows a high level overview of the workflow we will be creating, starting with the raw data for each patient, mapping it against a human reference genome file, and then identifying and summarising the genetic variants found in the input data.  
 
-![](figs/00_workflow_illustration.png)
+![](../part1/figs/00_workflow_illustration.png)
+TODO revise this diagram to describe steps, 
 
 ## 2.0.4 The pipeline file anatomy
 
