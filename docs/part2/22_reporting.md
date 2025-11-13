@@ -100,7 +100,14 @@ Once we get the workflow running without error on the scheduler, we need to enab
 
     === "Gadi (PBS)"
 
-        TODO
+        | name                       | status    | exit | duration | realtime | cpus | %cpu  | memory | %mem | peak_rss |
+        | -------------------------- | --------- | ---- | -------- | -------- | ---- | ----- | ------ | ---- | -------- |
+        | ALIGN (1)                  | COMPLETED | 0    | 29.6s    | 1s       | 1    | 93.7% | 4 GB   | 0.0% | 95.8 MB  |
+        | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 34.5s    | 5s       | 1    | 76.2% | 4 GB   | 0.1% | 286.6 MB |
+        | GENOTYPE (1)               | COMPLETED | 0    | 59.9s    | 45s      | 1    | 97.6% | 4 GB   | 0.5% | 950.3 MB |
+        | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 34.8s    | 16s      | 1    | 93.3% | 4 GB   | 0.3% | 508.8 MB |
+        | STATS (1)                  | COMPLETED | 0    | 19.9s    | 0ms      | 1    | 73.4% | 4 GB   | 0.0% | 3.1 MB   |
+        | MULTIQC                    | COMPLETED | 0    | 29.9s    | 4.7s     | 1    | 79.5% | 4 GB   | 0.0% | 97.2 MB  |
 
     === "Setonix (Slurm)"
 
@@ -167,3 +174,77 @@ for debugging. It is up to you how you want to configure your traces for your ow
 Nextflow's profiling features are powerful automations that scale nicely when
 you have many processes in a pipeline. This saves the need for manual
 benchmarking such as using `time`.
+
+??? Code
+
+    === "Gadi (PBS)"
+
+        ```groovy title='config/custom.config' hl_lines="6-31"
+        process {
+            cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6 OR 9.1
+            memory = 4.GB
+        }
+
+        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+
+        trace {
+             enabled = true
+             overwrite = false
+             file = "./runInfo/trace-${params.timestamp}.txt"
+             fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss,workdir,native_id'
+         }
+
+        timeline {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/timeline-${params.timestamp}.html"
+        }
+
+        report {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/report-${params.timestamp}.html"
+        }
+    
+        dag {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/dag-${params.timestamp}.html"
+        }
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```groovy title='config/custom.config' hl_lines="6-31"
+        process {
+            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+            memory = 2.GB
+        }
+
+        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+
+        trace {
+             enabled = true
+             overwrite = false
+             file = "./runInfo/trace-${params.timestamp}.txt"
+             fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss,workdir,native_id'
+         }
+
+        timeline {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/timeline-${params.timestamp}.html"
+        }
+
+        report {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/report-${params.timestamp}.html"
+        }
+    
+        dag {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/dag-${params.timestamp}.html"
+        }
+        ```
