@@ -95,6 +95,11 @@ This pipeline builds on the structure introduced in our introductory
 **data processing logic**, and **system-specific configuration**. This layout helps keep things reproducible, easy
 to maintain, and simple to adapt across different environments - like moving from your laptop to an HPC!
 
+Recall the demo Nextflow workflow we explored in [lesson 1.5](http://127.0.0.1:8000/part1/01_5_nf_hpc/#152-our-first-hpc-workflow). Our custom workflow will extend on this by introducing some new features that help us stay organised. This includes: 
+
+- `conf` to house our custom configuration files
+- `modules`to house our process files as `.nf` files
+
 At a glance:
 
 ```bash
