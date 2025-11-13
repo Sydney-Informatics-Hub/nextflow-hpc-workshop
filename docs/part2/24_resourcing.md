@@ -2,9 +2,8 @@
 
 !!! info "Learning objectives"
 
-    - Identify how to size resource requests appropriately for each process
+    - Recall how to size resource requests appropriately for each process
     - Apply resource-aware design principles to improve job efficiency
-    - Optimise processes for time, noting the trade-offs with cost (SU usage)
     - Understand how to efficiently configure jobs to fit system queues
     - Apply infrastructure requirements of memory/CPU proportions to match the node
     architecture of the target HPC queue/partition
@@ -35,25 +34,19 @@ To begin tuning our workflow, we first need to understand how many resources eac
 
 === "Gadi (PBS)"
 
-    | name                       | status    | exit | duration | realtime | cpus | %cpu   | memory | %mem | rss      |
-    | -------------------------- | --------- | ---- | -------- | -------- | ---- | ------ | ------ | ---- | -------- |
-    | ALIGN (1)                  | COMPLETED | 0    | 24.4s    | 0ms      | 4    | 262.6% | 2 GB   | 0.0% | 26.6 MB  |
-    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 29.4s    | 3s       | 4    | 226.3% | 2 GB   | 0.2% | 322.6 MB |
-    | GENOTYPE (1)               | COMPLETED | 0    | 1m 20s   | 50s      | 4    | 145.6% | 2 GB   | 1.0% | 1.2 GB   |
-    | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 39.9s    | 9s       | 4    | 225.6% | 2 GB   | 0.4% | 511.3 MB |
-    | STATS (1)                  | COMPLETED | 0    | 29.9s    | 0ms      | 4    | 161.3% | 2 GB   | 0.0% | 4 MB     |
-    | MULTIQC                    | COMPLETED | 0    | 34.9s    | 3.9s     | 4    | 100.7% | 2 GB   | 0.1% | 98.6 MB  |
+    TODO: RUN AND ADD
 
 === "Setonix (Slurm)"
 
-    | name                       | status    | exit | duration | realtime | cpus | %cpu   | memory | %mem | rss      |
+    | name                       | status    | exit | duration | realtime | cpus | %cpu   | memory | %mem | peak_rss |
     | -------------------------- | --------- | ---- | -------- | -------- | ---- | ------ | ------ | ---- | -------- |
-    | ALIGN (1)                  | COMPLETED | 0    | 14.6s    | 1s       | 2    | 110.7% | 2 GB   | 0.0% | 96.4 MB  |
-    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 14.6s    | 3s       | 2    | 142.4% | 2 GB   | 0.1% | 251.2 MB |
-    | GENOTYPE (1)               | COMPLETED | 0    | 44.9s    | 32s      | 2    | 156.7% | 2 GB   | 0.7% | 1.7 GB   |
-    | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 20s      | 8s       | 2    | 227.5% | 2 GB   | 0.2% | 458.8 MB |
-    | STATS (1)                  | COMPLETED | 0    | 10.3s    | 0ms      | 2    | 123.9% | 2 GB   | 0.0% | 2 MB     |
-    | MULTIQC                    | COMPLETED | 0    | 19s      | 5.1s     | 2    | 72.5%  | 2 GB   | 0.0% | 86.7 MB  |
+    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 13.8s    | 4s       | 1    | 135.0% | 2 GB   | 0.1% | 240.6 MB |
+    | ALIGN (1)                  | COMPLETED | 0    | 13.8s    | 2s       | 1    | 100.1% | 2 GB   | 0.0% | 98.2 MB  |
+    | GENOTYPE (1)               | COMPLETED | 0    | 39.9s    | 28s      | 1    | 164.8% | 2 GB   | 0.5% | 1.4 GB   |
+    | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 19.2s    | 8s       | 1    | 204.2% | 2 GB   | 0.2% | 466 MB   |
+    | STATS (1)                  | COMPLETED | 0    | 14.9s    | 1s       | 1    | 45.2%  | 2 GB   | 0.0% | 2 MB     |
+    | MULTIQC                    | COMPLETED | 0    | 19.9s    | 5.3s     | 1    | 62.4%  | 2 GB   | 0.0% | 78.6 MB  |
+
 
 While we could configure each process to match these values, we’re instead going to take a broader view. We'll explore how HPC systems allocate memory per CPU, and how to align our process requests to match this architecture more effectively.
 
@@ -63,14 +56,12 @@ This approach lets us make the most of the available resources - sometimes even 
 
 Recall that this is the configuration we used in Part 2.1 to get the pipeline running on the respective HPC systems:
 
-TODO: check these values are correct i.e. 230GB/256, not 230GB/128 normalbw
-
 === "Gadi (PBS)"
 
     ```groovy title='custom.config'
     process {
-        cpu = 4 // 'queue' normalbw = 128 GB / 28 CPU ~ 4.6
-        memory = 2.GB
+        cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
+        memory = 4.GB
     }
     ```
 
@@ -78,14 +69,14 @@ TODO: check these values are correct i.e. 230GB/256, not 230GB/128 normalbw
 
     ```groovy title='custom.config'
     process {
-        cpu = 2 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+        cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
         memory = 2.GB
     }
     ```
     
 The reason for these values come down to requesting a balanced amount of memory, relative to your CPU.
 
-![](../part1/figs/00_smarter_multi_diagram.png)
+![](../part1/figs/00_smarter_proportions.png)
 
 Most HPC systems allocate jobs to nodes based on both CPU and memory requests, where each queue or partition is associated with a specific type of node with: 
 
@@ -97,7 +88,11 @@ This means there is an **average amount of memory per CPU** - this becomes an im
 Based on the discussion of the optimal `FASTQC` threads in Part 1, we will give `FASTQC` two CPUs to process each of the paired-end reads. According to the trace file, it does not require much memory, so the limiting
 resource here is CPU.
 
+The trace file also nicely shows that the CPU efficiency is 
+
 Let's find the effective usable memory per CPU for the `normalbw` queue on Gadi, and the `work` partition on Setonix.
+
+Note: Some queues and partitions may have different nodes with different hardware specifications, such as nodes with more or less memory. Using the effective memory per cpu to fit the smaller node has the benefit of running on both, whereas the larger node may take longer, but provides extra resources.
 
 !!! example "Exercise"
 
@@ -152,9 +147,7 @@ TODO Gadi equivalent
 
 ### Configuring `withLabel` and `withName`
 
-TODO: More explanation
-
-Now that we have decided how many process, we will configure it. As we are tuning for a specific HPC this will go into the `custom.config`.
+tl;dr recall that configuration can be workflow-specific to run across different systems, but needs to be system-specific to use the infrastructure effectively. Here, we will apply resource configuration settings in the `config/custom.config` as we are tuning according to the HPC we are running it on.
 
 Processes that require the same resources are recommended to be
 configured using the `withLabel` process directive. This let's you
@@ -169,120 +162,127 @@ and the `withLabel: 'process_small` configuration. This is useful to have when
 new processes/modules are being added, to be explicit what the default is vs.
 the ones we intentionally want with the default settings.
 
+Refer back to the trace files. In summary:
+
+- FASTQC requires 2 CPUs, 1GB
+- ALIGN and JOINT_GENOTYPE maxed out at 1 CPU. Good indication that bwa mem and GATK could benefit from more CPUs. Memory is ok, so it is similar to the requirements for FASTQC.
+- GENOTYPE has a 50% mem usage. Indicates could be given more memory, high wall time too.
+- STATS and MULTIQC are fine with the default. 
+
+Let's record these in our configs, with a bit of buffer so things don't fail.
+
 !!! example "Exercise"
 
     Update your custom configs:
 
     === "Gadi (PBS)"
 
-        **TODO: Revise**
-
         ```groovy title="conf/custom.config"
-        process {
-            // Default configuration for all processes
-            cpus = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
+        # TODO: RUNA ND ADD
+         process {
+            cpu = 1 
             memory = 4.GB
-
-            // Configuration for processes labelled as "process_small"
-            withLabel: 'process_small' {
-                cpus = 4
-                memory = 2.GB
-                time = 2.minutes
-            }
-
-            // GENOTYPE requires extra walltime
-            withName: 'GENOTYPE' {
-                cpus = 4
-                memory = 2.GB
-                time = 5.minutes
-            }
-
-            // Provide more memory for FASTQC
-            withName: 'FASTQC' {
-                cpus = 2
-                memory = 9.GB
-                time = 2.minutes
-            }
-        }
+         }
         ```
 
     === "Setonix (Slurm)"
 
         ```groovy title="conf/custom.config"
         process {
-            cpu = 2 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
             memory = 2.GB
 
             // Configuration for processes labelled as "process_small"
+            // STATS and multiqc
             withLabel: 'process_small' {
-                cpus = 2
+                cpus = 1
                 memory = 2.GB
                 time = 2.minutes
             }
 
-            // GENOTYPE requires extra walltime
+            // ALIGN AND JOINT GENOTYPE AND FASTQC
+            withLabel: 'process_2cpus' {
+                cpus = 2
+                memory = 1.GB
+                time = 2.minutes
+            }
+
+            // GENOTYPE requires extra walltime and mem
+            withName: 'GENOTYPE' {
+                cpus = 2
+                memory = 2.GB
+                time = 5.minutes
+            }
+        ```
+
+Next, we need to provide the labels to the processes. 
+
+Note that we add them to the config file, and not the modules. This keeps the workflow logic and system-specific configuration separate.
+
+!!! example "Exercise"
+
+    === "Gadi (PBS)"
+
+        ```groovy title="conf/custom.config"
+        # TODO: RUNA ND ADD
+         process {
+            cpu = 1 
+            memory = 4.GB
+         }
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```groovy title="conf/custom.config"
+        process {
+            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+            memory = 2.GB
+
+            // Configuration for processes labelled as "process_small"
+            // STATS and multiqc
+            withLabel: 'process_small' {
+                cpus = 1
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+            // ALIGN AND JOINT GENOTYPE AND FASTQC
+            withLabel: 'process_2cpus' {
+                cpus = 2
+                memory = 1.GB
+                time = 2.minutes
+            }
+
+            // GENOTYPE requires extra walltime and mem
             withName: 'GENOTYPE' {
                 cpus = 2
                 memory = 2.GB
                 time = 5.minutes
             }
 
-            // Provide more memory for FASTQC
-            withName: 'FASTQC' {
-                cpus = 2
-                memory = 4.GB
-                time = 2.minutes
+            withName: 'STATS' {
+                label = "process_small"
+            }
+
+            withName: 'MULTIQC' {
+                label = "process_small"
+            }
+
+            withName: 'ALIGN' {
+                label = "process_2cpus"
+            }
+  
+            withName: 'JOINT_GENOTYPE' {
+                label = "process_2cpus"
             }
         }
         ```
+    
+    Save your files, and execute the pipeline:
 
-Next, we need to go into the following modules and add the `withLabel` directive
-to ensure that these resources are assigned:
-
-- `align.nf`
-- `fastqc.nf`
-- `joint_genotype.nf`
-- `multiqc.nf`
-- `stats.nf`
-
-!!! example "Exercises"
-
-    **TODO: REPLACE THIS SO LABELS ARE ADDED IN THE CUSTOM.CONFIG**
-
-    On both Gadi and Setonix, add the following line at the end of the
-    process directives. An example is provided for `modules/align.nf`
-    and `modules/stats.nf`:
-
-    ```groovy title='modules/align.nf' hl_lines='5'
-    process ALIGN {
-
-        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
-        publishDir "${params.outdir}/alignment"
-        label "process_small"
-
-        input:
-        tuple val(sample_id), path(reads_1), path(reads_2)
-        tuple val(ref_name), path(bwa_index)
-
-    // truncated
-    }
+    ```bash
+    ./run.sh
     ```
-
-    ```groovy title='modules/stats.nf' hl_lines='5'
-    process STATS {
-
-        container "quay.io/biocontainers/bcftools:1.22--h3a4d415_1"
-        publishDir "${params.outdir}/genotyping"
-        label "process_small"
-
-        input:
-        tuple val(cohort_id), path(cohort_vcf), path(cohort_vcf_idx)
-
-    // truncated
-    }
-    ```
-
-    Ensure this is added to the remaining modules listed above.
 
 Specifying the number of resources is the first step of
 ensuring you don't ask for resources you don't need. On systems with
