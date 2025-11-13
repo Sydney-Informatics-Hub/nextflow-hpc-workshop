@@ -156,10 +156,10 @@ We will use the respective job scheduler introspection tools to observe the reso
 
     === "Gadi (PBS)"
 
-        Use `qstat -xf <job_id>` from above to query the job info and display the top 12 lines (we only need the resource usage information).
+        Use `qstat -xf <job_id>` to query for the resource usage and allocation
 
         ```bash
-        qstat -xf <job_id> | head -12
+        qstat -xf <job_id>
         ```
         ```console
         Job Id: 154038474.gadi-pbs
@@ -178,7 +178,7 @@ We will use the respective job scheduler introspection tools to observe the reso
 
     === "Setonix (Slurm)"
 
-        Use `sacct` with formatting to view key stats elated to resource usage:
+        Use `sacct` with formatting to view key stats related to resource usage:
 
         ```bash
         sacct -j <job_id> --format=JobID,JobName,User,CPUTime,TotalCPU,NCPUS,Elapsed,State,MaxRSS,MaxVMSize,Partition
@@ -215,9 +215,9 @@ Each configuration file serves a distinct purpose:
 
 - `nextflow.config` is the main configuration file that defines the core behaviour of the workflow itself (e.g. main.nf). It includes parameters (params), and references to profiles. To maintain reproducibility, **this file should not be modified during system-specific tuning**. It should only change if the underlying workflow logic changes - that is, what gets run.
 
-- `conf/pbspro.config` and `conf/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS or SLURM), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting.
+- `config/pbspro.config` and `config/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS or SLURM), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting.
 
-- `conf/custom.config` is where we bring it all together. This file contains system-specific process settings such as CPU and memory requests. It links what the workflow does with how it runs on a specific system. When developing or adapting a custom pipeline for an HPC environment, this is typically where most tuning happens to fit the specific node architecture, queue constraints, and resource optimisation.
+- `config/custom.config` is where we bring it all together. This file contains system-specific process settings such as CPU and memory requests. It links what the workflow does with how it runs on a specific system. When developing or adapting a custom pipeline for an HPC environment, this is typically where most tuning happens to fit the specific node architecture, queue constraints, and resource optimisation.
 
 While this structure is a useful starting point, it is not the only way to structure your configuration. The nf-core community have their own set of standards with some presets for some instutitions (there are ones available for Gadi and Setonix!). However, it is important to double check that these configs are suitable and optimal for your purposes. For more information see [nf-core/configs](https://nf-co.re/configs/)
 
@@ -244,10 +244,10 @@ TODO scheduler specific configs, instead of system-specifc configs.
 
 !!! example "Exercises"
 
-    1. Create a new file `conf/custom.config`
+    1. Create a new file `config/custom.config`
 
         ```bash
-        touch conf/custom.config
+        touch config/custom.config
         ```
 
     2. Add the following contents based on your HPC
@@ -270,22 +270,18 @@ TODO scheduler specific configs, instead of system-specifc configs.
         }
         ```
 
-Recall from Part 1 that Nextflow's executor is the part of the workflow engine that talks to the computing environment (whether it's a laptop or HPC). When running on a shared HPC system, these settings are important to include so you don't overwhelm the system (`queueSize`, `pollInterval`, `queueStatInterval`), or generate duplicated files in excess (`cache`, `stageInMode`), or run things in the wrong place (`` options).
+Recall from Part 1 that Nextflow's executor is the part of the workflow engine that talks to the computing environment (whether it's a laptop or HPC). When running on a shared HPC system, these settings are important to include so you don't overwhelm the system (`queueSize`, `pollInterval`, `queueStatInterval`), or generate duplicated files in excess (`cache`, `stageInMode`), or run things in the wrong place (options).
 
 TODO queue rate limit
 
 !!! example "Exercises"
 
-    TODO: Instructions to edit
+    Open the pbspro.config or slurm.config and edit. We will add these HPC-friendly options.
 
     === "Gadi (PBS)"
 
-        ```groovy title="conf/pbspro.config"
-        singularity {
-            enabled = true
-            autoMounts = true
-            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
-        }
+        ```groovy title="config/pbspro.config" hl_lines="3 4 5 6 7 8 15 16 17"
+        params.pbspro_account = ""
 
         executor {
             // For high-throughput jobs, these values should be higher
@@ -296,23 +292,25 @@ TODO queue rate limit
 
         process {
             executor = 'pbspro'
-            storage = "scratch/${System.getenv('PROJECT')}"
             module = 'singularity'
-            cache = 'lenient'
-            stageInMode = 'symlink'
             queue = 'normalbw'
             clusterOptions = "-P ${System.getenv('PROJECT')}"
+            storage = "scratch/${System.getenv('PROJECT')}"
+            cache = 'lenient'
+            stageInMode = 'symlink'
+        }
+
+        singularity {
+            enabled = true
+            autoMounts = true
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
         ```
 
     === "Setonix (Slurm)"
 
-        ```groovy title="conf/slurm.config"
-        singularity {
-            enabled = true
-            autoMounts = true
-            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
-        }
+        ```groovy title="config/slurm.config" hl_lines="3 4 5 6 7 8 15 16"
+        params.slurm_account = ""
 
         executor {
             // For high-throughput jobs, these values should be higher
@@ -324,10 +322,16 @@ TODO queue rate limit
         process {
             executor = 'slurm'
             module = 'singularity/4.1.0-slurm'
-            cache = 'lenient'
-            stageInMode = 'symlink'
             queue = 'work'
             clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            cache = 'lenient'
+            stageInMode = 'symlink'
+        }
+
+        singularity {
+            enabled = true
+            autoMounts = true
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
         ```
 
@@ -351,7 +355,7 @@ While we could manually run the Nextflow command each time, using a run script c
         module load nextflow/24.04.5
         module load singularity
 
-        nextflow run main.nf -profile pbspro --pbspro_account vp91 -c conf/custom.config
+        nextflow run main.nf -profile pbspro --pbspro_account vp91 -c config/custom.config
         ```
 
     === "Setonix (Slurm)"
@@ -362,7 +366,7 @@ While we could manually run the Nextflow command each time, using a run script c
         module load nextflow/24.10.0
         module load singularity/4.1.0-slurm
 
-        nextflow run main.nf -profile slurm --slurm_account courses01 -c conf/custom.config
+        nextflow run main.nf -profile slurm --slurm_account courses01 -c config/custom.config
         ```
 
     3. Save the run.sh file (Windows: Ctrl+S, macOS: Cmd+S).
