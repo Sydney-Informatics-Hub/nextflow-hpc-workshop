@@ -352,3 +352,9 @@ The above command is quite long, and would be a pain to write out every time you
     NA12878_chr20-22.R1_fastqc.html NA12878_chr20-22.R2_fastqc.html
     NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip
     ```
+
+!!! question "How are you going?"
+
+    If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
+    
+    If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.

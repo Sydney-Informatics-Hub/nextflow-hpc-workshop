@@ -27,6 +27,12 @@ In the first part of this workshop, we will familarise ourselves with some found
         An example command to run on Setonix
         ```
 
+!!! question "Let us know if you need help"
+
+    HPCs are complex, shared systems, and this can sometimes introduce unexpected issues and errors. If you ran into any issues at any time during this workshop, please use the **":material-close:{ .close } No"** Zoom react and our facilitators can help you out. If necessary, we will make use of breakout rooms to diagnose significant issues and make sure that everyone is at the same point before moving on to further lessons.
+    
+    We will also provide a Google Docs document for questions you might have.
+
 ## 1.0.1 Log in to your assigned HPC
 
 If you haven't already done so, follow the [setup instructions](../setup.md) to set up VSCode and log in to your assigned HPC with the user account and password provided to you.
@@ -136,6 +142,16 @@ There are two scripts in the main directory: `setup.gadi.sh` and `setup.setonix.
 
 Once completed, the script will print out "Setup complete" to confirm everything has successfully been set up.
 
+!!! warning "Attention Gadi users: If you get this message..."
+
+    On Gadi, you may get the following message at the end of the setup script:
+
+    ```console
+    IMPORTANT: YOUR DEFAULT PROJECT HAS BEEN CHANGED TO 'vp91'. PLEASE LOG OUT AND BACK IN AGAIN TO REFRESH YOUR SESSION.
+    ```
+
+    If you see this message, you will need to close your window and re-connect to the HPC [as per the setup instructions](../setup.md#connecting-to-the-hpcs).
+
 As a final step, go to VSCode's "File" menu and select "Open Folder...". Enter the full path to the `part1` directory in the text box:
 
 === "Gadi (PBS)"
@@ -147,5 +163,11 @@ As a final step, go to VSCode's "File" menu and select "Open Folder...". Enter t
     `/scratch/courses01/<username>/nextflow-on-hpc-materials/part1`
 
 Press Enter and the window will refresh. Now the window is loaded at today's working directory, since everything we will be doing in part 1 of this workshop will be within this folder.
+
+!!! question "Did everything work correctly?"
+
+    The above setup steps are vital for the rest of the workshop. If you ran into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on.
+
+    Otherwise, if you're ready to move on, please let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
 
 We are now ready to get started with the workshop!
