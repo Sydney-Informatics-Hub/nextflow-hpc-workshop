@@ -221,10 +221,11 @@ workflow {
 ```
 
 We have used:  
-- `include { process } from './modules/process-name'` to pull in processes from `modules/`  
-- Input channels (e.g. `reads`, `bwa_index`, `ref`) to define how data moves between processes 
-- Channel operators (e.g. `.map()`, `.groupTuple()`, `.mix()`, `.collect()`) to transform and combine data streams dynamically
-- Parameterised inputs (e.g. `params.ref_fasta`, `params.samplesheet`) so the workflow can be reused on different datasets without having to edit the code
+
+* `include { process } from './modules/process-name'` to pull in processes from `modules/`  
+* Input channels (e.g. `reads`, `bwa_index`, `ref`) to define how data moves between processes   
+* Channel operators (e.g. `.map()`, `.groupTuple()`, `.mix()`, `.collect()`) to transform and combine data streams dynamically  
+* Parameterised inputs (e.g. `params.ref_fasta`, `params.samplesheet`) so the workflow can be reused on different datasets without having to edit the code
 
 This structure makes it easier to swap in alternative tools and processes, especially later when working with scatter-gather patterns - all without cluttering `main.nf` or compromising reproducibility.
 
@@ -259,6 +260,20 @@ profiles {
     pbspro { includeConfig "conf/pbspro.config" }
 }
 ```
+
+Nextflow’s configuration files define how and where each process runs, including what resources to request, which job scheduler to use, and whether to run using containers.
+
+In the context of HPCs, this means specifying:
+
+- How many CPUs, memory, and time a process should use
+- The appropriate **executor** (e.g. PBS on Gadi or SLURM on Setonix)
+- The default **queue/partition** and optional account/project codes
+- Whether and how to use Singularity containers
+- Plus many other useful features
+
+These settings are defined in the main `nextflow.config`, and extended using config profiles - one for each target system. This separation allows you to **run the same pipeline across different HPCs just by switching profiles, without modifying the core workflow.**
+
+Here's what the `nextflow.config` file looks like:
 
 It contains the default parameters required for `main.nf`, and the profiles for Gadi (PBS) and Setonix (Slurm).
 
