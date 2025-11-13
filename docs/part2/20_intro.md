@@ -42,9 +42,15 @@ Navigate to the scratch space for the workshop project, then open your cloned pa
 
 ## 2.0.2 Configuring a custom pipeline
 
-Part 2 of this workshop builds on the foundational HPC and Nextflow configuration concepts introduced in Part 1. We will now apply these concepts to configure a variant calling pipeline for efficient execution on HPC systems.
+Part 2 of this workshop builds on the foundational HPC and Nextflow configuration concepts introduced in Part 1. We will now apply these concepts to configure a custom variant calling pipeline for efficient execution on HPC systems.
 
-To keep the focus on configuration, the pipeline code and logic are provided for you and will not be reviewing the contents of input and output files in detail, beyond configuration needs. We’ll begin by getting the pipeline running on the HPC, then progressively explore how to benchmark performance, understand HPC-specific constraints, and implement optimisations to improve efficiency and resource use.
+To keep the focus on configuration, the pipeline code and logic are provided for you and will not be reviewing the contents of input and output files in detail, beyond configuration needs. 
+
+!!! note
+
+    See our Nextflow For the [Life Sciences materials](https://sydney-informatics-hub.github.io/hello-nextflow-2025/) for an introduction to building Nextflow workflows. This workshop builds on Nextflow for the Life Sciences.   
+
+We’ll begin by getting the pipeline running on the HPC, then progressively explore how to benchmark performance, understand HPC-specific constraints, and implement optimisations to improve efficiency and resource use.
 
 Throughout this section, we’ll continue using the variant calling example to deepen your understanding of the key decisions involved in tuning pipelines for the specific HPC infrastructure you work on.
 
