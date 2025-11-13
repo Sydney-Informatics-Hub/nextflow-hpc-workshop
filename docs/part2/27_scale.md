@@ -3,18 +3,16 @@
 !!! info "Learning objectives"
 
     - Apply an optimised pipeline across multiple samples
-    - Understand and compare sample-level and within-sample parallelism
+    - Understand sample-level and within-sample parallelism
     - Recall best practices for running multi-sample data with samplesheets
 
 TODO: Figure for benchmarking process single sample -> optimise and benchmark -> multi sample
 
-Now that we have a pipeline that has run successfully and efficiently on one, we will no run it on multiple samples in parallel. Explain sample-level paralellism. Refer back to smarter not harder lesson in HPC foundations.
+Now that we have a pipeline that runs successfully and configured for a representative sample, we will now run it on multiple samples.
 
-TODO: 
+Nextflow's "dataflow" model and channels makes this easy to execute. Every additional sample can run independently, in parallel, using the same code and resources we've configured. For more information, refer to the Nextflow for the Life Science's explainers on [Queue Channels](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part1/05_inputs/#queue-channels) and [input samplesheets](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part2/02_fastqc/#223-reading-files-with-a-samplesheet).
 
-Compare to things like removing the need for [loop optimisations](https://pawsey.atlassian.net/wiki/spaces/US/pages/51925998/Loop+Optimisations)
-
-This demonstrates another form of parallelisation, by sample.
+We will now replace the samplesheet we used by modifying our run script with resume, so it runs only on the two new samples.
 
 !!! example "Exercise"
 
@@ -28,7 +26,7 @@ This demonstrates another form of parallelisation, by sample.
         module load nextflow/24.04.5
         module load singularity
 
-        nextflow run main.nf -profile pbspro --pbspro_account vp91 -c conf/custom.config --samplesheet "samplesheet_full.csv"
+        nextflow run main.nf -profile pbspro --pbspro_account vp91 -c config/custom.config --samplesheet "samplesheet_full.csv" -resume
         ```
 
     === "Setonix (Slurm)"
@@ -39,9 +37,8 @@ This demonstrates another form of parallelisation, by sample.
         module load nextflow/24.10.0
         module load singularity/4.1.0-slurm
 
-        nextflow run main.nf -profile slurm --slurm_account courses01 -c conf/custom.config --samplesheet "samplesheet_full.csv"
+        nextflow run main.nf -profile slurm --slurm_account courses01 -c config/custom.config --samplesheet "samplesheet_full.csv" -resume
         ```
-
 
     Save your script and re-run!
 
@@ -95,4 +92,14 @@ This demonstrates another form of parallelisation, by sample.
         Succeeded   : 22
         ```
 
-Dynamic resourcing important to implement here too.
+Note that the 
+
+!!! example "Exercise" 
+
+    Open the timeline file - note the parallel
+
+## Next steps
+
+When developing and running workflows on "real" data, input data is rarely uniform. While the sample data used here was intentially consistent, actual data sets often contain variation in file size, formats, sequencing depth and libraries, or metadata. These differences can impact performance and potentially requires updating the workflow structure (`main.nf`, modules) to suit.
+
+As you scale up, these differences may require you to re-configure parts of your workflow, for example, by using dynamic resourcing strategies from the previous lesson. Configuration is an iterative process - get it right for a representative sample, scale up, iterate and optimise as you go.
