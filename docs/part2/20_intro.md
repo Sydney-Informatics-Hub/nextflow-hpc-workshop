@@ -98,7 +98,7 @@ to maintain, and simple to adapt across different environments - like moving fro
 At a glance:
 
 ```bash
-tree
+tree -L 2
 ```
 
 ```console
@@ -116,7 +116,9 @@ tree
 │   └── ...
 ├── nextflow.config         # Base parameters and profile defs
 ├── samplesheet_full.csv
-└── samplesheet_single.csv
+├── samplesheet_single.csv
+└── ...
+
 ```
 
 ### 2.0.4.1 `main.nf` and `modules/`: What to run?
