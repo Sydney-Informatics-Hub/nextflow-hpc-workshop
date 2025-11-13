@@ -42,9 +42,15 @@ Navigate to the scratch space for the workshop project, then open your cloned pa
 
 ## 2.0.2 Configuring a custom pipeline
 
-Part 2 of this workshop builds on the foundational HPC and Nextflow configuration concepts introduced in Part 1. We will now apply these concepts to configure a variant calling pipeline for efficient execution on HPC systems.
+Part 2 of this workshop builds on the foundational HPC and Nextflow configuration concepts introduced in Part 1. We will now apply these concepts to configure a custom variant calling pipeline for efficient execution on HPC systems.
 
-To keep the focus on configuration, the pipeline code and logic are provided for you and will not be reviewing the contents of input and output files in detail, beyond configuration needs. We’ll begin by getting the pipeline running on the HPC, then progressively explore how to benchmark performance, understand HPC-specific constraints, and implement optimisations to improve efficiency and resource use.
+To keep the focus on configuration, the pipeline code and logic are provided for you and will not be reviewing the contents of input and output files in detail, beyond configuration needs. 
+
+!!! info "Learn to build custom Nextflow workflows"
+
+    See our Nextflow For the [Life Sciences materials](https://sydney-informatics-hub.github.io/hello-nextflow-2025/) for an introduction to building Nextflow workflows. This workshop builds on Nextflow for the Life Sciences.   
+
+We’ll begin by getting the pipeline running on the HPC, then progressively explore how to benchmark performance, understand HPC-specific constraints, and implement optimisations to improve efficiency and resource use.
 
 Throughout this section, we’ll continue using the variant calling example to deepen your understanding of the key decisions involved in tuning pipelines for the specific HPC infrastructure you work on.
 
@@ -65,9 +71,9 @@ Throughout this section, we’ll continue using the variant calling example to d
 There are several reasons why you might need to develop or adapt your own
 Nextflow pipeline:
 
-- **Tailored to your specific needs** - Custom pipelines give you full control over input/output formats, tool parameters, workflow logic, and configuration options.
-- **Gaps in available pipelienes** - Existing pipelines (e.g. nf-core) may not cover your use case, or a relevant pipeline may not exist at all.
-- **Resource optimisation** - nf-core pipelines are generalised by design and may be over-provisioned or misconfigured for your HPC environment. Although easier to get running out-of-the box, this could lead to inefficient use of HPC resources or being charged excess service units (SUs)!
+- **Tailored to your specific needs**: custom pipelines give you full control over input/output formats, tool parameters, workflow logic, and configuration options.
+- **Gaps in available pipelienes**: existing pipelines (e.g. nf-core) may not cover your use case, or a relevant pipeline may not exist at all.
+- **Resource optimisation**: nf-core pipelines are generalised by design and may be over-provisioned or misconfigured for your HPC environment. Although easier to get running out-of-the box, this could lead to inefficient use of HPC resources or being charged excess service units (SUs)!
 
 ## 2.0.3 The scenario: variant calling on HPC
 
@@ -79,7 +85,8 @@ We start with an unoptimised and minimally configured pipeline (like something t
 
 The diagram below shows a high level overview of the workflow we will be creating, starting with the raw data for each patient, mapping it against a human reference genome file, and then identifying and summarising the genetic variants found in the input data.  
 
-![](figs/00_workflow_illustration.png)
+![](../part1/figs/00_workflow_illustration.png)
+TODO revise this diagram to describe steps, 
 
 ## 2.0.4 The pipeline file anatomy
 
