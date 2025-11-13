@@ -1,4 +1,4 @@
-# Configuring custom Nextflow pipelines
+# Con
 
 !!! info "Learning objectives"
 
@@ -22,23 +22,23 @@
 
     See the recommendations on running the head job for [Gadi](https://opus.nci.org.au/spaces/Help/pages/241926895/Persistent+Sessions) and [Setonix](https://pawsey.atlassian.net/wiki/spaces/US/pages/286097469/How+to+Run+Workflows+on+the+Workflow+Nodes).
 
-Before launching a full-scale analysis, it is important to optimise your pipeline using a small, representative subset of your data. This helps you:
+It is useful to develop your pipelines using a small, representative subset of your data. This allows you:
 
-- Estimate the computational requirements of each step
-- Configure your pipeline
-- Avoid wasting service units (SUs) during development
+- Rapidly iterate your workflow design
+- Validate environment and software set up
+- Tune pipeline configuration without burning service units
+- Reduce queue wait times
+- Estimate basic performance characteristics of each process
 
-In this case, we’re starting with the reads from a single individual (NA1287) from the cohort. This is a good proxy for the other two samples as they all contain the same subset of chromosomes (20, 21, and 22).
+## 2.1.1 Run without configuration
 
-Once we’re confident everything works as intended, we can scale up to run on the full dataset.
+We will start configuring our custom pipeline with using a subset of raw reads from a single individual (NA1287) in our sample cohort. This is a good proxy for the other two samples as they all contain the same subset of chromosomes (20, 21, and 22) and have been sequenced to the same depth. Once we’re confident everything works as intended, we will scale up to run on the full dataset.
 
-In real-world pipelines, throughput becomes a key consideration of how you choose to configure pipelines. It’s not just about how fast one sample runs, but how many samples can be processed concurrently. A well-optimised configuration ensures that your pipeline makes efficient use of the HPC resources available, reducing queue times, avoiding bottlenecks, and increasing the number of samples processed per unit time.
-
-The first step is to get our **custom pipeline running on the HPC**. This means running the head job so that the tasks are scheduled properly on the compute nodes.
+The first step is to get our custom pipeline running individual tasks on the compute nodes.
 
 !!! example "Exercises"
 
-    First load the Nextflow and singularity modules, following the same method we learnt yesterday:
+    1. Load the Nextflow and singularity modules, following the same method we learnt yesterday:
 
     === "Gadi (PBS)"
         ```bash
@@ -50,7 +50,7 @@ The first step is to get our **custom pipeline running on the HPC**. This means 
         module load nextflow/24.10.0 singularity/4.1.0-slurm
         ```
 
-    Then execute your Nextflow command. **(Note: Your run may fail here - that's ok for this step!)**
+    2. Run your Nextflow command
 
     === "Gadi (PBS)"
 
