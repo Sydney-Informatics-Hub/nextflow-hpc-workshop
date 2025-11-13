@@ -1,4 +1,4 @@
-# Con
+# Running a custom pipeline on HPC
 
 !!! info "Learning objectives"
 
@@ -8,6 +8,8 @@
     and interpretting exit codes and error messages
     - Know how to find and specify system-dependent HPC values such as queues/partitions
     - Recall how Nextflow interacts with HPC components
+
+TODO these learning objectives arent accurate, update them
 
 !!! warning "Testing and developing in the right environment"
 
@@ -34,25 +36,270 @@ It is useful to develop your pipelines using a small, representative subset of y
 
 We will start configuring our custom pipeline with using a subset of raw reads from a single individual (NA1287) in our sample cohort. This is a good proxy for the other two samples as they all contain the same subset of chromosomes (20, 21, and 22) and have been sequenced to the same depth. Once we’re confident everything works as intended, we will scale up to run on the full dataset.
 
-The first step is to get our custom pipeline running individual tasks on the compute nodes.
+Let's start by running the pipeline out of the box to identify what we need to configure: 
 
-!!! example "Exercises"
 
-    1. Load the Nextflow and singularity modules, following the same method we learnt yesterday:
+!!! example "Exercise"
 
-    === "Gadi (PBS)"
+    1. Load the Nextflow module, following the same method we learnt yesterday:
+
+    === "Gadi (PBSpro)"
         ```bash
-        module load nextflow/24.04.5 singularity
+        module load nextflow/24.04.5 
         ```
 
     === "Setonix (Slurm)"
         ```bash
-        module load nextflow/24.10.0 singularity/4.1.0-slurm
+        module load nextflow/24.10.0
         ```
 
-    2. Run your Nextflow command
+    2. Run your Nextflow command out of the box:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
+
+        ```bash
+        nextflow run main.nf
+        ```
+
+        ??? abstract "Output"
+
+            ```
+            N E X T F L O W   ~  version 24.04.5
+
+            Launching `main.nf` [suspicious_almeida] DSL2 - revision: 5e5c4f57e0
+
+            executor >  local (2)
+            [a3/a6da06] FASTQC (fastqc on NA12877) [100%] 1 of 1, failed: 1 ✘
+            [16/860647] ALIGN (1)                  [100%] 1 of 1, failed: 1 ✘
+            [-        ] GENOTYPE                   -
+            [-        ] JOINT_GENOTYPE             -
+            [-        ] STATS                      -
+            [-        ] MULTIQC                    -
+            ERROR ~ Error executing process > 'FASTQC (fastqc on NA12877)'
+
+            Caused by:
+            Process `FASTQC (fastqc on NA12877)` terminated with an error exit status (127)
+
+
+            Command executed:
+
+            mkdir -p "fastqc_NA12877"
+            fastqc -t 1 --outdir "fastqc_NA12877" --format fastq NA12877_chr20-22.R1.fq.gz NA12877_chr20-22.R2.fq.gz
+
+            Command exit status:
+            127
+
+            Command output:
+            (empty)
+
+            Command error:
+            .command.sh: line 3: fastqc: command not found
+
+            Work dir:
+            /scratch/project/username/nextflow-on-hpc-materials/part2/work/a3/a6da061dd65d454add3f000923235d
+
+            Tip: when you have fixed the problem you can continue the execution adding the option `-resume` to the run command line
+
+            -- Check '.nextflow.log' file for details
+            ```
+
+    === "Setonix (Slurm)"
+
+        ```bash
+        nextflow run main.nf
+        ```
+
+        ??? abstract "Output"
+
+            ```console
+             N E X T F L O W   ~  version 24.10.0
+
+            Launching `main.nf` [trusting_brown] DSL2 - revision: 5e5c4f57e0
+
+            executor >  local (2)
+            executor >  local (2)
+            [e6/21a49e] FASTQC (fastqc on NA12877) [100%] 1 of 1, failed: 1 ✘
+            [68/bda517] ALIGN (1)                  [100%] 1 of 1, failed: 1 ✘
+            [-        ] GENOTYPE                   -
+            [-        ] JOINT_GENOTYPE             -
+            [-        ] STATS                      -
+            [-        ] MULTIQC                    -
+            ERROR ~ Error executing process > 'ALIGN (1)'
+
+            Caused by:
+            Process `ALIGN (1)` terminated with an error exit status (127)
+
+
+            Command executed:
+
+            bwa mem -t 1 -R "@RG\tID:NA12877\tPL:ILLUMINA\tPU:NA12877\tSM:NA12877\tLB:NA12877\tCN:SEQ_CENTRE" ref/Hg38.subsetchr20-22.fasta NA12877_chr20-22.R1.fq.gz NA12877_chr20-22.R2.fq.gz | samtools sort -O bam -o NA12877.bam
+            samtools index NA12877.bam
+
+            Command exit status:
+            127
+
+            Command output:
+            (empty)
+
+            Command error:
+            .command.sh: line 2: samtools: command not found
+            .command.sh: line 2: bwa: command not found
+
+            Work dir:
+            /scratch/project/username/nextflow-on-hpc-materials/part2/work/68/bda517eeaa47f5ba24a9c401bdeb0e
+
+            Tip: view the complete command output by changing to the process work dir and entering the command `cat .command.out`
+
+            -- Check '.nextflow.log' file for details
+            ```
+
+!!! question "Why did it fail?"
+    Use the output printed to your screen, `.nextflow.log` file in your current directory, and `.command` files in the work directory of the failed task to identify what caused your workflow run to fail. 
+
+    ??? abstract "Answer"
+        Our run stopped because one or more processes failed. [Exit status `127` in Linux environments](https://linuxconfig.org/how-to-fix-bash-127-error-return-code) means your system was not able to find the command referenced in the process. This suggests the software is not available in our environment. 
+
+## 2.1.2 And run with containers
+
+All our process modules specify a container to run inside. This can only happen if Singularity is explicitly enabled in our configuration. Let's enable this in our system-specific configuration files:  
+
+!!! example "Exercise"
+
+    Load the Singularity modules, following the same method we learnt yesterday:
+
+    === "Gadi (PBSpro)"
+        ```bash
+        module load singularity
+        ```
+
+    === "Setonix (Slurm)"
+        ```bash
+        module load singularity/4.1.0-slurm
+        ```
+
+    Add the following to your system-specific config file that you can find in `config/`. Remember, we have already enabled profiles in our `nextflow.config`, so no need to edit that file. 
+
+    === "Gadi (config/pbspro.config)"
+        ```console
+        process {
+        // Load the globally installed singularity module before running any process
+        module = 'singularity'
+        }
+
+        singularity {
+        // Explicitly turns on container execution
+        enabled = true
+        // Automatically bind-mount working directory on scratch and common system paths
+        autoMounts = true
+        // Define location of stored container images 
+        cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity""${projectDir}/singularity" 
+        }
+
+        ```
+
+    === "Setonix (config/pbspro.config)"
+        ```console
+
+        process {
+        // Load the globally installed singularity/4.1.0-slurm module before running any process
+        module = 'singularity/4.1.0-slurm'
+        }
+
+        singularity {
+        // Explicitly turns on container execution
+        enabled = true
+        // Automatically bind-mount working directory on scratch and common system paths
+        autoMounts = true
+        // Define location of stored container images 
+        cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+    
+    3. Run your updated Nextflow command:
+
+    === "Gadi (PBSpro)"
+
+        ```bash
+        nextflow run main.nf -profile pbspro 
+        ```
+
+        ??? abstract "Output"
+
+            ```
+            executor >  pbspro (5)
+            [e4/dc7852] FASTQC (fastqc on NA12889) | 3 of 3 ✔
+            [3f/c0e6ae] ALIGN (1)                  | 1 of 1 ✔
+            [d0/6677c4] GENOTYPE (1)               | 1 of 1, failed: 1 ✘
+            [-        ] JOINT_GENOTYPE             -
+            [-        ] STATS                      -
+            [-        ] MULTIQC                    | 0 of 1
+            ERROR ~ Error executing process > 'GENOTYPE (1)'
+
+            Caused by:
+              Process `GENOTYPE (1)` terminated with an error exit status (247)
+
+
+            Command executed:
+
+              gatk --java-options "-Xmx4g" HaplotypeCaller -R Hg38.subsetchr20-22.fasta -I NA12877.bam -O NA12877.g.vcf.gz -ERC GVCF
+
+            Command exit status:
+              247
+
+            Command output:
+              (empty)
+
+            Command error:
+            ```
+
+    === "Setonix (Slurm)"
+
+        ```bash
+        nextflow run main.nf -profile slurm 
+        ```
+
+        ??? abstract "Output"
+
+            ```console
+            N E X T F L O W   ~  version 24.10.0                 14:13:57
+
+            Launching `main.nf` [dreamy_cuvier] DSL2 - revision: 5e5c4f57e0
+
+            executor >  slurm (8)
+            [c4/babfde] FASTQC (fastqc on NA12877) | 3 of 3 ✔
+            [6f/7a523b] ALIGN (1)                  | 1 of 1 ✔
+            [bf/525fc9] GENOTYPE (1)               | 1 of 1 ✔
+            [5c/ea7cb0] JOINT_GENOTYPE (1)         | 1 of 1 ✔
+            [7f/4e64dc] STATS (1)                  | 1 of 1 ✔
+            [70/254c9e] MULTIQC                    | 1 of 1 ✔
+            Completed at: 05-Nov-2025 13:59:02
+            Duration    : 2m 21s
+            CPU hours   : (a few seconds)
+            Succeeded   : 8
+            ```
+
+!!! question "Why did it fail?"
+    Use the output printed to your screen, `.nextflow.log` file in your current directory, and `.command` files in the work directory of the failed task to identify what caused your workflow run to fail. 
+
+    ??? abstract "Answer"
+        Blah blah 
+
+
+## 2.1.3 And run on the right queues/partitions
+
+Blah blah 
+
+!!! example "Exercise"
+
+    1. Load the Singularity modules, following the same method we learnt yesterday:
+
+
+    2. Add the following to your system-specific config file that you can find in `conf/`
+    
+    Run the updated Nextflow command:
+
+    === "Gadi (PBSpro)"
 
         ```bash
         nextflow run main.nf -profile pbspro --pbspro_account vp91
@@ -192,7 +439,7 @@ This is why **explicit resource configuration** is important. Even though the pi
 
 In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory. Let's explicitly configure that in the next step.
 
-## 2.1.2 Why do we have so many configuration files?
+## 2.1.4 Why do we have so many configuration files?
 
 ![](figs/00_custom_configs.png)
 
@@ -211,7 +458,7 @@ Each configuration file serves a distinct purpose:
 
 While this structure is a useful starting point, it is not the only way to structure your configuration. The nf-core community have their own set of standards with some presets for some instutitions (there are ones available for Gadi and Setonix!). However, it is important to double check that these configs are suitable and optimal for your purposes. For more information see [nf-core/configs](https://nf-co.re/configs/)
 
-## 2.1.3 Minimal configuration to run on HPC
+## 2.1.5 Minimal configuration to run on HPC
 
 We will continue to get the pipeline running with a minimum viable configuration. This serves as a baseline to confirm everything is working correctly (such as scheduling, containers are enabled, etc.), prior to any fine tuning. We want to ensure that:
 

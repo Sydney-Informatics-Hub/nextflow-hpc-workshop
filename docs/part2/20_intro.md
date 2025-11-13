@@ -272,59 +272,11 @@ Nextflow’s configuration files define how and where each process runs, includi
 In the context of HPCs, this means specifying:
 
 - How many CPUs, memory, and time a process should use
-- The appropriate **executor** (e.g. PBS on Gadi or SLURM on Setonix)
-- The default **queue/partition** and optional account/project codes
+- The appropriate executor (e.g. PBSpro on Gadi or SLURM on Setonix)
+- The default queue/partition and optional account/project codes
 - Whether and how to use Singularity containers
 
-These settings are defined in the main `nextflow.config`, and extended using config profiles. This separation will allow us to run the same pipeline across different HPCs just by switching profiles, without modifying the core workflow.
-
-Let's take a look at the system-specific  configuration files in `conf/`:
-
-=== "Gadi (PBSpro)"
-
-    ```bash
-    cat conf/pbspro.config
-    ```
-    ```groovy title="conf/pbspro.config"
-    params.pbspro_account = ""
-
-    process {
-      executor = 'pbspro'
-      queue = 'normalbw'
-      clusterOptions = "-P ${params.pbspro_account}"
-      module = 'singularity'
-    }
-
-    singularity {
-      enabled = true
-      autoMounts = true
-      cacheDir = "${projectDir}/singularity"
-    }
-    ```
-
-=== "Setonix (Slurm)"
-
-    ```bash
-    cat conf/slurm.config
-    ```
-    ```groovy title="conf/slurm.config"
-    params.slurm_account = ""
-
-    process {
-      executor = 'slurm'
-      queue = 'work'
-      clusterOptions = "--account=${params.slurm_account}"
-      module = 'singularity/4.1.0-slurm'
-    }
-
-    singularity {
-      enabled = true
-      autoMounts = true
-      cacheDir = "${projectDir}/singularity"
-    }
-    ```
-
-This setup makes it easy for us to run the same workflow in different environments. By the end of Part 2, we’ll have extended these configs to better reflect the characteristics of each system, improving efficiency without touching the workflow logic itself.
+These settings are defined in the main `nextflow.config`, and extended using config profiles. This separation will allow us to run the same pipeline across different HPCs just by switching profiles, without modifying the core workflow. We will build our system-specific configuration files in `conf/` in the next lesson:
 
 !!! note "Configuration imagination"
     While we are using custom configs to allow us to make our pipeline "portable" so it can run on NCI Gadi and Pawsey Setonix HPCs, you can also use custom configurations to tailor your pipeline to many other scenarios. For example: 
