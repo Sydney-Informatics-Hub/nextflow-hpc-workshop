@@ -442,6 +442,10 @@ We now have a configuration file with both our executor defined and singularity 
         }
         ```
 
+        !!! note "Read the docs!"
+
+            Remember to check [NCI's "Queue Limits" page](https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits) when configuring the `queue` for your pipelines on Gadi, as it contains important information about how and when to select each particular queue. We are using a fairly naive selection method today for simplicity, but more complex queue selection methods are possible and advisable for larger pipelines.
+
     === "Setonix (Slurm)"
 
         On Setonix, the `work` queue supports tasks with up to 230GB of memory. If we need more than that, we want to use the `highmem` queue. We can achieve this using a short-hand if-else statement in groovy: `<condition> ? <value if true> : <value if false>`. We can ask whether the memory required by the current task (`task.memory`) is less than 230GB; if so, we set `queue` to `work`, otherwise we set it to `highmem`. By wrapping the whole statement in curly braces, we ensure that it is evaluated when the task runs:
@@ -466,6 +470,10 @@ We now have a configuration file with both our executor defined and singularity 
             cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
         ```
+
+        !!! note "Read the docs!"
+
+            Remember to check [Pawsey's "Running Jobs on Setonix" page](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix) when configuring the `queue` for your pipelines on Setonix, as it contains important information about how and when to select each particular queue. We are using a fairly naive selection method today for simplicity, but more complex queue selection methods are possible and advisable for larger pipelines.
 
     We want to add just a couple of extra options to the process definition. The first option is the `stageInMode` option. We will explicitly tell Nextflow that we want to use **symbolic links**. These are essentially shortcuts that point to another file on the system, and let us refer to inputs within our working directory without physically copying them in, which would use up lots of additional storage space. To set this, we define `stageInMode = 'symlink'` in the `process` scope.
 
@@ -730,3 +738,9 @@ We now have a configuration file with both our executor defined and singularity 
         !!! note
         
             If your pipeline hasn't finished after a few minutes, you can cancel the run with a `Ctrl + C` keyboard combination. In the final section for today, we will create another configuration file to layer on top of our exisitng configuration and fine-tune our tasks to run more efficiently.
+
+!!! question "How are you going?"
+
+    If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
+    
+    If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.

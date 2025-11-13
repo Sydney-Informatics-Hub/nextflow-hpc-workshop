@@ -218,3 +218,9 @@ profiles {
         ```
 
 Now that we've recapped the basics of Nextflow and seen how a simple Nextflow pipeline can be run on an HPC, in the next section we will look at how we can start running some more complex workflows on HPCs, and how we can configure them to more efficiently utilise the resources available to them.
+
+!!! coffee "Need a break?"
+
+    We've gone through a lot so far, so before we continue on, feel free to take a break!
+
+    Also, if you have run into any issues so far please react with a **":material-close:{ .close } No"** and we can help out.

@@ -154,7 +154,7 @@ Process directives, such as CPU and memory requirements, can be configured in a 
     - `BAM_TO_CRAM_MAPPING`
     - `MULTIQC`
 
-    From the trace file we received from the previous run of `sarek`, we saw that the processes were requesting between 1 and 24 CPUs, and up to 30 GB of memory for the `GATK4_CREATESEQUENCEDICTIONARY` process. For our example dataset, these values are overkill. Instead, we can get away with just 1-2 CPUs and 1-2GB of memory for each task. We'll also give each task just 2 minutes to complete, which is more than enough time.
+    From the trace file we received from the previous run of `sarek`, we saw that the processes were requesting between 1 and 24 CPUs, and up to 30 GB of memory for the `BWAMEM1_MEM` process. For our example dataset, these values are overkill. Instead, we can get away with just 1-2 CPUs and 1-2GB of memory for each task. We'll also give each task just 2 minutes to complete, which is more than enough time.
 
     Let's translate this into the Nextflow configuration format:
 

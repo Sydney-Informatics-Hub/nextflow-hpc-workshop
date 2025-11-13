@@ -202,6 +202,12 @@ As mentioned in the [previous section](./02_1_nfcore_intro.md), we will be runni
             --igenomes_ignore true
         ```
 
+!!! question "How are you going?"
+
+    If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
+    
+    If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.
+
 ## 2.2.3 Not quite ready!
 
 We've created a full run script for our pipeline, but we won't run it just yet, because we haven't actually told Nextflow to use the HPC scheduler. If we were to run the workflow, it would attempt to run on the login node where we are currently working!

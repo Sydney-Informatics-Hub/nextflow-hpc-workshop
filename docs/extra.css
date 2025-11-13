@@ -3,6 +3,7 @@
   --md-primary-fg-color--dark:  #ac2d14;
   --md-primary-fg-color--light: #ee806b;
   --md-typeset-color:           #424242;
+  --md-admonition-icon--coffee: url('assets/coffee.svg')
 }
 
 [data-md-color-scheme="slate"] {
@@ -10,4 +11,27 @@
   --md-primary-fg-color--dark:  #ac2d14;
   --md-primary-fg-color--light: #ee806b;
   --md-typeset-color:           #cccccc;
+}
+
+.md-typeset .admonition.coffee,
+.md-typeset details.coffee {
+  border-color: rgb(43, 155, 70);
+}
+.md-typeset .coffee > .admonition-title,
+.md-typeset .coffee > summary {
+  background-color: rgba(43, 155, 70, 0.1);
+}
+.md-typeset .coffee > .admonition-title::before,
+.md-typeset .coffee > summary::before {
+  background-color: rgb(43, 155, 70);
+  -webkit-mask-image: var(--md-admonition-icon--coffee);
+          mask-image: var(--md-admonition-icon--coffee);
+}
+
+.check {
+  color: rgb(43, 155, 70);
+}
+
+.close {
+  color: rgb(155, 43, 43);
 }
