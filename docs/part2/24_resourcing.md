@@ -34,7 +34,14 @@ To begin tuning our workflow, we first need to understand how many resources eac
 
 === "Gadi (PBS)"
 
-    TODO: RUN AND ADD
+    | name                       | status    | exit | duration | realtime | cpus | %cpu  | memory | %mem | peak_rss |
+    | -------------------------- | --------- | ---- | -------- | -------- | ---- | ----- | ------ | ---- | -------- |
+    | ALIGN (1)                  | COMPLETED | 0    | 29.6s    | 1s       | 1    | 93.7% | 4 GB   | 0.0% | 95.8 MB  |
+    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 34.5s    | 5s       | 1    | 76.2% | 4 GB   | 0.1% | 286.6 MB |
+    | GENOTYPE (1)               | COMPLETED | 0    | 59.9s    | 45s      | 1    | 97.6% | 4 GB   | 0.5% | 950.3 MB |
+    | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 34.8s    | 16s      | 1    | 93.3% | 4 GB   | 0.3% | 508.8 MB |
+    | STATS (1)                  | COMPLETED | 0    | 19.9s    | 0ms      | 1    | 73.4% | 4 GB   | 0.0% | 3.1 MB   |
+    | MULTIQC                    | COMPLETED | 0    | 29.9s    | 4.7s     | 1    | 79.5% | 4 GB   | 0.0% | 97.2 MB  |
 
 === "Setonix (Slurm)"
 
@@ -46,7 +53,6 @@ To begin tuning our workflow, we first need to understand how many resources eac
     | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 19.2s    | 8s       | 1    | 204.2% | 2 GB   | 0.2% | 466 MB   |
     | STATS (1)                  | COMPLETED | 0    | 14.9s    | 1s       | 1    | 45.2%  | 2 GB   | 0.0% | 2 MB     |
     | MULTIQC                    | COMPLETED | 0    | 19.9s    | 5.3s     | 1    | 62.4%  | 2 GB   | 0.0% | 78.6 MB  |
-
 
 While we could configure each process to match these values, we’re instead going to take a broader view. We'll explore how HPC systems allocate memory per CPU, and how to align our process requests to match this architecture more effectively.
 
@@ -85,10 +91,9 @@ Most HPC systems allocate jobs to nodes based on both CPU and memory requests, w
 
 This means there is an **average amount of memory per CPU** - this becomes an important consideration for optimising resource requests for your Nextflow processes.
 
-Based on the discussion of the optimal `FASTQC` threads in Part 1, we will give `FASTQC` two CPUs to process each of the paired-end reads. According to the trace file, it does not require much memory, so the limiting
-resource here is CPU.
+## Exploring resource options for FASTQC
 
-The trace file also nicely shows that the CPU efficiency is 
+Based on the Part 1 discussion on the optimal number of `FASTQC` threads, we will give `FASTQC` two CPUs to process each of the paired-end reads. According to the trace file, it does not require much memory, so the limiting resource here is CPU.
 
 Let's find the effective usable memory per CPU for the `normalbw` queue on Gadi, and the `work` partition on Setonix.
 
@@ -138,51 +143,75 @@ Let’s look at the trade-offs.
 
 If we request:
 
-- 2 CPUs and 4 GB memory (on the Setonix `work` partition), this takes advantage of all the memory you’re entitled to, but `FASTQC` won't actually use that memory. So you're not getting any extra performance and may lengthen the time in queue.
-- 2 CPUs and 1 GB memory, on the other hand, still gives `FASTQC` enough to run, and because you're requesting less RAM, your job may be scheduled faster - as it can fit into more available nodes. This is more memory efficient too.
+=== "Gadi (PBS Pro)"
 
-We will proceed with the 2 CPUs 1 GB memory option for `FASTQC`
+    - 2 CPUs and 8 GB memory (on the Gadi `normalbw` partition), this takes advantage of all the memory you’re entitled to, but `FASTQC` won't actually use that memory. So you're not getting any extra performance and may lengthen the time in queue.
+    - 2 CPUs and 1 GB memory, on the other hand, still gives `FASTQC` enough to run, and because you're requesting less RAM, your job may be scheduled fasterm as it can fit into more available nodes. This is more memory efficient too.
 
-TODO Gadi equivalent
+=== "Setonix (Slurm)"
 
-### Configuring `withLabel` and `withName`
+    - 2 CPUs and 4 GB memory (on the Setonix `work` partition), this takes advantage of all the memory you’re entitled to, but `FASTQC` won't actually use that memory. So you're not getting any extra performance and may lengthen the time in queue.
+    - 2 CPUs and 1 GB memory, on the other hand, still gives `FASTQC` enough to run, and because you're requesting less RAM, your job may be scheduled fasterm as it can fit into more available nodes. This is more memory efficient too.
+        
+We will proceed with the 2 CPUs 1 GB memory option for `FASTQC` as the job won't benefit from the extra memory.
 
-tl;dr recall that configuration can be workflow-specific to run across different systems, but needs to be system-specific to use the infrastructure effectively. Here, we will apply resource configuration settings in the `config/custom.config` as we are tuning according to the HPC we are running it on.
+### Configuring with process names (`withName`)
 
-Processes that require the same resources are recommended to be
-configured using the `withLabel` process directive. This let's you
-control one set of values instead of having to change the values for each
-process indivdually.
+Recall that configuration can be workflow-specific to run across different systems, but needs to be system-specific to use the infrastructure effectively. Here, we will apply resource configuration settings in the `config/custom.config` as we are tuning according to the HPC we are running it on.
 
-In this case, `withName` will be used for processes `FASTQC` and `GENOTYPE`,
-where extra tuning is required.
+`withName` is a powerful tool to:
+    - Specifically targets individual modules
+    - Specify multiple module names using wildcards (`*` or `|`)
+    - Avoid editing the module.nf file to add a process label (remember: separation of workflow logic and system-specific tuning)
+    - Has a higher priority than withLabel
 
-Note that there is redundancy between the now default `process` configuration
-and the `withLabel: 'process_small` configuration. This is useful to have when
-new processes/modules are being added, to be explicit what the default is vs.
-the ones we intentionally want with the default settings.
+!!! question "Configuring `withLabel` and configuration priorities"
 
-Refer back to the trace files. In summary:
+    Processes that require similar resources can be configured using the `withLabel` process selector. Processes can be tagged with multiple labels to flexibly categorise different runtime needs (e.g. high memory). However, `withLabel` may be overwritten by settings defined by `withName`.
 
-- FASTQC requires 2 CPUs, 1GB
-- ALIGN and JOINT_GENOTYPE maxed out at 1 CPU. Good indication that bwa mem and GATK could benefit from more CPUs. Memory is ok, so it is similar to the requirements for FASTQC.
-- GENOTYPE has a 50% mem usage. Indicates could be given more memory, high wall time too.
-- STATS and MULTIQC are fine with the default. 
+    For more information, see [custom resource configuration using process labels](https://sydney-informatics-hub.github.io/customising-nfcore-workshop/notebooks/2.3_configEnv.html#custom-resource-configuration-using-process-labels).
+
+To summarise and group the resource usage from the trace file:  
+
+| Process                         | Resources | Rationale                                        |
+| ------------------------------- | --------- | ------------------------------------------------ |
+| FASTQC                          | 2CPU, 1GB | Fix 2CPU to process R1 and R2, memory sufficient |
+| ALIGN, GENOTYPE, JOINT_GENOTYPE | 2CPU, 1GB | High CPU utilisation >90%                        |
+| GENOTYPE                        | 2CPU, 2GB |                                                  |
+| STATS, MULTIQC                  | 1CPU, 2GB |                                                  |
 
 Let's record these in our configs, with a bit of buffer so things don't fail.
 
-!!! example "Exercise"
+Note that we add them to the config file, and not the modules. This keeps the workflow logic and system-specific configuration separate.
 
-    Update your custom configs:
+!!! example "Exercise"
 
     === "Gadi (PBS)"
 
         ```groovy title="conf/custom.config"
-        # TODO: RUNA ND ADD
-         process {
-            cpu = 1 
+        process {
+            cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
             memory = 4.GB
-         }
+        
+            withName: /FASTQC|ALIGN|JOINT_GENOTYPE/ {
+                cpus = 2
+                memory = 1.GB
+                time = 2.minutes
+            }
+    
+            withName: GENOTYPE {
+                cpus = 2
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+            withName: /STATS|MULTIQC/ {
+                cpus = 1
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+        }
         ```
 
     === "Setonix (Slurm)"
@@ -192,76 +221,25 @@ Let's record these in our configs, with a bit of buffer so things don't fail.
             cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
             memory = 2.GB
 
-            // Configuration for processes labelled as "process_small"
-            // STATS and multiqc
-            withLabel: 'process_small' {
-                cpus = 1
-                memory = 2.GB
-                time = 2.minutes
-            }
-
-            // ALIGN AND JOINT GENOTYPE AND FASTQC
-            withLabel: 'process_2cpus' {
+            withName: /FASTQC|ALIGN|JOINT_GENOTYPE/ {
                 cpus = 2
                 memory = 1.GB
                 time = 2.minutes
             }
-
-            // GENOTYPE requires extra walltime and mem
-            withName: 'GENOTYPE' {
+    
+            withName: GENOTYPE {
                 cpus = 2
                 memory = 2.GB
-                time = 5.minutes
+                time = 2.minutes
             }
-        ```
 
-Next, we need to provide the labels to the processes. 
-
-Note that we add them to the config file, and not the modules. This keeps the workflow logic and system-specific configuration separate.
-
-!!! example "Exercise"
-
-    === "Gadi (PBS)"
-
-        ```groovy title="conf/custom.config"
-        # TODO: RUNA ND ADD
-         process {
-            cpu = 1 
-            memory = 4.GB
-         }
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```groovy title="conf/custom.config"
-        process {
-    
-        withName: /FASTQC|ALIGN|JOINT_GENOTYPE/ {
-            cpus = 2
-            memory = 1.GB
-            time = 2.minutes
-        }
-    
-        withName: /STATS|MULTIQC/ {
-            cpus = 1
-            memory = 2.GB
-            time = 2.minutes
-        }
-    
-        // GENOTYPE requires extra walltime and mem
-        withName: GENOTYPE {
-            cpus = 2
-            memory = 2.GB
-            time = 5.minutes
-        }
-
-        cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
-        memory = 2.GB
-
+            withName: /STATS|MULTIQC/ {
+                cpus = 1
+                memory = 2.GB
+                time = 2.minutes
+            }
         }
         ```
-    
-    Save your files, and execute the pipeline:
 
     ```bash
     ./run.sh
@@ -271,7 +249,14 @@ Review the new trace file. What has changed? What happened to our FASTQC process
 
 === "Gadi (PBS)"
 
-    TODO
+    | name                       | status    | exit | duration | realtime | cpus | %cpu   | memory | %mem | peak_rss |
+    | -------------------------- | --------- | ---- | -------- | -------- | ---- | ------ | ------ | ---- | -------- |
+    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 49.6s    | 3s       | 2    | 136.4% | 1 GB   | 0.1% | 213.8 MB |
+    | ALIGN (1)                  | COMPLETED | 0    | 49.5s    | 1s       | 2    | 122.4% | 1 GB   | 0.1% | 102.5 MB |
+    | GENOTYPE (1)               | COMPLETED | 0    | 1m 20s   | 36s      | 2    | 136.3% | 2 GB   | 0.8% | 1.5 GB   |
+    | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 49.8s    | 9s       | 2    | 163.8% | 1 GB   | 0.2% | 391.6 MB |
+    | STATS (1)                  | COMPLETED | 0    | 34.9s    | 0ms      | 1    | 62.0%  | 2 GB   | 0.0% | 3.1 MB   |
+    | MULTIQC                    | COMPLETED | 0    | 49.9s    | 5.6s     | 1    | 67.3%  | 2 GB   | 0.0% | 93.5 MB  |
 
 === "Setonix (Slurm)"
 
@@ -369,7 +354,7 @@ You should see no major changes in memory usage or efficiency - but now your scr
     - Consider parallelisation strategies (e.g. OpenMP)
     - Avoid holding large objects in memory unnecessarily
 
-    While these are outside the scope of this workshop, they’re essential if you want to scale up workflows on HPC.
+    While these are outside the scope of this workshop, they’re good to consider if you want to scale up workflows on HPC.
 
 ## Summary
 

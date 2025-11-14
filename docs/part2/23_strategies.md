@@ -2,35 +2,53 @@
 
 !!! info "Learning objectives"
 
-    - Understand how HPC resource requests affect job scheduling and performance
-    - Identify process and configuration bottlenecks in trace reports
+    - Identify the key factors that impact workflow performance on HPC systems
+    - Describe common workflow optimisation strategies
 
 ## Overview
 
-Our configuraiton is now functional! The workflow runs sucessfully with scheduler-specific settings and outputs useful trace files showing resource usage.
+Our workflow is now functional - it runs sucessfully with scheduler-specific settings and outputs useful trace files showing resource usage.
 
-Now, we shift focus from making it run, to making it efficient.
+Now, we shift focus from making it run, to getting to run efficiently.
 
 TODO: figure benchmarking progress e.g. it runs, it runs well, it scales
 
-Optimisation depends on several key factors, such as:
+Workflow optimisation involves fine-tuning your pipeline to reduce runtime, resource waste, and cost (e.g. service units). This is particularly important on share HPC infrastructure where jobs are charged based on compute and memory usage.
 
-- The specific HPC system (e.g. queue limits, node sizes, charging model)
-- The characteristics of your data (e.g. file size, sample number, processing steps)
-- The type of processes your workflow runs (e.g. high-memory)
+## Why optimise?
 
-The same principles can be applied to any HPC environment, but in this workshop, we’ll focus on NCI Gadi and Pawsey Setonix as practical examples.
+Small inefficiencies for small, or infreuqently-run workflows may not make a large impact. Many users run nf-core pipelines on HPCs successfully, using the default configuration. Optimising workflows on HPC becomes increasingly valuable when:
 
-Each HPC has different hardware and node architectures and it is up to the user to understand how their workflow fits within the limits. 
+- You are running many samples or large data sets (high-throughput)
+- Your workflow will be run repeatedly
+- You are approaching allocation limits or want it to be more efficient 
 
-Small inefficiencies for small, or infreuqently-run workflows may not make a large impact. Many users run nf-core pipelines on HPCs successfully, using the default configuration.
-     
-However, if you are running high-throughput workflows that consume a considerable amount of service units, it is worthwhile to benchmark and optimise your workflow for the HPC you will run it on.
+TODO: figures would be useful to demo these
 
-## 
+## What affects performance?
 
-For the remainder of Part 2 we will apply the various optimisation strategies introduced in Part 1. We'll build off the benchmarks to configure our custom pipeline for HPC.
+Awareness of these factors can help you make decisions about the optimisation approach to use.
 
-1. Right resourcing for each process, to fit your assigned HPC
-2. multithreading bwa mem
-3. Multiprocessing alignment using scatter-gather patterns in Nextflow
+- The specific HPC **system** (e.g. queue limits, node sizes, charging model, default settings)
+- The characteristics of your **data** (e.g. file size, sample number, processing steps)
+- The **workflow** structure (e.g. the number of steps/processes, memory or CPU-intensive tasks)
+
+!!! note
+
+    Each HPC has different hardware and node architectures and it is up to the user to understand how their workflow fits within the limits
+
+## What will we optimise?
+
+For the remainder of Part 2 we will apply the strategies introduced from Part 1 to optimise our custom workflow. In particular, we will:
+
+1. Assign appropriate resources for each per process
+    - Use trace files to fine-tune `cpus`, `memory`, and `time`
+    - Tune these to fit with the architecutre of your HPC
+
+2. Enable multi-threading for BWA MEM
+    - Increase speed of alignment by using multiple threads
+
+3. Parallelise alignment using scatter-gather
+    - Split our FASTQ files, align "simultaneously", and combine again
+
+These same principles can be applied to any HPC environment, but in this workshop, we’ll focus on NCI Gadi and Pawsey Setonix as practical examples.

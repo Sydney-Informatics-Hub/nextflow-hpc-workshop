@@ -19,7 +19,7 @@ nav:
     - Summary: part1/03_0_outro.md
   - Part 2:
     - 2.0 Introduction: part2/20_intro.md
-    - 2.1 Configuring a custom pipeline: part2/21_firstrun.md
+    - 2.1 Running a custom pipeline on HPC: part2/21_firstrun.md
     - 2.2 Monitoring workflow runs: part2/22_reporting.md
     - 2.3 HPC optimisation strategies: part2/23_strategies.md
     - 2.4 Configuring resource usage: part2/24_resourcing.md

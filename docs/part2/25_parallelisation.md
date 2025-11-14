@@ -15,7 +15,7 @@ Part 1.4 introduced parallelisation approaches with the goal of speeding up your
 
 ![](figs/00_benchmark_at_scale_theme.png)
 
-Recall that parallelisation requires benchmarking to find the right balance between the walltime, CPU efficiency, and service unit consumption. We want to avoid over-parallelising our workflows.
+Recall that splitting your data up across too many cores can lead to diminishing returns, such as increased SU usage and walltime. Parallelisation requires benchmarking to find the right balance between the walltime, CPU efficiency, and service unit consumption. We want to avoid over-parallelising our workflows.
 
 ## Multithreading `bwa mem`
 
@@ -31,9 +31,6 @@ Recall that multithreading spawns `n` tasks for a single job on the one data set
     - Which `.config` file would you want to use? (`nextflow.config` - workflow-specific, system-agnostic; `custom.config` - workflow-specific, system-specific)
     - How much extra memory can you utilise if required? (Consider the effective RAM/CPUs
     proportion of the queue or partition)
-    - Based on the CPU and memory requirements, which directive would be
-    more suitable to use - `withLabel` or `withName`? (Consider whether
-    it matches an existing configuration)
 
     === "Gadi (PBS)"
 
@@ -93,20 +90,19 @@ Recall that multithreading spawns `n` tasks for a single job on the one data set
     ./run.sh
     ```
 
-Remember to review the tools in your workflow to see if they support multithreading.
+!!! info "Remember to read the tool documentation!"
+
+    All software and bioinformatics tools are all built differently. Some support multi-threading, some can only run things with a single thread. Overlooking these details may not be crucial when running on systems where you have autonomy and access to all resources (personal compute, cloud instances), however, these are important parts of configuring your workflow on HPC shared systems to set reasonable limits and requests.
 
 ## Multi-processing with 'scatter-gather'
 
 ![](figs/00_Scatter_gather_fig.png)
 
-One of the core benefits of running bioinformatics workflows on HPC is access to better processing power and hardware. By leveraging multi-processing on HPC, if configured correctly, we can run many jobs simultaneously and reduce the overall walltime required to run the workflow. 
+One of the core benefits of running bioinformatics workflows on HPC is access to increased processing power and hardware. By leveraging multi-processing on HPC, if configured correctly, we can run many jobs simultaneously and reduce the overall walltime required to run the workflow. 
 
-Recall that multi-processing runs multiple, indpendent jobs. 
+!!! note "Not everything can or should be split"
 
-!!! note
-
-    - Need to consider the biology - can this be split
-    - What can't be split - e.g. structural variant calling
+    Recall from Part 1 that we can't split everything - it should only be done if the particular processing step can be conducted independently of each other. Scattering taks does not make sense when results depend on comparing all data together, such as detecting structural variants across multiple chromosomes.
 
 We will multi-process the alignment step. Scatter-gathering in this step is widely
 used as whole genome data is large, time-consuming, and the reads can be mapped
@@ -284,73 +280,8 @@ Lastly, add the `process_small` labels to each of the modules:
 
 !!! example "Exercise"
 
-    For `SPLIT_FASTQ`:
+    TODO: configure the three modules withName
 
-    ```groovy title="modules/split_fastq.nf"
-    process SPLIT_FASTQ {
-
-        tag "split fastqs for ${sample_id}"
-        container "quay.io/biocontainers/fastp:1.0.1--heae3180_0"
-        label "process_small"
-
-        input:
-        tuple val(sample_id), path(reads_1), path(reads_2), val(n)
-
-        output:
-        tuple val(sample_id), path("*.${sample_id}.R1.fq"), path("*.${sample_id}.R2.fq"), emit: split_fq
-
-        script:
-        """
-        fastp -Q -L -A -i $reads_1 -I $reads_2 -o ${sample_id}.R1.fq -O ${sample_id}.R2.fq -s $n
-        """
-    }
-    ```
-    For `MERGE_BAMS`:
-
-    ```groovy title="modules/split_fastq.nf"
-    process MERGE_BAMS {
-
-        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
-        publishDir "${params.outdir}/alignment"
-        label "process_small"
-
-        input:
-        tuple val(sample_id), path(bams), path(bais)
-
-        output:
-        tuple val(sample_id), path("${sample_id}.bam"), path("${sample_id}.bam.bai"), emit: aligned_bam
-
-        script:
-        """
-        samtools cat ${bams} | samtools sort -O bam -o ${sample_id}.bam
-        samtools index ${sample_id}.bam
-        """
-
-    }
-    ```
-    For `ALIGN_CHUNK`:
-
-    ```groovy title="modules/align_chunk.nf.nf"
-    process ALIGN_CHUNK {
-
-        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
-        label "process_small"
-
-        input:
-        tuple val(sample_id), val(chunk), path(reads_1), path(reads_2)
-        tuple val(ref_name), path(bwa_index)
-
-        output:
-        tuple val(sample_id), val(chunk), path("${sample_id}.${chunk}.bam"), path("${sample_id}.${chunk}.bam.bai"), emit: aligned_bam
-
-        script:
-        """
-        bwa mem -t $task.cpus -R "@RG\\tID:${sample_id}\\tPL:ILLUMINA\\tPU:${sample_id}\\tSM:${sample_id}\\tLB:${sample_id}\\tCN:SEQ_CENTRE" ${bwa_index}/${ref_name} $reads_1 $reads_2 | samtools sort -O bam -o ${sample_id}.${chunk}.bam
-        samtools index ${sample_id}.${chunk}.bam
-        """
-
-    }
-    ```
     now run the parallelised pipeline
     ```bash
     ./run.sh
@@ -398,21 +329,27 @@ One option may be to configure the resource usage so it runs on the largest data
 
 The alternative would be to take a dynamic approach when you need to process data that require unequal CPUs, memory, or walltime.
 
-Two approaches - 
+If a job fails, you can tell Nextflow to automatically re-run it with additional resources. For example:
 
 | Directive | Closure Example             | Attempt 1 (Initial Run) | Attempt 2 (First Retry) |
 | --------- | --------------------------- | ----------------------- | ----------------------- |
 | `memory`  | `{ 2.GB * task.attempt }`   | 2 GB                    | 4 GB                    |
 | `time`    | `{ 1.hour * task.attempt }` | 1 hour                  | 2 hours                 |
 
+Another approach is to ynamically assign a resource based on properties of the input data. For example, by the size of the file:
 
 ```groovy
 process {
   withName: 'ALIGN' {
-    memory = { reads.size() * 2}
+    memory = { reads.size() * 2 }
   }
 }
 ```
+
+For more information, see Nextflow's training on:
+
+- [Retry strategies](https://training.nextflow.io/2.1.1/advanced/configuration/#retry-strategies)
+- [Dynamic directives](https://training.nextflow.io/2.1.1/advanced/configuration/#dynamic-directives)
 
 The same concepts of configuring resources will apply here, aim to fit the
 appropriate queues/partitions, but will require addtional benchmarking. This is worthwhile if developing and running high-throughput workflows.

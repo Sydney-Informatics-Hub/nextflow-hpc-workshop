@@ -18,7 +18,7 @@ Before the workshop, you must have the following:
 
 !!! info
 
-    If you require assistance with the setup, please write in the discussion board on the [Google document]().
+    If you require assistance with the setup, please write in the discussion board on the [Google document](https://docs.google.com/document/d/1BcvDLy_YDuP4vBxqewo5ivC5LYaKQXDeiKsyivqU7uo/edit?tab=t.0).
 
 ## Installing Visual Studio Code
 

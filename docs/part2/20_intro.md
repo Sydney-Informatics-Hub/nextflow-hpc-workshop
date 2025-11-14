@@ -42,9 +42,15 @@ Navigate to the scratch space for the workshop project, then open your cloned pa
 
 ## 2.0.2 Configuring a custom pipeline
 
-Part 2 of this workshop builds on the foundational HPC and Nextflow configuration concepts introduced in Part 1. We will now apply these concepts to configure a variant calling pipeline for efficient execution on HPC systems.
+Part 2 of this workshop builds on the foundational HPC and Nextflow configuration concepts introduced in Part 1. We will now apply these concepts to configure a custom variant calling pipeline for efficient execution on HPC systems.
 
-To keep the focus on configuration, the pipeline code and logic are provided for you and will not be reviewing the contents of input and output files in detail, beyond configuration needs. We’ll begin by getting the pipeline running on the HPC, then progressively explore how to benchmark performance, understand HPC-specific constraints, and implement optimisations to improve efficiency and resource use.
+To keep the focus on configuration, the pipeline code and logic are provided for you and will not be reviewing the contents of input and output files in detail, beyond configuration needs. 
+
+!!! info "Learn to build custom Nextflow workflows"
+
+    See our Nextflow For the [Life Sciences materials](https://sydney-informatics-hub.github.io/hello-nextflow-2025/) for an introduction to building Nextflow workflows. This workshop builds on Nextflow for the Life Sciences.   
+
+We’ll begin by getting the pipeline running on the HPC, then progressively explore how to benchmark performance, understand HPC-specific constraints, and implement optimisations to improve efficiency and resource use.
 
 Throughout this section, we’ll continue using the variant calling example to deepen your understanding of the key decisions involved in tuning pipelines for the specific HPC infrastructure you work on.
 
@@ -65,17 +71,22 @@ Throughout this section, we’ll continue using the variant calling example to d
 There are several reasons why you might need to develop or adapt your own
 Nextflow pipeline:
 
-- **Tailored to your specific needs** - Custom pipelines give you full control over input/output formats, tool parameters, workflow logic, and configuration options.
-- **Gaps in available pipelienes** - Existing pipelines (e.g. nf-core) may not cover your use case, or a relevant pipeline may not exist at all.
-- **Resource optimisation** - nf-core pipelines are generalised by design and may be over-provisioned or misconfigured for your HPC environment. Although easier to get running out-of-the box, this could lead to inefficient use of HPC resources or being charged excess service units (SUs)!
+- **Tailored to your specific needs**: custom pipelines give you full control over input/output formats, tool parameters, workflow logic, and configuration options.
+- **Gaps in available pipelienes**: existing pipelines (e.g. nf-core) may not cover your use case, or a relevant pipeline may not exist at all.
+- **Resource optimisation**: nf-core pipelines are generalised by design and may be over-provisioned or misconfigured for your HPC environment. Although easier to get running out-of-the box, this could lead to inefficient use of HPC resources or being charged excess service units (SUs)!
 
 ## 2.0.3 The scenario: variant calling on HPC
 
-TODO: Describe starting variant calling pipeline briefly
+Our use case for today is taking raw DNA sequence data from a number of human patients and using a number of data processing steps to obtain a final results file containing genetic variants for each patient. 
 
-![](figs/00_workflow_illustration.png)
+Remember, it does not matter if you are unfamiliar with the biology or the tools used; the focus is on learning how to efficiently run Nextflow pipelines on HPC.
 
-TODO: scenario for benchmarking and optimising
+We start with an unoptimised and minimally configured pipeline (like something that was developed and run on a laptop), and run through the entire workflow on a single sample. We will then explore optimisation strategies, implement them, and finally scale up the workflow to handle multiple samples efficiently.
+
+The diagram below shows a high level overview of the workflow we will be creating, starting with the raw data for each patient, mapping it against a human reference genome file, and then identifying and summarising the genetic variants found in the input data.  
+
+![](../part1/figs/00_workflow_illustration.png)
+TODO revise this diagram to describe steps, 
 
 ## 2.0.4 The pipeline file anatomy
 
@@ -84,10 +95,17 @@ This pipeline builds on the structure introduced in our introductory
 **data processing logic**, and **system-specific configuration**. This layout helps keep things reproducible, easy
 to maintain, and simple to adapt across different environments - like moving from your laptop to an HPC!
 
+Recall the demo Nextflow workflow we explored in [lesson 1.5.2](../part1/01_5_nf_hpc.md). Our custom workflow will extend on this by introducing some new features that help us stay organised. This includes: 
+
+- `conf/` to house our custom configuration files
+- `modules/`to house our process files as `.nf` files
+
+TODO diagram including `conf/` and `modules/` showing how they connect to nextflow.config and main.nf, extending on docs/part1/figs/00_config_demo_nf_v2.excalidraw
+
 At a glance:
 
 ```bash
-tree
+tree -L 2
 ```
 
 ```console
@@ -105,14 +123,20 @@ tree
 │   └── ...
 ├── nextflow.config         # Base parameters and profile defs
 ├── samplesheet_full.csv
-└── samplesheet_single.csv
+├── samplesheet_single.csv
+└── ...
+
 ```
 
-### 2.0.4.1 `main.nf` and `modules/`: What to run?
+Consider a basic Nextflow run command with this structure, where a user needs to specify some parameters and (optionally) a configuration file: 
 
-The core workflow logic lives in `main.nf` and the `modules/` directory. This is where you define what to do, like running `FASTQC`, `ALIGN`, or `GENOTYPE`. Our pipelines are structured using modules, allowing you to **separate workflow components from system-specific configuration**. They’re written once and can be used across different systems without needing to change the underlying code.
+TODO make one of these: https://sydney-informatics-hub.github.io/template-nf-guide/figs/template_command.png 
 
-In this part, we **don’t edit the module files directly**. Instead, we focus on configuring _how and where_ these steps run on HPCs, using separate config files. This separation makes it easy to test a pipeline locally and later scale it up on a system like Gadi or Setonix, without rewriting processes.
+- `main.nf` is the executable file that identifies the workflow structure, inputs, and processes that are pulled from `modules/`
+- `--parameter` flag matches a parameter initialised in the `nextflow.config` and applies to the workflow execution 
+- `-profile` flag is used to specify custom configuration details for our specific environments, but it can also apply to other customisations
+
+In part 2, we **don’t edit the module files directly**. Instead, we focus on configuring _how and where_ these steps run on HPCs, using separate config files. This separation makes it easy to test a pipeline locally and later scale it up on a system like Gadi or Setonix, without rewriting processes.
 
 !!! tip "Why modules?"
 
@@ -132,6 +156,10 @@ In this part, we **don’t edit the module files directly**. Instead, we focus o
     later on, without starting from scratch.
 
     For more information, see ["What's in `modules/`"](https://sydney-informatics-hub.github.io/template-nf-guide/notebooks/modules.html).
+
+### 2.0.4.1 `main.nf` and `modules/`
+
+Let's take a look at our custom pipeline's `main.nf` to see how we have structured our variant calling workflow:
 
 ```bash
 cat main.nf
@@ -192,25 +220,18 @@ workflow {
 }
 ```
 
-This structure also makes it easier to swap in alternative tools and processes, especially later when working with scatter-gather patterns - all without cluttering `main.nf` or compromising reproducibility.
+We have used:  
 
-### 2.0.4.2 `nextflow.config` and `conf/`: How and where to run it
+- `include { process } from './modules/process-name'` to pull in processes from `modules/`  
+- Input channels (e.g. `reads`, `bwa_index`, `ref`) to define how data moves between processes   
+- Channel operators (e.g. `.map()`, `.groupTuple()`, `.mix()`, `.collect()`) to transform and combine data streams dynamically  
+- Parameterised inputs (e.g. `params.ref_fasta`, `params.samplesheet`) so the workflow can be reused on different datasets without having to edit the code
 
-![](figs/00_workflow_illustration.png)
+This structure makes it easier to swap in alternative tools and processes, especially later when working with scatter-gather patterns without cluttering `main.nf` or compromising reproducibility.
 
-Nextflow’s configuration files define how and where each process runs - including what resources to request, which job scheduler to use, and whether to run using containers.
+### 2.0.4.2 `nextflow.config` and `conf/`
 
-In the context of HPCs, this means specifying:
-
-- How many CPUs, memory, and time a process should use
-- The appropriate **executor** (e.g. PBS on Gadi or SLURM on Setonix)
-- The default **queue/partition** and optional account/project codes
-- Whether and how to use Singularity containers
-- Plus many other useful features
-
-These settings are defined in the main `nextflow.config`, and extended using config profiles - one for each target system. This separation allows you to **run the same pipeline across different HPCs just by switching profiles, without modifying the core workflow.**
-
-Here's what the `nextflow.config` file looks like:
+Let's take a look at our custom pipeline's `nextflow.config` to see how we are configuring the workflow execution: 
 
 ```bash
 cat nextflow.config
@@ -240,56 +261,29 @@ profiles {
 }
 ```
 
-It contains the default parameters required for `main.nf`, and the profiles for Gadi (PBS) and Setonix (Slurm).
+We have used: 
 
-Each profile brings in a system-specific config file from the `conf/` folder:
+- `params {...}` blocks to centralise all user-controlled parameters
+- `profiles {...}` for profile definitions to enable us to run different configurations 
+- `includeConfig "conf/name.config"` directives to pull in separate configuration files from `conf/`
 
-=== "Gadi (PBS)"
+Nextflow’s configuration files define how and where each process runs, including what resources to request, which job scheduler to use, and how to execute software.
 
-    ```bash
-    cat conf/pbspro.config
-    ```
-    ```groovy title="conf/pbspro.config"
-    params.pbspro_account = ""
+In the context of HPCs, this means specifying:
 
-    process {
-      executor = 'pbspro'
-      queue = 'normalbw'
-      clusterOptions = "-P ${params.pbspro_account}"
-      module = 'singularity'
-    }
+- How many CPUs, memory, and time a process should use
+- The appropriate executor (e.g. PBSpro on Gadi or SLURM on Setonix)
+- The default queue/partition and optional account/project codes
+- Whether and how to use Singularity containers
 
-    singularity {
-      enabled = true
-      autoMounts = true
-      cacheDir = "${projectDir}/singularity"
-    }
-    ```
+These settings are defined in the main `nextflow.config`, and extended using config profiles. This separation will allow us to run the same pipeline across different HPCs just by switching profiles, without modifying the core workflow. We will build our system-specific configuration files in `conf/` in the next lesson:
 
-=== "Setonix (Slurm)"
+!!! note "Configuration imagination"
+    While we are using custom configs to allow us to make our pipeline "portable" so it can run on NCI Gadi and Pawsey Setonix HPCs, you can also use custom configurations to tailor your pipeline to many other scenarios. For example: 
 
-    ```bash
-    cat conf/slurm.config
-    ```
-    ```groovy title="conf/slurm.config"
-    params.slurm_account = ""
-
-    process {
-      executor = 'slurm'
-      queue = 'work'
-      clusterOptions = "--account=${params.slurm_account}"
-      module = 'singularity/4.1.0-slurm'
-    }
-
-    singularity {
-      enabled = true
-      autoMounts = true
-      cacheDir = "${projectDir}/singularity"
-    }
-    ```
-
-This setup makes it easy to test and run the same workflow in different environments. By the end of Part 2, we’ll have extended these configs to better reflect the characteristics of each system - improving efficiency without touching the pipeline logic itself.
+    - Different datasets requiring more/less memory 
+    - Testing vs production runs 
 
 ## 2.0.5 Summary
 
-This section introduced the basic structure of the custom variant calling Nextflow pipeline for the remainder of Part 2, emphasising the separation between workflow logic (`main.nf`, `modules/`) and system-specific configuration (`nextflow.config`, `conf/`). We reviewed how this separation supports portability, reproducibility, and ease of adaptation across environments, such as when transitioning from local testing to running on HPC systems like Gadi (PBS) and Setonix (Slurm).
+This section introduced the basic structure of the custom variant calling Nextflow pipeline for the remainder of Part 2, emphasising the separation between workflow logic (`main.nf`, `modules/`) and system-specific configuration (`nextflow.config`, `conf/`). We reviewed how this separation supports portability, reproducibility, and ease of adaptation across environments, such as when transitioning from local testing to running on HPC systems like Gadi (PBSpro) and Setonix (Slurm).

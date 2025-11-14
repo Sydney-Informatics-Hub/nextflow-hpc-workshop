@@ -1,4 +1,4 @@
-# Configuring custom Nextflow pipelines
+# Running a custom pipeline on HPC
 
 !!! info "Learning objectives"
 
@@ -9,63 +9,219 @@
     - Know how to find and specify system-dependent HPC values such as queues/partitions
     - Recall how Nextflow interacts with HPC components
 
-!!! warning Running the head job on the correct node
+TODO these learning objectives arent accurate, update them
+
+!!! warning "Testing and developing in the right environment"
 
     For the workshop, we have pre-pulled containers and use them from the cache,
     and as data is small and the workflow runs quickly, we will be running them
     on login nodes.
-
-    **However, this should not be done when developing and running your own
-    pipelines on HPC systems.**
-
-    When developing or running workflows with real data, you should follow your HPC's
-    recommended approach for long-running, low-resource jobs. This may include being
-    used in conjunction with terminal multiplexers such as `tmux` or `screen` within
-    these sessions to keep the job running when you log out or connection drops out.
     
-    Alternatively, starting your Nextflow run within an **interactive job** is useful for testing and debugging 
-    workflows directly on compute nodes. If you instead schedule your Nextflow
-    job, ensure that your `run.sh` script includes the appropriate scheduler options.
+    We recommend using **interactive jobs** for testing and debugging 
+    workflows directly on compute nodes instead of the login nodes. Alternatively, 
+    if you want to schedule your Nextflow head job, ensure that your `run.sh` 
+    script includes the appropriate scheduler options.
 
-    See the recommendations on running the head job for [Gadi](https://opus.nci.org.au/spaces/Help/pages/241926895/Persistent+Sessions) and [Setonix](https://pawsey.atlassian.net/wiki/spaces/US/pages/286097469/How+to+Run+Workflows+on+the+Workflow+Nodes)
+    See the recommendations on running the head job for [Gadi](https://opus.nci.org.au/spaces/Help/pages/241926895/Persistent+Sessions) and [Setonix](https://pawsey.atlassian.net/wiki/spaces/US/pages/286097469/How+to+Run+Workflows+on+the+Workflow+Nodes).
 
-    Finally, be aware of **network access on compute nodes**. If Nextflow cannot locate
-    the container, it will attempt to pull from an online repository. This occurs during run time and will fail if the compute node does not have internet access. In these cases, you can pre-pull containers, or schedule the head job on a queue/partition with network access.
+It is useful to develop your pipelines using a small, representative subset of your data. This allows you:
 
-Before launching a full-scale analysis, it is important to optimise your pipeline using a small, representative subset of your data. This helps you:
+- Rapidly iterate your workflow design
+- Validate environment and software set up
+- Tune pipeline configuration without burning service units
+- Reduce queue wait times
+- Estimate basic performance characteristics of each process
 
-- Estimate the computational requirements of each step
-- Configure your pipeline
-- Avoid wasting service units (SUs) during development
+## 2.1.1 Run without configuration
 
-In this case, we’re starting with the reads from a single individual (NA1287) from the cohort. This is a good proxy for the other two samples as they all contain the same subset of chromosomes (20, 21, and 22).
+We will start configuring our custom pipeline with using a subset of raw reads from a single individual (NA1287) in our sample cohort. This is a good proxy for the other two samples as they all contain the same subset of chromosomes (20, 21, and 22) and have been sequenced to the same depth. Once we’re confident everything works as intended, we will scale up to run on the full dataset.
 
-Once we’re confident everything works as intended, we can scale up to run on the full dataset.
+Let's start by running the pipeline out of the box to identify what we need to configure: 
 
-In real-world pipelines, throughput becomes a key consideration of how you choose to configure pipelines. It’s not just about how fast one sample runs, but how many samples can be processed concurrently. A well-optimised configuration ensures that your pipeline makes efficient use of the HPC resources available, reducing queue times, avoiding bottlenecks, and increasing the number of samples processed per unit time.
 
-The first step is to get our **custom pipeline running on the HPC**. This means running the head job so that the tasks are scheduled properly on the compute nodes.
+!!! example "Exercise"
 
-!!! example "Exercises"
+    1. Load the Nextflow module, following the same method we learnt yesterday:
 
-    First load the Nextflow and singularity modules, following the same method we learnt yesterday:
-
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
         ```bash
-        module load nextflow/24.04.5 singularity
+        module load nextflow/24.04.5 
         ```
 
     === "Setonix (Slurm)"
         ```bash
-        module load nextflow/24.10.0 singularity/4.1.0-slurm
+        module load nextflow/24.10.0
         ```
 
-    Then execute your Nextflow command. **(Note: Your run may fail here - that's ok for this step!)**
+    2. Run your Nextflow command out of the box:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash
-        nextflow run main.nf -profile pbspro --pbspro_account vp91
+        nextflow run main.nf
+        ```
+
+        ??? abstract "Output"
+
+            ```
+            N E X T F L O W   ~  version 24.04.5
+
+            Launching `main.nf` [suspicious_almeida] DSL2 - revision: 5e5c4f57e0
+
+            executor >  local (2)
+            [a3/a6da06] FASTQC (fastqc on NA12877) [100%] 1 of 1, failed: 1 ✘
+            [16/860647] ALIGN (1)                  [100%] 1 of 1, failed: 1 ✘
+            [-        ] GENOTYPE                   -
+            [-        ] JOINT_GENOTYPE             -
+            [-        ] STATS                      -
+            [-        ] MULTIQC                    -
+            ERROR ~ Error executing process > 'FASTQC (fastqc on NA12877)'
+
+            Caused by:
+            Process `FASTQC (fastqc on NA12877)` terminated with an error exit status (127)
+
+
+            Command executed:
+
+            mkdir -p "fastqc_NA12877"
+            fastqc -t 1 --outdir "fastqc_NA12877" --format fastq NA12877_chr20-22.R1.fq.gz NA12877_chr20-22.R2.fq.gz
+
+            Command exit status:
+            127
+
+            Command output:
+            (empty)
+
+            Command error:
+            .command.sh: line 3: fastqc: command not found
+
+            Work dir:
+            /scratch/project/username/nextflow-on-hpc-materials/part2/work/a3/a6da061dd65d454add3f000923235d
+
+            Tip: when you have fixed the problem you can continue the execution adding the option `-resume` to the run command line
+
+            -- Check '.nextflow.log' file for details
+            ```
+
+    === "Setonix (Slurm)"
+
+        ```bash
+        nextflow run main.nf
+        ```
+
+        ??? abstract "Output"
+
+            ```console
+             N E X T F L O W   ~  version 24.10.0
+
+            Launching `main.nf` [trusting_brown] DSL2 - revision: 5e5c4f57e0
+
+            executor >  local (2)
+            executor >  local (2)
+            [e6/21a49e] FASTQC (fastqc on NA12877) [100%] 1 of 1, failed: 1 ✘
+            [68/bda517] ALIGN (1)                  [100%] 1 of 1, failed: 1 ✘
+            [-        ] GENOTYPE                   -
+            [-        ] JOINT_GENOTYPE             -
+            [-        ] STATS                      -
+            [-        ] MULTIQC                    -
+            ERROR ~ Error executing process > 'ALIGN (1)'
+
+            Caused by:
+            Process `ALIGN (1)` terminated with an error exit status (127)
+
+
+            Command executed:
+
+            bwa mem -t 1 -R "@RG\tID:NA12877\tPL:ILLUMINA\tPU:NA12877\tSM:NA12877\tLB:NA12877\tCN:SEQ_CENTRE" ref/Hg38.subsetchr20-22.fasta NA12877_chr20-22.R1.fq.gz NA12877_chr20-22.R2.fq.gz | samtools sort -O bam -o NA12877.bam
+            samtools index NA12877.bam
+
+            Command exit status:
+            127
+
+            Command output:
+            (empty)
+
+            Command error:
+            .command.sh: line 2: samtools: command not found
+            .command.sh: line 2: bwa: command not found
+
+            Work dir:
+            /scratch/project/username/nextflow-on-hpc-materials/part2/work/68/bda517eeaa47f5ba24a9c401bdeb0e
+
+            Tip: view the complete command output by changing to the process work dir and entering the command `cat .command.out`
+
+            -- Check '.nextflow.log' file for details
+            ```
+
+!!! question "Why did it fail?"
+    Use the output printed to your screen, `.nextflow.log` file in your current directory, and `.command` files in the work directory of the failed task to identify what caused your workflow run to fail. 
+
+    ??? abstract "Answer"
+        Our run stopped because one or more processes failed. [Exit status `127` in Linux environments](https://linuxconfig.org/how-to-fix-bash-127-error-return-code) means your system was not able to find the command referenced in the process. This suggests the software is not available in our environment. 
+
+## 2.1.2 And run with containers
+
+All our process modules specify a container to run inside. This can only happen if Singularity is explicitly enabled in our configuration. Let's enable this in our system-specific configuration files and attempt to run again:  
+
+!!! example "Exercise"
+
+    Load the Singularity modules, following the same method we learnt yesterday:
+
+    === "Gadi (PBSpro)"
+        ```bash
+        module load singularity
+        ```
+
+    === "Setonix (Slurm)"
+        ```bash
+        module load singularity/4.1.0-slurm
+        ```
+
+    Add the following to your system-specific config file that you can find in `config/`. Remember, we have already enabled profiles in our `nextflow.config`, so no need to edit that file. 
+
+    === "Gadi (PBSpro)"
+        ```console
+        process {
+        // Load the globally installed singularity module before running any process
+        module = 'singularity'
+        }
+
+        singularity {
+        // Explicitly turns on container execution
+        enabled = true
+        // Automatically bind-mount working directory on scratch and common system paths
+        autoMounts = true
+        // Define location of stored container images 
+        cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity""${projectDir}/singularity" 
+        }
+
+        ```
+
+    === "Setonix (Slurm)"
+        ```console
+
+        process {
+        // Load the globally installed singularity/4.1.0-slurm module before running any process
+        module = 'singularity/4.1.0-slurm'
+        }
+
+        singularity {
+        // Explicitly turns on container execution
+        enabled = true
+        // Automatically bind-mount working directory on scratch and common system paths
+        autoMounts = true
+        // Define location of stored container images 
+        cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+    
+    3. Run your updated Nextflow command:
+
+    === "Gadi (PBSpro)"
+
+        ```bash
+        nextflow run main.nf -profile pbspro 
         ```
 
         ??? abstract "Output"
@@ -100,7 +256,7 @@ The first step is to get our **custom pipeline running on the HPC**. This means 
     === "Setonix (Slurm)"
 
         ```bash
-        nextflow run main.nf -profile slurm --slurm_account courses01
+        nextflow run main.nf -profile slurm 
         ```
 
         ??? abstract "Output"
@@ -117,20 +273,19 @@ The first step is to get our **custom pipeline running on the HPC**. This means 
             [5c/ea7cb0] JOINT_GENOTYPE (1)         | 1 of 1 ✔
             [7f/4e64dc] STATS (1)                  | 1 of 1 ✔
             [70/254c9e] MULTIQC                    | 1 of 1 ✔
+            
             Completed at: 05-Nov-2025 13:59:02
             Duration    : 2m 21s
             CPU hours   : (a few seconds)
             Succeeded   : 8
             ```
 
-The jobs were scheduled to run on the compute nodes successfully, indicated by the `executor > [name]`. However, the pipeline may have failed!
-
 !!! question "Zoom react!"
 
     1. If your job has finished succesfully, react "Yes" on Zoom, and "No" if it returned an error
     2. Similarly, react "Yes" if you are running it on Gadi, and "No" for Setonix
 
-A common reason that pipelines fail on HPC is due to improper configuration. Here, we have yet to configure the resources properly, to the default allocation from the system's queue or partition were used.
+Although both systems run Nextflow with Singularity, Gadi and Setonix have different environmental variables, filesystem layouts, job schedulers, queue structures, module names, and container cache behaviour. These differences affect how Nextflow executes each process. 
 
 Let's explore what resources were actually used and compare them to what was allocated, by inspecting the logs and system job information using the methods from Part 1.
 
@@ -202,7 +357,7 @@ This is why **explicit resource configuration** is important. Even though the pi
 
 In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory. Let's explicitly configure that in the next step.
 
-## 2.1.2 Why do we have so many configuration files?
+## 2.1.3 Why do we have so many configuration files?
 
 ![](figs/00_custom_configs.png)
 
@@ -221,7 +376,7 @@ Each configuration file serves a distinct purpose:
 
 While this structure is a useful starting point, it is not the only way to structure your configuration. The nf-core community have their own set of standards with some presets for some instutitions (there are ones available for Gadi and Setonix!). However, it is important to double check that these configs are suitable and optimal for your purposes. For more information see [nf-core/configs](https://nf-co.re/configs/)
 
-## 2.1.3 Minimal configuration to run on HPC
+## 2.1.4 Minimal configuration to run on HPC
 
 We will continue to get the pipeline running with a minimum viable configuration. This serves as a baseline to confirm everything is working correctly (such as scheduling, containers are enabled, etc.), prior to any fine tuning. We want to ensure that:
 
