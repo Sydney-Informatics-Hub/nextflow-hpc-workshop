@@ -7,7 +7,11 @@
     - Know which fields help determine efficiency and HPC resource usage
     - Compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
 
-Once we get the workflow running without error on the scheduler, we need to enable Nextflow's reporting and monitoring functions. This allows us to view the resource requirements that each process uses, on our representative sample.
+In bioinformatics workflows, resource requirements are often not fixed. They can vary significantly depending on the size of input files, varying complexity of different genomic regions, the species you're working with, and sequencing format and depth. This means we can't assume CPU, memory, or time values will work the same for every sample. On HPC systems, where resources are shared and allocations may be charged, these differences matter. 
+
+You cannot set and forget resource values for an entire workflow, you need to build in flexibility. This requires you to have visiblity over pipeline behaviour at the process level. Nextflow provides several monitoring and reporting tools that help you understand this behaviour. 
+
+Now that our workflow is running without error on the scheduler, we will enable Nextflow's reporting and monitoring functions. This allows us to view the resource requirements that each process uses, on our representative sample.
 
 !!! example "Exercise"
 
