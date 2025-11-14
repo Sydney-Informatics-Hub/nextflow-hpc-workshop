@@ -179,43 +179,41 @@ All our process modules specify a container to run inside. This can only happen 
 
     Add the following to your system-specific config file that you can find in `config/`. Remember, we have already enabled profiles in our `nextflow.config`, so no need to edit that file. 
 
-    === "Gadi (config/pbspro.config)"
-        ```console
+    === "Gadi (PBSpro)"
+        ```groovy title="config/pbspro.sh"
         process {
-        // Load the globally installed singularity module before running any process
-        module = 'singularity'
+            // Load the globally installed singularity module before running any process
+            module = 'singularity'
         }
 
         singularity {
-        // Explicitly turns on container execution
-        enabled = true
-        // Automatically bind-mount working directory on scratch and common system paths
-        autoMounts = true
-        // Define location of stored container images 
-        cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity""${projectDir}/singularity" 
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
-
         ```
 
-    === "Setonix (config/pbspro.config)"
-        ```console
+    === "Setonix (Slurm)"
+        ```groovy title="config/slurm/config"
 
         process {
-        // Load the globally installed singularity/4.1.0-slurm module before running any process
-        module = 'singularity/4.1.0-slurm'
+            // Load the globally installed singularity/4.1.0-slurm module before running any process
+            module = 'singularity/4.1.0-slurm'
         }
 
         singularity {
-        // Explicitly turns on container execution
-        enabled = true
-        // Automatically bind-mount working directory on scratch and common system paths
-        autoMounts = true
-        // Define location of stored container images 
-        cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
         ```
 
-    
     3. Run your updated Nextflow command:
 
     === "Gadi (PBSpro)"
@@ -308,7 +306,7 @@ We will use the respective job scheduler introspection tools to observe the reso
 
     Then, inspect the job resource usage. There are different tools used for different schedulers.
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         Use `qstat -xf <job_id>` to query for the resource usage and allocation
 
@@ -328,6 +326,7 @@ We will use the respective job scheduler introspection tools to observe the reso
         resources_used.walltime = 00:03:03
         job_state = F
         queue = normal-exec
+        ...
         ```
 
     === "Setonix (Slurm)"
@@ -369,7 +368,7 @@ Each configuration file serves a distinct purpose:
 
 - `nextflow.config` is the main configuration file that defines the core behaviour of the workflow itself (e.g. main.nf). It includes parameters (params), and references to profiles. To maintain reproducibility, **this file should not be modified during system-specific tuning**. It should only change if the underlying workflow logic changes - that is, what gets run.
 
-- `config/pbspro.config` and `config/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS or SLURM), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting.
+- `config/pbspro.config` and `config/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS Pro or SLURM), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting.
 
 - `config/custom.config` is where we bring it all together. This file contains system-specific process settings such as CPU and memory requests. It links what the workflow does with how it runs on a specific system. When developing or adapting a custom pipeline for an HPC environment, this is typically where most tuning happens to fit the specific node architecture, queue constraints, and resource optimisation.
 
@@ -381,8 +380,6 @@ We will continue to get the pipeline running with a minimum viable configuration
 
 - Jobs are being scheduled correctly
 - All process tasks and the pipeline complete successfully
-
-TODO scheduler specific configs, instead of system-specifc configs.
 
 !!! note
 
@@ -406,7 +403,7 @@ TODO scheduler specific configs, instead of system-specifc configs.
 
     2. Add the following contents based on your HPC
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy title='custom.config'
         process {
@@ -426,13 +423,11 @@ TODO scheduler specific configs, instead of system-specifc configs.
 
 Recall from Part 1 that Nextflow's executor is the part of the workflow engine that talks to the computing environment (whether it's a laptop or HPC). When running on a shared HPC system, these settings are important to include so you don't overwhelm the system (`queueSize`, `pollInterval`, `queueStatInterval`), or generate duplicated files in excess (`cache`, `stageInMode`), or run things in the wrong place (options).
 
-TODO queue rate limit
-
 !!! example "Exercises"
 
     Open the pbspro.config or slurm.config and edit. We will add these HPC-friendly options.
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy title="config/pbspro.config" hl_lines="3 4 5 6 7 8 15 16 17"
         params.pbspro_account = ""
@@ -501,7 +496,7 @@ While we could manually run the Nextflow command each time, using a run script c
 
     2. Copy and paste the following code based on your HPC:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy title="run.sh"
         #!/bin/bash
@@ -539,7 +534,7 @@ While we could manually run the Nextflow command each time, using a run script c
         executed on the respective scheduler.
 
 
-        === "Gadi (PBS)"
+        === "Gadi (PBSpro)"
 
             ```bash
             Loading nextflow/24.04.5
