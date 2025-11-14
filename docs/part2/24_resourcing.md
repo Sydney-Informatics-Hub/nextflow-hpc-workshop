@@ -404,11 +404,13 @@ We will next make our `FASTQC` take in the number of cores we provide it **dynam
             | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 14.9s    | 3s       | **2** | **196.9%** | 1 GB   | 0.1% | 236.7 MB |
             | MULTIQC                    | COMPLETED | 0    | 14s      | 4.4s     | 1     | 80.1%      | 2 GB   | 0.0% | 95.6 MB  |
 
-In this example, we observe:
+In this example, we observe an increase in CPU utilisation so our configuration has worked. The changes in duration and realtime are minimal due to the size of the test data. These changes are expected to be more distinct with "real" data.
 
-- A huge boost in CPU utilisation (e.g. 90% → 196%)
-- 
+!!! note "Iterating fast"
 
+    In the previous exercise we used `-resume` to run only the processes that were modified. This is a great way to only re-run the things we need to. Consider you are configuring and benchmarking a pipeline on larger data - this will considerably shorten the time to get the information you need, and save you SUs.
+
+    However, if you change only configuration settings, the process will not re-run.
 
 !!! info "Writing efficient custom scripts"
 
