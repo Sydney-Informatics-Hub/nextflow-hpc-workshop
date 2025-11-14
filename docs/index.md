@@ -47,16 +47,10 @@ In order to foster a positive and professional learning environment we encourage
 - Focus on what is best for the community
 - Show courtesy and respect towards other community members.
 
-## Workshop schedule
-
-TODO add schedules.
-
-## Course survey
-
 ## Credits and acknowledgements
 
-We gratefully acknowledge the contributions of Abdullah Shaikh, Ludovic Capelli, Ziad Al-Bkhetan, Melissa Burke, Magda Antczak, Wenjing Xue, and Matthew Downton.
+We gratefully acknowledge the contributions of Abdullah Shaikh, Ludovic Capelli, Ziad Al-Bkhetan, Melissa Burke, Magda Antczak, Matthew Downton, Marie-Emilie Gauthier, Thanh Nguyen, and Eric Urng.
 
-This workshop event and accompanying materials were developed by the [Sydney Informatics Hub](https://www.sydney.edu.au/research/facilities/sydney-informatics-hub.html), University of Sydney in collaboration. The workshop was enabled by Australian BioCommons' [BioCLI Platforms Project](https://www.biocommons.org.au/biocli) (NCRIS via Bioplatforms Australia).
+This workshop event and accompanying materials were developed by the [Sydney Informatics Hub](https://www.sydney.edu.au/research/facilities/sydney-informatics-hub.html), University of Sydney. Provision of computing and data resources were provided by the Australian BioCommons Leadership Share (ABLeS) program, the National Computational Infrastructure (NCI) and Pawsey Supercomputing Research Centre. The workshop was enabled by Australian BioCommons' [BioCLI Platforms Project](https://www.biocommons.org.au/biocli) (NCRIS via Bioplatforms Australia).
 
 ![](./img/logos.png)
