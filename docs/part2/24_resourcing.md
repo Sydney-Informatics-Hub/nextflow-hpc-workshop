@@ -47,7 +47,7 @@ To begin tuning our workflow, we first need to understand how many resources eac
 
     | name                       | status    | exit | duration | realtime | cpus | %cpu   | memory | %mem | peak_rss |
     | -------------------------- | --------- | ---- | -------- | -------- | ---- | ------ | ------ | ---- | -------- |
-    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 13.8s    | 4s       | 1    | 135.0% | 2 GB   | 0.1% | 240.6 MB |
+    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 13.8s    | 4s       | 1    | 90.6%  | 2 GB   | 0.1% | 240.6 MB |
     | ALIGN (1)                  | COMPLETED | 0    | 13.8s    | 2s       | 1    | 100.1% | 2 GB   | 0.0% | 98.2 MB  |
     | GENOTYPE (1)               | COMPLETED | 0    | 39.9s    | 28s      | 1    | 164.8% | 2 GB   | 0.5% | 1.4 GB   |
     | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 19.2s    | 8s       | 1    | 204.2% | 2 GB   | 0.2% | 466 MB   |
@@ -93,7 +93,7 @@ This means there is an **average amount of memory per CPU** - this becomes an im
 
 ## Exploring resource options for FASTQC
 
-Based on the Part 1 discussion on the optimal number of `FASTQC` threads, we will give `FASTQC` two CPUs to process each of the paired-end reads. According to the trace file, it does not require much memory, so the limiting resource here is CPU.
+Based on the Part 1 discussion on the optimal number of `FASTQC` threads, we will give `FASTQC` two CPUs to process each of the paired-end reads (R1, R2). According to the trace file, it does not require much memory, so the limiting resource here is CPU.
 
 Let's find the effective usable memory per CPU for the `normalbw` queue on Gadi, and the `work` partition on Setonix.
 
@@ -153,6 +153,8 @@ If we request:
     - 2 CPUs and 4 GB memory (on the Setonix `work` partition), this takes advantage of all the memory you’re entitled to, but `FASTQC` won't actually use that memory. So you're not getting any extra performance and may lengthen the time in queue.
     - 2 CPUs and 1 GB memory, on the other hand, still gives `FASTQC` enough to run, and because you're requesting less RAM, your job may be scheduled fasterm as it can fit into more available nodes. This is more memory efficient too.
         
+TODO: how can this be made into an exercise? Benchmark both options? Use pawsey/nci calculator to compare costs? 
+
 We will proceed with the 2 CPUs 1 GB memory option for `FASTQC` as the job won't benefit from the extra memory.
 
 ### Configuring with process names (`withName`)
@@ -173,16 +175,18 @@ Recall that configuration can be workflow-specific to run across different syste
 
 To summarise and group the resource usage from the trace file:  
 
-| Process                         | Resources | Rationale                                        |
-| ------------------------------- | --------- | ------------------------------------------------ |
-| FASTQC                          | 2CPU, 1GB | Fix 2CPU to process R1 and R2, memory sufficient |
-| ALIGN, GENOTYPE, JOINT_GENOTYPE | 2CPU, 1GB | High CPU utilisation >90%                        |
-| GENOTYPE                        | 2CPU, 2GB |                                                  |
-| STATS, MULTIQC                  | 1CPU, 2GB |                                                  |
+| Process                         | Resources | Rationale                                         |
+| ------------------------------- | --------- | ------------------------------------------------- |
+| FASTQC                          | 2CPU, 1GB | Fix 2CPU to process R1 and R2, memory sufficient  |
+| ALIGN, GENOTYPE, JOINT_GENOTYPE | 2CPU, 1GB | High CPU utilisation >90%                         |
+| GENOTYPE                        | 2CPU, 2GB | High CPU utilisation > 90%, requires 1.5GB memory |
+| STATS, MULTIQC                  | 1CPU, 2GB |                                                   |
 
 Let's record these in our configs, with a bit of buffer so things don't fail.
 
-Note that we add them to the config file, and not the modules. This keeps the workflow logic and system-specific configuration separate.
+!!! note
+    
+    We add them to the config file, and not the modules. This keeps the workflow logic and system-specific configuration separate.
 
 !!! example "Exercise"
 
@@ -245,105 +249,166 @@ Note that we add them to the config file, and not the modules. This keeps the wo
     ./run.sh
     ```
 
-Review the new trace file. What has changed? What happened to our FASTQC process? Faster or slower?
+Review the new trace file. What has changed? What happened to our FASTQC process? 
 
-=== "Gadi (PBS)"
+??? abstract "Example trace files"
 
-    | name                       | status    | exit | duration | realtime | cpus | %cpu   | memory | %mem | peak_rss |
-    | -------------------------- | --------- | ---- | -------- | -------- | ---- | ------ | ------ | ---- | -------- |
-    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 49.6s    | 3s       | 2    | 136.4% | 1 GB   | 0.1% | 213.8 MB |
-    | ALIGN (1)                  | COMPLETED | 0    | 49.5s    | 1s       | 2    | 122.4% | 1 GB   | 0.1% | 102.5 MB |
-    | GENOTYPE (1)               | COMPLETED | 0    | 1m 20s   | 36s      | 2    | 136.3% | 2 GB   | 0.8% | 1.5 GB   |
-    | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 49.8s    | 9s       | 2    | 163.8% | 1 GB   | 0.2% | 391.6 MB |
-    | STATS (1)                  | COMPLETED | 0    | 34.9s    | 0ms      | 1    | 62.0%  | 2 GB   | 0.0% | 3.1 MB   |
-    | MULTIQC                    | COMPLETED | 0    | 49.9s    | 5.6s     | 1    | 67.3%  | 2 GB   | 0.0% | 93.5 MB  |
+    The `cpus` field indicates that 2 cores were provided for our `FASTQC` task to use, however, only ~90% of it was used. One possible reason is that  the task didn't require the extra core. Alternatively, some additional configuration is required...
 
-=== "Setonix (Slurm)"
+    === "Gadi (PBS)"
 
-    | name                       | status    | exit | duration | realtime | cpus | %cpu   | memory | %mem | peak_rss | 
-    | -------------------------- | --------- | ---- | -------- | -------- | ---- | ------ | ------ | ---- | -------- | 
-    | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 14s      | 4s       | 2    | 145.9% | 1 GB   | 0.1% | 259 MB   | 
-    | ALIGN (1)                  | COMPLETED | 0    | 14.1s    | 1s       | 2    | 139.3% | 1 GB   | 0.0% | 2 MB     | 
-    | GENOTYPE (1)               | COMPLETED | 0    | 44.8s    | 28s      | 2    | 164.0% | 2 GB   | 0.5% | 1.3 GB   | 
-    | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 19.4s    | 9s       | 2    | 211.3% | 1 GB   | 0.1% | 343.3 MB | 
-    | STATS (1)                  | COMPLETED | 0    | 14.5s    | 0ms      | 1    | 132.7% | 2 GB   | 0.0% | 2 MB     | 
-    | MULTIQC                    | COMPLETED | 0    | 15.3s    | 4.3s     | 1    | 77.6%  | 2 GB   | 0.0% | 76.4 MB  | 
+        | name                       | status    | exit | duration | realtime | cpus  | %cpu      | memory | %mem | peak_rss |
+        | -------------------------- | --------- | ---- | -------- | -------- | ----- | --------- | ------ | ---- | -------- |
+        | ALIGN (1)                  | COMPLETED | 0    | 24.5s    | 1s       | 2     | 108.5%    | 1 GB   | 0.1% | 102.3 MB |
+        | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 29.6s    | 5s       | **2** | **93.8%** | 1 GB   | 0.1% | 194.4 MB |
+        | GENOTYPE (1)               | COMPLETED | 0    | 1m 15s   | 35s      | 2     | 131.1%    | 2 GB   | 0.8% | 1.4 GB   |
+        | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 34.9s    | 7s       | 2     | 169.1%    | 1 GB   | 0.3% | 506 MB   |
+        | STATS (1)                  | COMPLETED | 0    | 44.9s    | 0ms      | 1     | 72.2%     | 2 GB   | 0.0% | 3 MB     |
+        | MULTIQC                    | COMPLETED | 0    | 44.9s    | 4.5s     | 1     | 66.7%     | 2 GB   | 0.0% | 88.6 MB  | 
 
+    === "Setonix (Slurm)"
+
+        | name                       | status    | exit | duration | realtime | cpus  | %cpu       | memory | %mem | peak_rss |
+        | -------------------------- | --------- | ---- | -------- | -------- | ----- | ---------- | ------ | ---- | -------- |
+        | ALIGN (1)                  | COMPLETED | 0    | 14.1s    | 1s       | 2     | 139.3%     | 1 GB   | 0.0% | 2 MB     |
+        | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 19.6s    | 4s       | **2** | **90.6%**  | 1 GB   | 0.1% | 226.4 MB |
+        | GENOTYPE (1)               | COMPLETED | 0    | 44.8s    | 28s      | 2     | 164.0%     | 2 GB   | 0.5% | 1.3 GB   |
+        | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 19.4s    | 9s       | 2     | 211.3%     | 1 GB   | 0.1% | 343.3 MB |
+        | STATS (1)                  | COMPLETED | 0    | 14.5s    | 0ms      | 1     | 132.7%     | 2 GB   | 0.0% | 2 MB     |
+        | MULTIQC                    | COMPLETED | 0    | 19.9s    | 4.6s     | 1     | 76.1%      | 2 GB   | 0.0% | 98.3 MB  |
 
 ## Passing allocated resources into process scripts
 
-Nextflow allows you to request specific resources for each process (like CPU and memory), but this doesn’t automatically tell the tool inside the process to use those resources. Some bioinformatics tools require you to explicitly specify how much memory or how many threads to use inside the script block, or uses a suboptimal default.
+Nextflow allows you to request specific resources for each process (like CPU and memory), but this doesn’t automatically tell the tool inside the process to use those resources. Some bioinformatics tools require you to explicitly specify how much memory or how many threads to use inside the script block. If this is not provided, it often uses a (suboptimal) default.
 
-If this is not done, **the scheduler may assign the resources, but the process itself might underutilise them** - reducing efficiency and potentially wasting queue time.
+If this is overlooked, **the scheduler may assign the resources, but the process may not use all of them**. Your job will waste time in the queue for the resources it won't use - that's not very efficient.
 
-If you do not update this, the resources will be allocated but not all
-completely utilised. In our current pipeline the memory is hardcoded for
-processes `GENOTYPE` and `JOINT_GENOTYPE` with 4 GB of memory.
+Let's inspect our `FASTQC` module:
 
-In our current workflow, the `GENOTYPE` and `JOINT_GENOTYPE` processes hardcode the Java heap size (-Xmx4g). This is not ideal, because:
+```bash
+cat modules/fastqc.nf
+```
+```groovy title="modules/fastqc.nf" hl_lines="16"
+process FASTQC {
 
-- It ignores any values set in the config file (custom.config)
-- It prevents automatic adjustment if more memory is allocated
-- It can lead to unnecessary limits or, worse, unexpected failures
+    tag "fastqc on ${sample_id}"
+    container "quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0"
+    publishDir "${params.outdir}/fastqc", mode: 'copy'
 
-Instead, we can make these values dynamic using `task.memory.toGiga()`. This allows the process to always match the memory allocated by the scheduler.
+    input:
+    tuple val(sample_id), path(reads_1), path(reads_2)
 
-In this case the size of the data will not impact the memory usage drastically
-as the previous trace files show that both processes use less than 4 GB. In
-your own pipelines, a task with high memory utilisation may benefit from the
-added memory allocated, and reduce walltime.
+    output:
+    path "fastqc_${sample_id}", emit: qc_out
 
-!!! example "Exercises"
+    script:
+    """
+    mkdir -p "fastqc_${sample_id}"
+    fastqc -t 1 --outdir "fastqc_${sample_id}" --format fastq $reads_1 $reads_2
+    """
 
-    For both systems, replace the hardcoded `"-Xmx4g"` setting with the memory
-    allocated to that task using `"-Xmx${task.memory.toGiga()}g"` for:
+}
+```
 
-    1. Process `GENOTYPE` in `modules/genotype.nf`.
+Note in the highlighted line `fastqc -t 1`, we are asking `fastqc` to use only a single thread. No matter how many cores we provide for this process, it will always only use a single core for the one thread. Hardcoding in automated pipelines is generally bad practice, particularly if we're providing system-specific resources we want the tasks to use. Of course, there are always exceptions where we may want to fix the number of cores or memory for a certain tool.
 
-    ```groovy title='modules/genotype.nf'
-    process GENOTYPE {
-    // truncated
-
-        output:
-        tuple val(sample_id), path("${sample_id}.g.vcf.gz"), path("${sample_id}.g.vcf.gz.tbi"), emit: gvcf
-
-        script:
-        """
-        gatk --java-options "-Xmx${task.memory.toGiga()}g" HaplotypeCaller -R $ref_fasta -I $bam -O ${sample_id}.g.vcf.gz -ERC GVCF
-        """
-
-    }
-    ```
-
-    2. Process `JOINT_GENOTYPE` in `modules/joint_genotype.nf`
-
-    ```groovy title='modules/joint_genotype.nf'
-    process JOINT_GENOTYPE {
-    // truncated
-
-        output:
-        tuple val(cohort_id), path("${cohort_id}.vcf.gz"), path("${cohort_id}.vcf.gz.tbi"), emit: vcf
-
-        script:
-        variant_params = gvcfs.collect { f -> "--variant ${f}" }.join(" ")
-        """
-        gatk --java-options "-Xmx${task.memory.toGiga()}g" CombineGVCFs -R $ref_fasta $variant_params -O cohort.g.vcf.gz
-        gatk --java-options "-Xmx${task.memory.toGiga()}g" GenotypeGVCFs -R $ref_fasta -V cohort.g.vcf.gz -O cohort.vcf.gz
-        """
-    }
-    ```
+We will next make our `FASTQC` take in the number of cores we provide it **dynamically**. This means whatever `cpus` we provide will tell the process to always use that many threads (`-t`). 
 
 !!! example "Exercises"
 
-    Once updated, run your newly configured pipeline using.
-    
-    ```bash
-    ./run.sh
-    ```
+    1. Open your `modules/fastqc.nf` file. Replace `-t 1` with `-t ${task.cpus}`.
 
-    Once complete, inspect the new trace file.
+    ??? abstract "Show code"
 
-You should see no major changes in memory usage or efficiency - but now your script matches the config, and will adjust based on any changes to the memory allocation.
+        ```groovy title='modules/fastqc.nf' hl_lines="16"
+        process FASTQC {
+
+            tag "fastqc on ${sample_id}"
+            container "quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0"
+            publishDir "${params.outdir}/fastqc", mode: 'copy'
+
+            input:
+            tuple val(sample_id), path(reads_1), path(reads_2)
+
+            output:
+            path "fastqc_${sample_id}", emit: qc_out
+
+            script:
+            """
+            mkdir -p "fastqc_${sample_id}"
+            fastqc -t ${task.cpus} --outdir "fastqc_${sample_id}" --format fastq $reads_1 $reads_2
+            """
+
+        }
+        ```
+
+    2. Save the file.
+
+    3. Open your run script `run.sh`.
+
+    4. Add the `-resume` option. **This conserves time and SUs by only re-running `FASTQC`.**
+
+    ??? abstract "Show code"
+
+       === "Gadi (PBSpro)"
+
+            ```groovy title="run.sh"
+            #!/bin/bash
+
+            module load nextflow/24.04.5
+            module load singularity
+
+            nextflow run main.nf -profile pbspro --pbspro_account vp91 -c config/custom.config
+            ```
+
+        === "Setonix (Slurm)"
+
+            ```groovy title="run.sh"
+            #!/bin/bash
+
+            module load nextflow/24.10.0
+            module load singularity/4.1.0-slurm
+
+            nextflow run main.nf -profile slurm --slurm_account courses01 -c config/custom.config
+            ```
+
+    5. Save, and run your workflow:
+
+        ```
+        ./run.sh
+        ```
+
+    6. View the trace and note the `cpus` and `%cpu` values for `FASTQC`.
+
+    ??? abstract "Show trace"
+
+        === "Gadi (PBSpro)"
+
+            | name                       | status    | exit | duration | realtime | cpus  | %cpu       | memory | %mem | peak_rss |
+            | -------------------------- | --------- | ---- | -------- | -------- | ----- | ---------- | ------ | ---- | -------- |
+            | ALIGN (1)                  | CACHED    | 0    | 24.5s    | 1s       | 2     | 108.5%     | 1 GB   | 0.1% | 102.3 MB |
+            | GENOTYPE (1)               | CACHED    | 0    | 1m 15s   | 35s      | 2     | 131.1%     | 2 GB   | 0.8% | 1.4 GB   |
+            | JOINT_GENOTYPE (1)         | CACHED    | 0    | 34.9s    | 7s       | 2     | 169.1%     | 1 GB   | 0.3% | 506 MB   |
+            | STATS (1)                  | CACHED    | 0    | 44.9s    | 0ms      | 1     | 72.2%      | 2 GB   | 0.0% | 3 MB     |
+            | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 44.5s    | 4s       | **2** | **120.4%** | 1 GB   | 0.1% | 163.1 MB |
+            | MULTIQC                    | COMPLETED | 0    | 44.9s    | 3.7s     | 1     | 88.9%      | 2 GB   | 0.0% | 93.6 MB  |
+
+        === "Setonix (Slurm)"
+
+            | name                       | status    | exit | duration | realtime | cpus  | %cpu       | memory | %mem | peak_rss |
+            | -------------------------- | --------- | ---- | -------- | -------- | ----- | ---------- | ------ | ---- | -------- |
+            | ALIGN (1)                  | CACHED    | 0    | 14.1s    | 1s       | 2     | 139.3%     | 1 GB   | 0.0% | 2 MB     |
+            | GENOTYPE (1)               | CACHED    | 0    | 44.8s    | 28s      | 2     | 164.0%     | 2 GB   | 0.5% | 1.3 GB   |
+            | JOINT_GENOTYPE (1)         | CACHED    | 0    | 19.4s    | 9s       | 2     | 211.3%     | 1 GB   | 0.1% | 343.3 MB |
+            | STATS (1)                  | CACHED    | 0    | 14.5s    | 0ms      | 1     | 132.7%     | 2 GB   | 0.0% | 2 MB     |
+            | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 14.9s    | 3s       | **2** | **196.9%** | 1 GB   | 0.1% | 236.7 MB |
+            | MULTIQC                    | COMPLETED | 0    | 14s      | 4.4s     | 1     | 80.1%      | 2 GB   | 0.0% | 95.6 MB  |
+
+In this example, we observe:
+
+- A huge boost in CPU utilisation (e.g. 90% → 196%)
+- 
+
 
 !!! info "Writing efficient custom scripts"
 
