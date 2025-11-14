@@ -1,6 +1,6 @@
-# 1.0 Part 1 Introduction 
+# 1.0 Part 1 Introduction
 
-In the first part of this workshop, we will familarise ourselves with some foundational concepts required to effectively run bioinformatics workflows on HPC clusters. We will then apply these concepts to the configuration of a popular nf-core pipeline, Sarek. In part 2, we will further apply these concepts to a custom Nextflow workflow. 
+In the first part of this workshop, we will familarise ourselves with some foundational concepts required to effectively run bioinformatics workflows on HPC clusters. We will then apply these concepts to the configuration of a popular nf-core pipeline, Sarek. In part 2, we will further apply these concepts to a custom Nextflow workflow.
 
 !!! warning "Note the code blocks!"
 
@@ -8,8 +8,8 @@ In the first part of this workshop, we will familarise ourselves with some found
 
     The commands provided are largely the same, but each system has its own scheduler, queues, and job submission syntax.
 
-    Select the tab that matches the system you’re using — the content will stay synced across the page.  
-    
+    Select the tab that matches the system you’re using, the content will stay synced across the page.
+
     If you switch to **Setonix** once, all other tabs on this page will automatically follow.
 
 
@@ -30,7 +30,7 @@ In the first part of this workshop, we will familarise ourselves with some found
 !!! question "Let us know if you need help"
 
     HPCs are complex, shared systems, and this can sometimes introduce unexpected issues and errors. If you ran into any issues at any time during this workshop, please use the **":material-close:{ .close } No"** Zoom react and our facilitators can help you out. If necessary, we will make use of breakout rooms to diagnose significant issues and make sure that everyone is at the same point before moving on to further lessons.
-    
+
     We will also provide a Google Docs document for questions you might have.
 
 ## 1.0.1 Log in to your assigned HPC
@@ -44,7 +44,7 @@ If you haven't already done so, follow the [setup instructions](../setup.md) to 
     When you log in to your assigned account and access the terminal in VSCode (`Ctrl + J` (Windows/Linux) / `Cmd + J` (Mac)), you should see your username in the prompt:
 
     === "Gadi (PBS)"
-        
+
         ```console
         [aaa000@gadi-login-01 ~]$
         ```
@@ -52,13 +52,13 @@ If you haven't already done so, follow the [setup instructions](../setup.md) to 
     === "Setonix (Slurm)"
 
         ```console
-        cou001@setonix-01:~> 
+        cou001@setonix-01:~>
         ```
 
     If you see a different user name, close the window and try re-connecting to the HPC. If you find that you keep logging in to the wrong user account, you can also try editing your SSH config file and removing the old account details:
 
     === "Gadi (PBS)"
-        
+
         ```title="Duplicate entries for gadi.nci.org.au in ~/.ssh/config"
         Host gadi.nci.org.au
             HostName gadi.nci.org.au
@@ -85,13 +85,13 @@ If you haven't already done so, follow the [setup instructions](../setup.md) to 
 
 For this workshop, we will be working within the scratch storage system of the HPCs. Navigate to the scratch space for the workshop project.
 
-1. In the left-hand side bar, click on the "Explorer" tab (an icon that looks like two sheets of paper).
+1.  In the left-hand side bar, click on the "Explorer" tab (an icon that looks like two sheets of paper).
 
     ![](../img/vscode_explorer.png)
 
-2. Click on "Open Folder"
+2.  Click on "Open Folder"
 
-3. In the text box that appears, enter the path of your assigned directory in the HPC scratch space:
+3.  In the text box that appears, enter the path of your assigned directory in the HPC scratch space:
 
     === "Gadi (PBS)"
 
@@ -109,7 +109,7 @@ For this workshop, we will be working within the scratch storage system of the H
         /scratch/courses01/usr123
         ```
 
-## 1.0.2 Setup the project space 
+## 1.0.2 Setup the project space
 
 When you first log in, your directory in the scratch space will be an empty folder. The first job for the day will be to clone the workshop materials into this space. To do this, open the VSCode terminal (`Ctrl + J`) and run the following commands:
 
