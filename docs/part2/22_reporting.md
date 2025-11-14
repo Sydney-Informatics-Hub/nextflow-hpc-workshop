@@ -7,82 +7,80 @@
     - Know which fields help determine efficiency and HPC resource usage
     - Compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
 
-Once we get the workflow running without error on the scheduler, we need to enable Nextflow's reporting and monitoring functions. This allows us to view the resource requirements that each process uses, on our representative sample.
+In bioinformatics workflows, resource requirements are often not fixed. They can vary significantly depending on the size of input files, varying complexity of different genomic regions, the species you're working with, and sequencing format and depth. This means we can't assume CPU, memory, or time values will work the same for every sample. On HPC systems, where resources are shared and allocations may be charged, these differences matter. 
+
+You cannot set and forget resource values for an entire workflow, you need to build in flexibility. This requires you to have visiblity over pipeline behaviour at the process level. Nextflow provides several monitoring and reporting tools that help you understand this behaviour including `nextflow log`, trace files, and reports. 
+
+!!! note "Recall the trace file from Part 1"
+
+    TODO add a reference to how we did this in part 1 and comment on how we will explore further here. Link out when we have page structure of Part 1 ready.
+
+Now that our workflow is running without error on the scheduler, we will enable [Nextflow's reports](https://nextflow.io/docs/latest/reports.html). This allows us to view the resource usage of each process for our representative sample.
+
+
+## 2.2.1 Using the execution report and timeline
+
+Nextflow can produce an [execution report](https://nextflow.io/docs/latest/reports.html#execution-report) at the end of your workflow run that summarises all process execution metrics. Similarly, it can create a [execution timeline](https://nextflow.io/docs/latest/reports.html#execution-timeline). These reports summarise how your workflow ran, which processes were executed, and how long they took. They are very helpful during development, troubleshooting, and performance optimisation. These reports can be created when running the pipeline using the `-with-report` and `-with-timeline` flags or by adding the following to your configuration file:
+
+```console
+timeline {
+    enabled = true
+    overwrite = false
+    file = "./runInfo/timeline.html"
+    }
+
+report {
+    enabled = true
+    overwrite = false
+    file = "./runInfo/report.html"
+        }
+```
+
+Both directives allow us to specify a custom file name and choose whether or not you overwrite the file for each run. Rather than overwriting the same report file every time we run the pipeline, we will add a small timestamp parameter that automatically labels each report with the exact date and time the workflow was launched. This makes it easier to track multiple runs, especially when you are iterating qucikly and comparing resource usage. 
 
 !!! example "Exercise"
 
-    Enable all trace reporting available, with default/minimal settings.
-    We use the configured `trace` from Part 1.
+    Enable execution and timeline reports in our `custom.config` file. Copy the following into your `custom.config`:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
-        ```groovy title='config/custom.config' hl_lines="6-31"
-        process {
-            cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6 OR 9.1
-            memory = 4.GB
-        }
-
+        ```groovy title='config/custom.config'
+        // Name the reports according to when they were run
         params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
 
-        trace {
-             enabled = true
-             overwrite = false
-             file = "./runInfo/trace-${params.timestamp}.txt"
-             fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss'
-         }
-
+        // Generate timeline-timestamp.html timeline report 
         timeline {
             enabled = true
             overwrite = false
             file = "./runInfo/timeline-${params.timestamp}.html"
         }
 
+        // Generate report-timestamp.html execution report 
         report {
             enabled = true
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
-        }
-    
-        dag {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/dag-${params.timestamp}.html"
         }
         ```
 
     === "Setonix (Slurm)"
 
-        ```groovy title='config/custom.config' hl_lines="6-31"
-        process {
-            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
-            memory = 2.GB
-        }
-
+        ```groovy title='config/custom.config'
+        // Name the reports according to when they were run
         params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
 
-        trace {
-             enabled = true
-             overwrite = false
-             file = "./runInfo/trace-${params.timestamp}.txt"
-             fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss'
-         }
-
+        // Generate timeline-timestamp.html timeline report 
         timeline {
             enabled = true
             overwrite = false
             file = "./runInfo/timeline-${params.timestamp}.html"
         }
 
+        // Generate report-timestamp.html execution report 
         report {
             enabled = true
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
-        }
-    
-        dag {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/dag-${params.timestamp}.html"
         }
         ```
   
