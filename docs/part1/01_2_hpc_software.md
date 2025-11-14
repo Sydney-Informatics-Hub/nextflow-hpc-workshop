@@ -214,7 +214,7 @@ Containers are portable software environments: they package everything your tool
         singularity/3.11.4-mpi-gpu      singularity/3.11.4-nompi     singularity/4.1.0-askap        singularity/4.1.0-nohost
         ```
 
-To run a command or script inside a singularity container, you simply run `singularity exec /path/to/image.sif <your command>`, where `/path/to/image.sif` is the path to the container image that you wish to use. There are also numerous options and flags that you can provide to the `singularity exec` command itself. For the purposes of today's workshop, we will be using Singularity's default parameters, so we don't need to provide any options. As part of these defaults, the command will be run within your current working directory, as if you simply ran the command directly.
+To run a command or script inside a singularity container, you simply run `singularity exec /path/to/image.img <your command>`, where `/path/to/image.img` is the path to the container image that you wish to use. There are also numerous options and flags that you can provide to the `singularity exec` command itself. For the purposes of today's workshop, we will be using Singularity's default parameters, so we don't need to provide any options. As part of these defaults, the command will be run within your current working directory, as if you simply ran the command directly.
 
 !!! example "Exercise: Run FastQC in a Singularity container"
 
