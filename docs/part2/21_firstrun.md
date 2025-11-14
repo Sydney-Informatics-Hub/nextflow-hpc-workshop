@@ -161,7 +161,7 @@ Let's start by running the pipeline out of the box to identify what we need to c
 
 ## 2.1.2 And run with containers
 
-All our process modules specify a container to run inside. This can only happen if Singularity is explicitly enabled in our configuration. Let's enable this in our system-specific configuration files:  
+All our process modules specify a container to run inside. This can only happen if Singularity is explicitly enabled in our configuration. Let's enable this in our system-specific configuration files and attempt to run again:  
 
 !!! example "Exercise"
 
@@ -197,7 +197,7 @@ All our process modules specify a container to run inside. This can only happen 
         ```
 
     === "Setonix (Slurm)"
-        ```groovy title="config/slurm/config"
+        ```groovy title="config/slurm.config"
 
         process {
             // Load the globally installed singularity/4.1.0-slurm module before running any process
@@ -271,6 +271,7 @@ All our process modules specify a container to run inside. This can only happen 
             [5c/ea7cb0] JOINT_GENOTYPE (1)         | 1 of 1 ✔
             [7f/4e64dc] STATS (1)                  | 1 of 1 ✔
             [70/254c9e] MULTIQC                    | 1 of 1 ✔
+            
             Completed at: 05-Nov-2025 13:59:02
             Duration    : 2m 21s
             CPU hours   : (a few seconds)
@@ -282,7 +283,7 @@ All our process modules specify a container to run inside. This can only happen 
     1. If your job has finished succesfully, react "Yes" on Zoom, and "No" if it returned an error
     2. Similarly, react "Yes" if you are running it on Gadi, and "No" for Setonix
 
-A common reason that pipelines fail on HPC is due to improper configuration. Here, we have yet to configure the resources properly, to the default allocation from the system's queue or partition were used.
+Although both systems run Nextflow with Singularity, Gadi and Setonix have different environmental variables, filesystem layouts, job schedulers, queue structures, module names, and container cache behaviour. These differences affect how Nextflow executes each process. 
 
 Let's explore what resources were actually used and compare them to what was allocated, by inspecting the logs and system job information using the methods from Part 1.
 
