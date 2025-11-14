@@ -11,7 +11,7 @@ In bioinformatics workflows, resource requirements are often not fixed. They can
 
 You cannot set and forget resource values for an entire workflow, you need to build in flexibility. This requires you to have visiblity over pipeline behaviour at the process level. Nextflow provides several monitoring and reporting tools that help you understand this behaviour. 
 
-Now that our workflow is running without error on the scheduler, we will enable Nextflow's reporting and monitoring functions. This allows us to view the resource requirements that each process uses, on our representative sample.
+Now that our workflow is running without error on the scheduler, we will enable [Nextflow's reports](https://nextflow.io/docs/latest/reports.html). This allows us to view the resource usage of each process for our representative sample.
 
 !!! example "Exercise"
 
