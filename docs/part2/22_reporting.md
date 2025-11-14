@@ -20,21 +20,7 @@ Now that our workflow is running without error on the scheduler, we will enable 
 
 ## 2.2.1 Using the execution report and timeline
 
-Nextflow can produce an [execution report](https://nextflow.io/docs/latest/reports.html#execution-report) at the end of your workflow run that summarises all process execution metrics. Similarly, it can create a [execution timeline](https://nextflow.io/docs/latest/reports.html#execution-timeline). These reports summarise how your workflow ran, which processes were executed, and how long they took. They are very helpful during development, troubleshooting, and performance optimisation. These reports can be created when running the pipeline using the `-with-report` and `-with-timeline` flags or by adding the following to your configuration file:
-
-```console
-timeline {
-    enabled = true
-    overwrite = false
-    file = "./runInfo/timeline.html"
-    }
-
-report {
-    enabled = true
-    overwrite = false
-    file = "./runInfo/report.html"
-        }
-```
+Nextflow can produce an [execution report](https://nextflow.io/docs/latest/reports.html#execution-report) at the end of your workflow run that summarises all process execution metrics. Similarly, it can create a [execution timeline](https://nextflow.io/docs/latest/reports.html#execution-timeline). These reports summarise how your workflow ran, which processes were executed, and how long they took. They are very helpful during development, troubleshooting, and performance optimisation. These reports can be created when running the pipeline using the `-with-report` and `-with-timeline` flags or by adding `timeline{}` and `report{}` directives to our configuration file. 
 
 Both directives allow us to specify a custom file name and choose whether or not you overwrite the file for each run. Rather than overwriting the same report file every time we run the pipeline, we will add a small timestamp parameter that automatically labels each report with the exact date and time the workflow was launched. This makes it easier to track multiple runs, especially when you are iterating qucikly and comparing resource usage. 
 
@@ -82,6 +68,34 @@ Both directives allow us to specify a custom file name and choose whether or not
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
         }
+        ```
+  
+    Run the workflow 
+    ```bash
+    ./run.sh
+    ```
+
+!!! question "?"
+    Use the output printed to your screen, `.nextflow.log` file in your current directory, and `.command` files in the work directory of the failed task to identify what caused your workflow run to fail. 
+
+    ??? abstract "Answer"
+        Our run stopped because one or more processes failed. [Exit status `127` in Linux environments](https://linuxconfig.org/how-to-fix-bash-127-error-return-code) means your system was not able to find the command referenced in the process. This suggests the software is not available in our environment. 
+
+
+!!! example "Exercise"
+
+    Do something 
+
+    === "Gadi (PBSpro)"
+
+        ```groovy title='config/custom.config'
+        do somehing
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```groovy title='config/custom.config'
+         do somehing
         ```
   
     Run the workflow 
