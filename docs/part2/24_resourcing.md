@@ -143,16 +143,14 @@ Let’s look at the trade-offs.
 
 If we request:
 
-    === "Gadi (PBS Pro)"
+=== "Gadi (PBS Pro)"
 
     - 2 CPUs and 8 GB memory (on the Gadi `normalbw` partition), this takes advantage of all the memory you’re entitled to, but `FASTQC` won't actually use that memory. So you're not getting any extra performance and may lengthen the time in queue.
-
     - 2 CPUs and 1 GB memory, on the other hand, still gives `FASTQC` enough to run, and because you're requesting less RAM, your job may be scheduled fasterm as it can fit into more available nodes. This is more memory efficient too.
 
-    === "Setonix (Slurm)"
+=== "Setonix (Slurm)"
 
     - 2 CPUs and 4 GB memory (on the Setonix `work` partition), this takes advantage of all the memory you’re entitled to, but `FASTQC` won't actually use that memory. So you're not getting any extra performance and may lengthen the time in queue.
-    
     - 2 CPUs and 1 GB memory, on the other hand, still gives `FASTQC` enough to run, and because you're requesting less RAM, your job may be scheduled fasterm as it can fit into more available nodes. This is more memory efficient too.
         
 We will proceed with the 2 CPUs 1 GB memory option for `FASTQC` as the job won't benefit from the extra memory.

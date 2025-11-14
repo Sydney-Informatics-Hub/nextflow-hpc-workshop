@@ -100,11 +100,9 @@ Recall that multithreading spawns `n` tasks for a single job on the one data set
 
 One of the core benefits of running bioinformatics workflows on HPC is access to increased processing power and hardware. By leveraging multi-processing on HPC, if configured correctly, we can run many jobs simultaneously and reduce the overall walltime required to run the workflow. 
 
-Recall that multi-processing runs multiple, indpendent jobs, that can be processed in 
+!!! note "Not everything can or should be split"
 
-!!! note 'Not everything can or should be split'
-
-    Remember that we can't split everything. Some analyses that require  - What can't be split - e.g. structural variant calling
+    Recall from Part 1 that we can't split everything - it should only be done if the particular processing step can be conducted independently of each other. Scattering taks does not make sense when results depend on comparing all data together, such as detecting structural variants across multiple chromosomes.
 
 We will multi-process the alignment step. Scatter-gathering in this step is widely
 used as whole genome data is large, time-consuming, and the reads can be mapped
@@ -282,73 +280,8 @@ Lastly, add the `process_small` labels to each of the modules:
 
 !!! example "Exercise"
 
-    For `SPLIT_FASTQ`:
+    TODO: configure the three modules withName
 
-    ```groovy title="modules/split_fastq.nf"
-    process SPLIT_FASTQ {
-
-        tag "split fastqs for ${sample_id}"
-        container "quay.io/biocontainers/fastp:1.0.1--heae3180_0"
-        label "process_small"
-
-        input:
-        tuple val(sample_id), path(reads_1), path(reads_2), val(n)
-
-        output:
-        tuple val(sample_id), path("*.${sample_id}.R1.fq"), path("*.${sample_id}.R2.fq"), emit: split_fq
-
-        script:
-        """
-        fastp -Q -L -A -i $reads_1 -I $reads_2 -o ${sample_id}.R1.fq -O ${sample_id}.R2.fq -s $n
-        """
-    }
-    ```
-    For `MERGE_BAMS`:
-
-    ```groovy title="modules/split_fastq.nf"
-    process MERGE_BAMS {
-
-        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
-        publishDir "${params.outdir}/alignment"
-        label "process_small"
-
-        input:
-        tuple val(sample_id), path(bams), path(bais)
-
-        output:
-        tuple val(sample_id), path("${sample_id}.bam"), path("${sample_id}.bam.bai"), emit: aligned_bam
-
-        script:
-        """
-        samtools cat ${bams} | samtools sort -O bam -o ${sample_id}.bam
-        samtools index ${sample_id}.bam
-        """
-
-    }
-    ```
-    For `ALIGN_CHUNK`:
-
-    ```groovy title="modules/align_chunk.nf.nf"
-    process ALIGN_CHUNK {
-
-        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
-        label "process_small"
-
-        input:
-        tuple val(sample_id), val(chunk), path(reads_1), path(reads_2)
-        tuple val(ref_name), path(bwa_index)
-
-        output:
-        tuple val(sample_id), val(chunk), path("${sample_id}.${chunk}.bam"), path("${sample_id}.${chunk}.bam.bai"), emit: aligned_bam
-
-        script:
-        """
-        bwa mem -t $task.cpus -R "@RG\\tID:${sample_id}\\tPL:ILLUMINA\\tPU:${sample_id}\\tSM:${sample_id}\\tLB:${sample_id}\\tCN:SEQ_CENTRE" ${bwa_index}/${ref_name} $reads_1 $reads_2 | samtools sort -O bam -o ${sample_id}.${chunk}.bam
-        samtools index ${sample_id}.${chunk}.bam
-        """
-
-    }
-    ```
     now run the parallelised pipeline
     ```bash
     ./run.sh

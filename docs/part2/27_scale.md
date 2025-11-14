@@ -92,8 +92,6 @@ We will now replace the samplesheet we used by modifying our run script with res
         Succeeded   : 22
         ```
 
-Note that the 
-
 !!! example "Exercise" 
 
     Open the timeline file - note the parallel

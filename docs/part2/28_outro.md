@@ -30,17 +30,14 @@ Use the trace and timeline outputs to guide configuration decisions. Review thes
 
 ## Choose the right optimisation strategy
 
-Does the tool support multithreading?
-→ Increase CPUs, add ${task.cpus} to the `process`
+Consider the different strategies we explored in Part 2 when tuning your pipeline:
 
-Can data be split into chunks without breaking biology?
-→ Use scatter-gather patterns
+- **Review your tools, does it support multi-threading?** → Increase CPUs, add ${task.cpus} to the `process` (remember to benchmark!)
+- **Can data be split into chunks without breaking biology?** → Use scatter-gather patterns
+- **Would more resources help speed up processing time?** → Match requests to node sizes (e.g. 2GB/core)
+- **When scaling, do you expect your input data to be heterogeneous?** → Consider dynamic resource configuration 
 
-Would more resources help speed up processing time?
-→ Match requests to node sizes (e.g. 2GB/core)
-
-Is your input data heterogeneous?
-→ Consider dynamic resource configuration 
+**Acknowledge what your (research) goals are** - what do you need to optimise for? → Time, cost, throughput?
 
 ## Iterate and adapt
 
