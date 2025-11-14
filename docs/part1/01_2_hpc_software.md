@@ -214,16 +214,16 @@ Containers are portable software environments: they package everything your tool
         singularity/3.11.4-mpi-gpu      singularity/3.11.4-nompi     singularity/4.1.0-askap        singularity/4.1.0-nohost
         ```
 
-To run a command or script inside a singularity container, you simply run `singularity exec /path/to/image.sif <your command>`, where `/path/to/image.sif` is the path to the container image that you wish to use. There are also numerous options and flags that you can provide to the `singularity exec` command itself. For the purposes of today's workshop, we will be using Singularity's default parameters, so we don't need to provide any options. As part of these defaults, the command will be run within your current working directory, as if you simply ran the command directly.
+To run a command or script inside a singularity container, you simply run `singularity exec /path/to/image.img <your command>`, where `/path/to/image.img` is the path to the container image that you wish to use. There are also numerous options and flags that you can provide to the `singularity exec` command itself. For the purposes of today's workshop, we will be using Singularity's default parameters, so we don't need to provide any options. As part of these defaults, the command will be run within your current working directory, as if you simply ran the command directly.
 
 !!! example "Exercise: Run FastQC in a Singularity container"
 
-    You should find a pre-built container image for running the `fastqc` command at `../singularity/fastqc.sif`.  
+    You should find a pre-built container image for running the `fastqc` command at `../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`.  
     
     You can execute the `fastqc --help` inside it with:
 
     ```bash
-    singularity exec ../singularity/fastqc.sif fastqc --help
+    singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img fastqc --help
     ```
 
     The output should look familiar:
@@ -247,5 +247,11 @@ To run a command or script inside a singularity container, you simply run `singu
 
     ...
     ```
+
+!!! question "How are you going?"
+
+    If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
+    
+    If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.
 
 Later, when we set up Nextflow to run on the HPC, we will configure it to use singularity containers. Behind the scenes, this process of running a command within a container is essentially what Nextflow does for us.

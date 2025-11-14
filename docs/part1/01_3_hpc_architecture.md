@@ -93,13 +93,13 @@ Schedulers like PBS Pro and Slurm use queues to group jobs that share similar re
     - **Memory** – how much RAM it requires
     - **Walltime** – how long it is allowed to run
 
-    Once submitted, your job enters a **queue**, much like a waiting line for compute resources. But unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together — like sliding Tetris blocks — to maximise system usage.
+    Once submitted, your job enters a **queue**, much like a waiting line for compute resources. But unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together, like sliding Tetris blocks, to maximise system usage.
 
     The order in which jobs run depends on several factors:
 
-    - **Job priority** — determined by project, queue, and fair-share usage
-    - **Requested resources** — smaller jobs can often “slot in” sooner
-    - **Queue limits** — different queues prioritise short, long, or interactive jobs
+    - **Job priority** - determined by project, queue, and fair-share usage
+    - **Requested resources** - smaller jobs can often “slot in” sooner
+    - **Queue limits** - different queues prioritise short, long, or interactive jobs
 
     Getting the shape right matters. Understandably, underestimating the resources you job requires can cause it to fail. What is less immediately obvious is that overestimating your needs is also detrimental, as it makes your job harder to fit. Common outcomes from overestimating your job's requirements include:
 
@@ -126,7 +126,7 @@ To start getting familiar with working with the scheduler and submitting jobs, w
     READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
     mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-    singularity exec ../singularity/fastqc.sif \
+    singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img \
     fastqc \
         --outdir "results/fastqc_${SAMPLE_ID}_logs" \
         --format fastq ${READS_1} ${READS_2}
@@ -144,13 +144,13 @@ To start getting familiar with working with the scheduler and submitting jobs, w
     READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
     mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-    singularity exec ../singularity/fastqc.sif \
+    singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img \
     fastqc \
         --outdir "results/fastqc_${SAMPLE_ID}_logs" \
         --format fastq ${READS_1} ${READS_2}
     ```
 
-The script does a few things. First, it loads the `singularity` module; we'll need this to run the `fastqc` command when the job gets submitted to the compute node. Next, it defines a few bash variables that point to the input FASTQ data. It then creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`. And finally, it runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec ../singularity/fastqc.sif`. Note that we have already pre-loaded the `fastqc` singularity container image at `../singularity/fastqc.sif`.
+The script does a few things. First, it loads the `singularity` module; we'll need this to run the `fastqc` command when the job gets submitted to the compute node. Next, it defines a few bash variables that point to the input FASTQ data. It then creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`. And finally, it runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`. Note that we have already pre-loaded the `fastqc` singularity container image at `../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`.
 
 This is everything we need to run the job; we just have to submit the script to the HPC scheduler. In doing so, we will provide the following details to the scheduler:
 
@@ -233,11 +233,11 @@ This is everything we need to run the job; we just have to submit the script to 
     === "Gadi (PBS)"
 
         ```console title="Output"
-        gadi-pbs: 
+        gadi-pbs:
                                                                         Req'd  Req'd   Elap
         Job ID               Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
         -------------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
-        123456789.gadi-pbs   usr123   normal   fastqc        --    1   1  1024m 00:10 Q   -- 
+        123456789.gadi-pbs   usr123   normal   fastqc        --    1   1  1024m 00:10 Q   --
         ```
 
         The `S` column near the end shows the status of the job, with typical codes being `Q` for queued, `R` for running, and `E` for finished or ending jobs.
@@ -292,7 +292,7 @@ The above command is quite long, and would be a pain to write out every time you
         READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
         mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec ../singularity/fastqc.sif \
+        singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img \
         fastqc \
             --outdir "results/fastqc_${SAMPLE_ID}_logs" \
             --format fastq ${READS_1} ${READS_2}
@@ -320,7 +320,7 @@ The above command is quite long, and would be a pain to write out every time you
         READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
 
         mkdir -p "results/fastqc_${SAMPLE_ID}_logs"
-        singularity exec ../singularity/fastqc.sif \
+        singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img \
         fastqc \
             --outdir "results/fastqc_${SAMPLE_ID}_logs" \
             --format fastq ${READS_1} ${READS_2}
@@ -352,3 +352,9 @@ The above command is quite long, and would be a pain to write out every time you
     NA12878_chr20-22.R1_fastqc.html NA12878_chr20-22.R2_fastqc.html
     NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip
     ```
+
+!!! question "How are you going?"
+
+    If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
+
+    If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.

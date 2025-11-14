@@ -139,6 +139,10 @@ Process directives, such as CPU and memory requirements, can be configured in a 
 
     Start by creating a new blank file within the `config/` folder called `custom.config` and open it up in VSCode.
 
+    ```bash
+    touch config/custom.config
+    ```
+
     We have eight distinct processes that we want to fine-tune:
 
     - `TABIX_BGZIPTABIX_INTERVAL_COMBINED`
@@ -150,7 +154,7 @@ Process directives, such as CPU and memory requirements, can be configured in a 
     - `BAM_TO_CRAM_MAPPING`
     - `MULTIQC`
 
-    From the trace file we received from the previous run of `sarek`, we saw that the processes were requesting between 1 and 24 CPUs, and up to 30 GB of memory for the `GATK4_CREATESEQUENCEDICTIONARY` process. For our example dataset, these values are overkill. Instead, we can get away with just 1-2 CPUs and 1-2GB of memory for each task. We'll also give each task just 2 minutes to complete, which is more than enough time.
+    From the trace file we received from the previous run of `sarek`, we saw that the processes were requesting between 1 and 24 CPUs, and up to 30 GB of memory for the `BWAMEM1_MEM` process. For our example dataset, these values are overkill. Instead, we can get away with just 1-2 CPUs and 1-2GB of memory for each task. We'll also give each task just 2 minutes to complete, which is more than enough time.
 
     Let's translate this into the Nextflow configuration format:
 
@@ -214,7 +218,7 @@ Process directives, such as CPU and memory requirements, can be configured in a 
 
     === "Gadi (PBS)"
 
-        ```bash title="run.sh" linenums="1" hl_lines="15"
+        ```bash title="run.sh" linenums="1" hl_lines="17"
         #!/bin/bash
 
         module load nextflow/24.04.5
@@ -231,13 +235,12 @@ Process directives, such as CPU and memory requirements, can be configured in a 
             --outdir results \
             --no_intervals true \
             --igenomes_ignore true \
-            -c config/gadi.config,config/custom.config \
-            -resume
+            -c config/gadi.config,config/custom.config
         ```
 
     === "Setonix (Slurm)"
 
-        ```bash title="run.sh" linenums="1" hl_lines="15"
+        ```bash title="run.sh" linenums="1" hl_lines="17"
         #!/bin/bash
 
         module load nextflow/24.10.0
@@ -254,8 +257,7 @@ Process directives, such as CPU and memory requirements, can be configured in a 
             --outdir results \
             --no_intervals true \
             --igenomes_ignore true \
-            -c config/setonix.config,config/custom.config \
-            -resume
+            -c config/setonix.config,config/custom.config
         ```
 
     And now we're ready to re-run the pipeline!
@@ -288,56 +290,56 @@ Process directives, such as CPU and memory requirements, can be configured in a 
 
 ## 2.4.3 Scaling up to multiple samples
 
-    Now that we have a fully-functioning run script and custom configuration, we can try scaling up to multiple samples.
+Now that we have a fully-functioning run script and custom configuration, we can try scaling up to multiple samples.
 
-    !!! example "Exercise: Run mapping on multiple samples"
+!!! example "Exercise: Run mapping on multiple samples"
 
-        Update the `run.sh` script to use the full samplesheet with all three test samples:
+    Update the `run.sh` script to use the full samplesheet with all three test samples. At the same time, add the `-resume` flag so that we don't have to re-run the previously run jobs for the first sample. When doing so, be sure to add a space and a backslash (` \`) to the preceding line to indicate that the command continues on the next line:
 
-        === "Gadi (PBS)"
+    === "Gadi (PBS)"
 
-            ```bash title="run.sh"
-            #!/bin/bash
+        ```bash title="run.sh" hl_lines="7 17-18"
+        #!/bin/bash
 
-            module load nextflow/24.04.5
-            module load singularity
+        module load nextflow/24.04.5
+        module load singularity
 
-            nextflow run sarek/main.nf \
-                --input ../data/fqs/samplesheet.fq.csv \
-                --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
-                --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
-                --dict ../data/ref/Hg38.subsetchr20-22.dict \
-                --bwa ../data/ref \
-                --step mapping \
-                --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
-                --outdir results \
-                --no_intervals true \
-                --igenomes_ignore true \
-                -c config/gadi.config \
-                -resume
-            ```
+        nextflow run sarek/main.nf \
+            --input ../data/fqs/samplesheet.fq.csv \
+            --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
+            --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
+            --dict ../data/ref/Hg38.subsetchr20-22.dict \
+            --bwa ../data/ref \
+            --step mapping \
+            --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
+            --outdir results \
+            --no_intervals true \
+            --igenomes_ignore true \
+            -c config/gadi.config,config/custom.config \
+            -resume
+        ```
 
-        === "Setonix (Slurm)"
+    === "Setonix (Slurm)"
 
-            ```bash title="run.sh"
-            #!/bin/bash
+        ```bash title="run.sh" hl_lines="7 17-18"
+        #!/bin/bash
 
-            module load nextflow/24.10.0
-            module load singularity/4.1.0-slurm
+        module load nextflow/24.10.0
+        module load singularity/4.1.0-slurm
 
-            nextflow run sarek/main.nf \
-                --input ../data/fqs/samplesheet.fq.csv \
-                --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
-                --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
-                --dict ../data/ref/Hg38.subsetchr20-22.dict \
-                --bwa ../data/ref \
-                --step mapping \
-                --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
-                --outdir results \
-                --no_intervals true \
-                --igenomes_ignore true \
-                -c config/setonix.config \
-                -resume
-            ```
+        nextflow run sarek/main.nf \
+            --input ../data/fqs/samplesheet.fq.csv \
+            --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
+            --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
+            --dict ../data/ref/Hg38.subsetchr20-22.dict \
+            --bwa ../data/ref \
+            --step mapping \
+            --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
+            --outdir results \
+            --no_intervals true \
+            --igenomes_ignore true \
+            -c config/setonix.config,config/custom.config \
+            -resume
+        ```
 
-        Go ahead and re-run the script. The `-resume` flag will mean that the previously-run tasks for the first sample (`FASTQC`, `FASTP`, `BWAMEM1_MEM`, etc.) will not be re-run, but instead their outputs will be reused. Only the new samples will be run through these processes. `MULTIQC` will re-run at the end of the pipeline as it needs to summarise the results from all three samples.
+    Go ahead and re-run the script. The `-resume` flag will mean that the previously-run tasks for the first sample (`FASTQC`, `FASTP`, `BWAMEM1_MEM`, etc.) will not be re-run, but instead their outputs will be reused. Only the new samples will be run through these processes. `MULTIQC` will re-run at the end of the pipeline as it needs to summarise the results from all three samples.

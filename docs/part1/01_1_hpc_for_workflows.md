@@ -18,7 +18,7 @@ In bioinformatics, a workflow is simply a defined series of steps that take data
 
 ### Signs your workflow is ready for HPC
 
-Not every workflow needs a supercomputer. Many analyses start on a laptop and stay there — especially during method development, testing small datasets, or when turnaround is more important than throughput. HPC becomes necessary when your workflow starts to hit practical limits of time, memory, storage, reliability, or governance.
+Not every workflow needs a supercomputer. Many analyses start on a laptop and stay there, especially during method development, testing small datasets, or when turnaround is more important than throughput. HPC becomes necessary when your workflow starts to hit practical limits of time, memory, storage, reliability, or governance.
 
 A workflow is usually ready for HPC when scale becomes a problem. This might be scale in data size (more gigabytes than your laptop can hold), compute time (weeks of serial runs), memory usage (jobs crash due to insufficient RAM), or workflow complexity (tens of jobs become too painful to run manually).
 

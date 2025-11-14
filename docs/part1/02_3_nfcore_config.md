@@ -59,7 +59,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     We also want to set some limits to how many jobs can be submitted at once and how frequently they get submitted. These settings are important, because many large pipelines can create potentially hundreds of jobs that may overwhelm the system. Most HPCs will set a limit for how many jobs a user can submit at once, and your pipeline may fail if it tries to submit more than this limit.
 
-    For our purposes, we will keep our queued job limit to 30, and limit the number of jobs we can submit at once to 20 per minute. We will also tell Nextflow to request for status updates on our jobs once every 5 seconds.
+    For our purposes, we will keep our queued job limit to 30, and limit the number of jobs we can submit at once to 20 per minute. We will also tell Nextflow to request for status updates on our jobs once every 15 seconds.
 
     === "Gadi (PBS)"
 
@@ -71,8 +71,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
         ```
 
@@ -86,18 +86,18 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
         ```
 
     Now we have defined our executor and some relevant settings for it, we will need to tell Nextflow to actually use this new configuration file; by default, Nextflow will only use the `nextflow.config` file in the project directory, and will only load other configuration files when explicitly told to do so.
 
-    In the `run.sh` script, add the following highlighted line to the `nextflow run` command:
+    In the `run.sh` script, update the following highlighted lines by adding a ` \` to the end of the old command and adding the new configuration file with the `-c` option:
 
     === "Gadi (PBS)"
 
-        ```bash title="run.sh" linenums="1" hl_lines="17"
+        ```bash title="run.sh" linenums="1" hl_lines="16-17"
         #!/bin/bash
 
         module load nextflow/24.04.5
@@ -114,8 +114,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
             --outdir results \
             --no_intervals true \
             --igenomes_ignore true \
-            -c config/gadi.config \
-            -resume
+            -c config/gadi.config
         ```
 
     === "Setonix (Slurm)"
@@ -137,8 +136,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
             --outdir results \
             --no_intervals true \
             --igenomes_ignore true \
-            -c config/setonix.config \
-            -resume
+            -c config/setonix.config
         ```
 
     The new line adds the `-c <config>` option to the `nextflow run` command. We provide the path to our new configuration file which tells Nextflow to load it and merge it with the existing configuration set up by the `nextflow.config` file. Note that the settings in configuration files provided by the `-c` command will take precedence over those set in the `nextflow.config` file, so if any options are specified in both files, the setting in `config/gadi.config` or `config/setonix.config` will be used. We will explore layering configurations further in the next section of the workshop.
@@ -253,8 +251,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -273,8 +271,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -296,8 +294,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -317,8 +315,8 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -357,8 +355,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -380,8 +378,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -404,8 +402,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -434,8 +432,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -443,6 +441,10 @@ We now have a configuration file with both our executor defined and singularity 
             cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
         ```
+
+        !!! note "Read the docs!"
+
+            Remember to check [NCI's "Queue Limits" page](https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits) when configuring the `queue` for your pipelines on Gadi, as it contains important information about how and when to select each particular queue. We are using a fairly naive selection method today for simplicity, but more complex queue selection methods are possible and advisable for larger pipelines.
 
     === "Setonix (Slurm)"
 
@@ -459,8 +461,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -468,6 +470,10 @@ We now have a configuration file with both our executor defined and singularity 
             cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
         ```
+
+        !!! note "Read the docs!"
+
+            Remember to check [Pawsey's "Running Jobs on Setonix" page](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix) when configuring the `queue` for your pipelines on Setonix, as it contains important information about how and when to select each particular queue. We are using a fairly naive selection method today for simplicity, but more complex queue selection methods are possible and advisable for larger pipelines.
 
     We want to add just a couple of extra options to the process definition. The first option is the `stageInMode` option. We will explicitly tell Nextflow that we want to use **symbolic links**. These are essentially shortcuts that point to another file on the system, and let us refer to inputs within our working directory without physically copying them in, which would use up lots of additional storage space. To set this, we define `stageInMode = 'symlink'` in the `process` scope.
 
@@ -491,8 +497,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -516,8 +522,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -544,8 +550,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -578,8 +584,8 @@ We now have a configuration file with both our executor defined and singularity 
         executor {
             queueSize = 30
             submitRateLimit = '20 min'
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
+            pollInterval = '15 sec'
+            queueStatInterval = '15 sec'
         }
 
         singularity {
@@ -732,3 +738,9 @@ We now have a configuration file with both our executor defined and singularity 
         !!! note
         
             If your pipeline hasn't finished after a few minutes, you can cancel the run with a `Ctrl + C` keyboard combination. In the final section for today, we will create another configuration file to layer on top of our exisitng configuration and fine-tune our tasks to run more efficiently.
+
+!!! question "How are you going?"
+
+    If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
+    
+    If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.
