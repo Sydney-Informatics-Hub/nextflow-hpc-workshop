@@ -42,9 +42,11 @@ We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatic
 
 ![](figs/00_config_demo_nf_v3.png)
 
-!!! example "Download the example workflow"
+!!! warning "Ensure you have a copy of the example workflow"
 
-    Use git to clone the workflow code base to your working directory:
+    You should already have a copy of the `config-demo-nf` directory in your working directory, as it was copied there as part of the [setup process](./01_0_intro.md#102-setup-the-workspace).
+    
+    **If it is missing**, use the following `git` command to clone the workflow code base to your working directory now:
 
     ```bash
     git clone https://github.com/Sydney-Informatics-Hub/config-demo-nf.git
@@ -77,7 +79,7 @@ Because configs are separate from the workflow logic, you can:
 
 In short, configs are what make Nextflow workflows portable, scalable, and cluster-aware.
 
-!!! example "Running the workflow on the compute nodes"
+!!! example "Exercise: Running the workflow on the compute nodes"
 
     === "Gadi (PBS)"
 
@@ -183,7 +185,7 @@ profiles {
 }
 ```
 
-!!! example "Running the workflow on the compute nodes with profiles"
+!!! example "Exercise: Running the workflow on the compute nodes with profiles"
 
     Run the workflow once more, this time using the executor profiles:
 

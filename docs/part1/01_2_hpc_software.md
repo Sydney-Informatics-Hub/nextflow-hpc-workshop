@@ -1,4 +1,4 @@
-# 1.2 Software on HPC
+# 1.2 Software is different on HPC
 
 !!! info "Learning objectives"
 

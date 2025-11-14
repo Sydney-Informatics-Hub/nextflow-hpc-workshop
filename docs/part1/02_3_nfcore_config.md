@@ -1,4 +1,4 @@
-# 2.3 Configuring nf-core
+# 1.8 Configuring nf-core
 
 !!! info "Learning objectives"
 
@@ -7,7 +7,7 @@
     - Understand the singularity configuration scope
     - Know how to dynamically define the queue based on required resources
 
-## 2.3.1 Executors
+## 1.8.1 Executors
 
 Executors are the back-end that Nextflow talks to to run the tasks in your workflow. By default, Nextflow will assume that you want to run everything on the same computer that you ran the `nextflow run` command on. But, as we have learned, that is definitely **not** how we want to run things on a shared HPC system: we want each task to be submitted to the scheduler to run on a compute node with all the appropriate resources.
 
@@ -235,7 +235,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
         The above example shows exactly what went wrong: `fastp: command not found`. We haven't yet configured Nextflow to use Singularity, so it is assuming the software is installed on the compute node. In the next section, we will set up Nextflow to use Singularity to run each tool.
 
-## 2.3.2 Containers in nf-core
+## 1.8.2 Containers in nf-core
 
 !!! example "Exercise: Define the singularity configuration"
 
@@ -327,7 +327,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
 We now have a configuration file with both our executor defined and singularity enabled. There are just a few finishing touches we need to make, primarily around defining the HPC queue that we want to use and some additional options for how to handle files.
 
-## 2.3.3 Configuring HPC resources
+## 1.8.3 Configuring HPC resources
 
 !!! example "Exercise: Finalise the config with resource requirements"
 

@@ -1,4 +1,4 @@
-# 1.4 HPC architecture for workflows
+# 1.3 HPC architecture
 
 !!! info "Learning objectives"
 
@@ -8,19 +8,21 @@
     - Explain how shared filesystems are accessed and managed safely in workflows
     - Define job resource requirements (CPU, memory, walltime) and their impact on scheduling
 
+## 1.3.1 Typical HPC architecture
+
 While HPCs can look intimidating, their architecture follows a simple structure that supports large-scale computation through shared resources. From a workflow perspective, this architecture means there are a few important realities to accept: work is not run interactively, resources must be requested rather than assumed and everything is governed by shared access.
 
 ![](figs/00_hpc_architecture.png)
 
-## Login nodes
+### Login nodes
 
 When a user connects to an HPC, they first land on a **login node**. This is a shared access point used to prepare work, not perform computations. From here, users submit jobs to the scheduler, monitor their progress and organise their project directories. The login node exists only to coordinate access to the system, and because it is shared by many people at once, it must not be overloaded with computational tasks.
 
-## Compute nodes
+### Compute nodes
 
 The real work happens on the compute nodes. These are powerful machines with many CPU cores, large amounts of memory and fast access to storage. When you run a workflow, the scheduler assigns the individual tasks of the workflow to available compute nodes based on the resources requested. This separation between the login node and compute nodes allows users to interact with the system while computation is queued and executed elsewhere.
 
-## Queues
+### Queues
 
 HPC systems divide compute resources into queues (also called "partitions" in Slurm). Each queue represents a group of compute nodes with specific hardware characteristics, limits, and intended usage.
 
@@ -43,7 +45,7 @@ For details about queue limits and scheduling policies on systems used today, se
 - [Setonix (Slurm) – Running Jobs on Setonix (Pawsey)](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix)
 - [Gadi (PBS Pro) – Queue Limits (NCI)](https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits)
 
-### Internet access on compute nodes
+#### Internet access on compute nodes
 
 Often, a workflow may need access to resources on the internet, such as Singularity container images and large reference databases. This can become an issue on HPCs, as some systems restrict internet access on the compute nodes. While on Setonix, all compute nodes are given internet access and can be used for downloading such resources, on Gadi, most of the compute nodes are kept offline; instead, only the compute nodes that make up the `copyq` queue are allowed to access the internet. Furthermore, this queue has a few important constraints, primarily that it only allows single CPU jobs and a maximum walltime of 10 hours. As such, when designing your workflows, you need to make sure you are working within these constraints.
 
@@ -57,7 +59,7 @@ As a general rule of thumb, it is always best to have as much as possible of you
 
 Remember to **always consult the documentation** specific to your HPC before writing and running workflows!
 
-## Shared storage
+### Shared storage
 
 All nodes are connected to a shared parallel filesystem. This is a large, high-speed storage system where input data, reference files and workflow outputs are kept. Because it is shared across all users, it enables collaborative research and scalable workflows. However, it also introduces constraints around file organisation and performance, which is why workflows must be careful about how they read and write data here.
 
@@ -73,7 +75,7 @@ All nodes are connected to a shared parallel filesystem. This is a large, high-s
     - Avoid simultaneous writes unless explicitly managed.
     - Add file checks and error handling.
 
-## Job scheduler
+### The job scheduler
 
 At the centre of everything is the job scheduler. Rather than allowing users to run programs directly, HPCs rely on a scheduling system (e.g. Slurm or PBS Pro) to manage fair access to shared compute resources. When a job is submitted, it enters a queue where the scheduler decides when and where it will run. Jobs are matched to compute nodes based on requested resources like CPU, memory and runtime. Understanding how the scheduler behaves is essential for designing workflows that run efficiently.
 
@@ -110,7 +112,7 @@ Schedulers like PBS Pro and Slurm use queues to group jobs that share similar re
     Just like in Tetris, the scheduler aims to fill every gap and keep the system running smoothly.
     Small, well-shaped jobs often fall neatly into open spaces, while larger ones wait for the perfect fit.
 
-## Submitting scripts to the scheduler
+## 1.3.2 Submitting scripts to the scheduler
 
 To start getting familiar with working with the scheduler and submitting jobs, we will once again use `fastqc` as an example. We have an example script for running `fastqc` in the `scripts/` directory:
 
@@ -163,6 +165,8 @@ This is everything we need to run the job; we just have to submit the script to 
 
 !!! example "Exercise: Submitting the fastqc script to the HPC"
 
+    In the **VSCode terminal** (`Ctrl + J` (Windows/Linux) / `Cmd + J` (Mac)), type in the following code. **Note the backslashes (`\`)**: these indicate that you will continue the command on the next line. When you type a backslash and press `Enter`, you will get a `>` character in your terminal prompt, indicating that you can continue writing your command here. **Ensure you put a space before the backslashes**.
+
     === "Gadi (PBS)"
 
         ```bash
@@ -214,6 +218,8 @@ This is everything we need to run the job; we just have to submit the script to 
         - `--mem=1GB`: Here we request 1 GB of memory.
         - `--time=00:01:00`: This requests 1 minute of walltime; walltime is specified in the format `HH:MM:SS`
 
+    Once you have written out the command, ensure you have **no final backslash**, and press `Enter` to submit the script to the scheduler.
+
     Once submitted, you can monitor the progress of your job with the following command:
 
     === "Gadi (PBS)"
@@ -262,7 +268,13 @@ This is everything we need to run the job; we just have to submit the script to 
     NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip
     ```
 
-### Cleaning up job submission
+    Before moving on, **delete the `results/` directory:
+
+    ```bash
+    rm -r results
+    ```
+
+## 1.3.3 Cleaning up job submission
 
 The above command is quite long, and would be a pain to write out every time you want to submit a script, especially if you want to run the same script several times with different samples. Luckily, there is a better way of specifying the resources required by a script. Both PBS Pro and Slurm support using special comments at the top of the script file itself for specifying the resources it requires.
 
@@ -352,6 +364,20 @@ The above command is quite long, and would be a pain to write out every time you
     NA12878_chr20-22.R1_fastqc.html NA12878_chr20-22.R2_fastqc.html
     NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip
     ```
+
+    Again, before moving on, delete the `results/` directory, as well as the scheduler outputs. **Do not delete the `run_id.txt` file**, as we will use that in the following lesson.
+
+    === "Gadi (PBS)"
+
+        ```bash
+        rm -r results fastqc.*
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```bash
+        rm -r results slurm-*
+        ```
 
 !!! question "How are you going?"
 

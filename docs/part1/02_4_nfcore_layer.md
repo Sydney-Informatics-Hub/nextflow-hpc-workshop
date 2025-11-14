@@ -1,4 +1,4 @@
-# 2.4 Layering Nextflow configurations
+# 1.9 Layering Nextflow configurations
 
 !!! info "Learning objectives"
 
@@ -11,7 +11,7 @@ We have now managed to configure and run an nf-core pipeline, but we have also s
 
 We have already seen how we can define a custom configuration file and layer it over the top of the default configuration using the `-c` option to Nextflow. We have also seen how the `sarek` pipeline defines the resources required by many of its processes within the `conf/base.config` file using `withLabel` and `withName` directives. In this final section of today's workshop, we will try to optimise the processes that we are running to more efficiently use the HPC resources by defining a new custom configuration file.
     
-## 2.4.1 Configuration priorities
+## 1.9.1 Configuration priorities
 
 Before we get started, it's important to understand how Nextflow prioritises configuration files. Because we can provide configuration information at various levels and using multiple files, it is possible for some options in these places to overlap, and Nextflow needs to know which ones to give precedence to. Referring to the [Nextflow configuration documentation](https://www.nextflow.io/docs/latest/config.html), configuration files are prioritised in the following order, from lowest to highest priority:
 
@@ -22,7 +22,7 @@ Before we get started, it's important to understand how Nextflow prioritises con
 
 Furthermore, when using the `-c` option, multiple configuration files can be provided, separated by commas, and are prioritised from lowest to highest in the order they are specified.
 
-!!! example "Example: A very simple layered configuration"
+??? example "Example: A very simple layered configuration"
 
     Consider the following (very basic) Nextflow file:
 
@@ -115,7 +115,7 @@ Process directives, such as CPU and memory requirements, can be configured in a 
 3. Process configuration settings within a matching `withLabel` selector
 4. Process configuration settings within a matching `withName` selector
 
-!!! example "Example: Configuring default resources and using process selectors"
+??? example "Example: Configuring default resources and using process selectors"
 
     Consider the following `process {}` scope within a configuration file:
 
@@ -133,7 +133,15 @@ Process directives, such as CPU and memory requirements, can be configured in a 
     - Any process given the `label` "hello" will instead be given 8 CPUs
     - Any process named "bye" will be given 16 CPUs
 
-## 2.4.2 Optimising `nf-core/sarek` for our data
+## 1.9.2 Optimising `nf-core/sarek` for our data
+
+We saw that `sarek` wasn't well-optimised for such a small test dataset. In this next exercise, we will build a new custom configuration file to explicitly set the resources we want for each of the stages.
+
+!!! note "How much will this improve our run?"
+
+    It's hard to say how much these optimisations will improve queue times: if the HPC is relatively quiet on the day, our queue times may already be quite short and so we won't see any significant improvement. When the HPC is being heavily used, we may notice that the poorly-optimised jobs take much longer to start and the following changes may help to reduce those wait times by letting our jobs 'slot in' to the gaps between larger jobs from other users.
+    
+    Also note that for such a small dataset, we won't see a noticable cost reduction - we aren't spending that much to begin with! However, the goal of this exercise is to teach best practices that can be applied to much larger runs - in which case it could make the difference of hundreds of dollars!
 
 !!! example "Exercise: Fine-tune `nf-core/sarek`"
 
@@ -288,7 +296,23 @@ Process directives, such as CPU and memory requirements, can be configured in a 
 
     We can see that `FASTQC` and `MULTIQC` are now using a much larger proportion of the memory assigned to them (in this case 200-700MB out of a total 1GB), so we are much more efficiently using our resources for these jobs. The other jobs are still only using a few MB of memory to run, but for such small jobs there isn't too much utility in optimising these any further; from a cost perspective, these jobs are already under-utilising memory per CPU, so there would be no benefit to reducing the request furhter; and we could also start running into failures due to fluctuations in the memory used between runs.
 
-## 2.4.3 Scaling up to multiple samples
+    We can also see that we are now running only two instances of the `BWAMEM1_MEM` process. Since we gave `FASTP` just two threads to work with, it ended up splitting our FASTQ file into two chunks, each of which was run through an independent `BWAMEM1_MEM` process. This is much more sensible given our small dataset!
+
+!!! note "The right config for the right situation"
+
+    We have now built two separate configuration files - an HPC-specific file (`gadi.config` / `setonix.config`) and our optimisation file (`custom.config`).
+
+    We also know that `sarek` has multiple levels of configuration: `nextflow.config`, `conf/base.config`, and `conf/modules/*.config`.
+
+    Separating out our configuration files is good practice as it makes our pipelines more portable and reproducible.
+
+    Typically, we have three levels of configuration:
+
+    1. Pipeline-level configuration. This includes the `nextflow.config` file and any other config files that are bundled with the pipeline. These should never be changed when running the pipeline and should be designed to work everywhere.
+    2. Institute-level configuration. This is what we built in the previous lesson (`gadi.config` and `setonix.config`). These are configuration files that are specific to the hardware and the systems that the pipeline is being run on. Ideally, they should be reusable for all Nextflow pipelines that run on that system. They should not need to be changed between pipelines on the same system.
+    3. Run-level configuration. This is what we have just built (`custom.config`). These are necessary when the default values provided by the pipeline aren't tuned well-enough to your specific data.
+
+## 1.9.3 Scaling up to multiple samples
 
 Now that we have a fully-functioning run script and custom configuration, we can try scaling up to multiple samples.
 
