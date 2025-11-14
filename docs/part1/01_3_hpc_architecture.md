@@ -93,13 +93,13 @@ Schedulers like PBS Pro and Slurm use queues to group jobs that share similar re
     - **Memory** – how much RAM it requires
     - **Walltime** – how long it is allowed to run
 
-    Once submitted, your job enters a **queue**, much like a waiting line for compute resources. But unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together — like sliding Tetris blocks — to maximise system usage.
+    Once submitted, your job enters a **queue**, much like a waiting line for compute resources. But unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together, like sliding Tetris blocks, to maximise system usage.
 
     The order in which jobs run depends on several factors:
 
-    - **Job priority** — determined by project, queue, and fair-share usage
-    - **Requested resources** — smaller jobs can often “slot in” sooner
-    - **Queue limits** — different queues prioritise short, long, or interactive jobs
+    - **Job priority** - determined by project, queue, and fair-share usage
+    - **Requested resources** - smaller jobs can often “slot in” sooner
+    - **Queue limits** - different queues prioritise short, long, or interactive jobs
 
     Getting the shape right matters. Understandably, underestimating the resources you job requires can cause it to fail. What is less immediately obvious is that overestimating your needs is also detrimental, as it makes your job harder to fit. Common outcomes from overestimating your job's requirements include:
 
@@ -233,11 +233,11 @@ This is everything we need to run the job; we just have to submit the script to 
     === "Gadi (PBS)"
 
         ```console title="Output"
-        gadi-pbs: 
+        gadi-pbs:
                                                                         Req'd  Req'd   Elap
         Job ID               Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
         -------------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
-        123456789.gadi-pbs   usr123   normal   fastqc        --    1   1  1024m 00:10 Q   -- 
+        123456789.gadi-pbs   usr123   normal   fastqc        --    1   1  1024m 00:10 Q   --
         ```
 
         The `S` column near the end shows the status of the job, with typical codes being `Q` for queued, `R` for running, and `E` for finished or ending jobs.
@@ -356,5 +356,5 @@ The above command is quite long, and would be a pain to write out every time you
 !!! question "How are you going?"
 
     If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
-    
+
     If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.
