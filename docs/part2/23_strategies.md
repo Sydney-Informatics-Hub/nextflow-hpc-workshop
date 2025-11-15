@@ -7,7 +7,9 @@
 
 ## Overview
 
-Our workflow is now functional, it runs successfully with scheduler-specific settings and outputs useful trace files showing resource usage. From here, we will explore ways of optimising our workflow for more efficient execution on the HPC. 
+Our workflow is now functional, it runs successfully with scheduler-specific settings and outputs useful trace files showing resource usage. Recall the principles covered in Lesson 1.4, we will apply them to our custom workflow.
+
+From here, we will explore ways of optimising our workflow for more efficient execution on the HPC. 
 
 !!! note "Why do we care about optimisation?"
 
@@ -28,17 +30,49 @@ Optimising workflows on HPC becomes especially important when:
 - You are operating on a system that uses a service unit or time-limited allocation model
 - Your processes have data-dependent resource usage 
 
+By optimising, you are making your workflow resilient and scalable. 
+
 ## What affects performance?
 
-Awareness of these factors can help you make decisions about the optimisation approach to use.
+Efficiency of any workflow on HPC dependens on the interaction of three factors: 
 
-- The specific HPC **system** (e.g. queue limits, node sizes, charging model, default settings)
-- The characteristics of your **data** (e.g. file size, sample number, processing steps)
-- The **workflow** structure (e.g. the number of steps/processes, memory or CPU-intensive tasks)
+### 1. Your HPC system 
 
-!!! note
+We have already witnessed many differences between Gadi and Setonix in previous lessons. A workflow that performs well on one cluster may perform poorly on another simply because the underlying architecture and scheduler rules differ. 
 
-    Each HPC has different hardware and node architectures and it is up to the user to understand how their workflow fits within the limits
+Good optimisation respects the boundaries of the system you're working on. When planning an optimisation approach, consider:
+
+| HPC characteristic | What it means | Why it matters for optimisation                     |
+| --------- | ---------------------- | ------------- |
+| **Default scheduler behaviour**         | Policies set by administrators: fair-share, job priorities, backfill rules, default limits  | Affects queue wait time, job placement efficiency, and how many tasks can run in parallel                            |
+| **Queue limits**                        | Maximum walltime, CPU count, and memory allowed per queue or partition                      | Determines which queues you can use, how large each job can be, and whether your workflow gets delayed               |
+| **Node architecture**                   | Hardware layout: cores per node, memory per node, CPU type (Intel/AMD), GPUs, local scratch | Ensures you request resources that “fit” the node, avoid resource fragmentation, and maximise throughput             |
+| **Charging model** | How HPC usage is accounted (CPU proportion, memory proportion, or the maximum of both)      | Guides you to request only what you need over requesting directly increases SU consumption without improving runtime |
+
+### 2. The characteristics of your data 
+
+Data shapes the computational behaviour of bioinformatics workflows. Even two workflows with identical code can perform very differently depending on the file sizes, sample numbers, and data complexity. Understanding these factors can help you anticipate bottlenecks and assign resources more accurately. When planning an optimisation approach, consider: 
+
+| Data characteristic     | What it means         | Why it matters for optimisation      |
+| ------------------------------------ | -------------------------- | -------------------------------- |
+| **File size**                        | The total size of FASTQ, BAM/CRAM, reference genomes, annotation files, or intermediate outputs                      | Larger files increase memory requirements, disk I/O, runtime, and queue time; they also influence whether single-threading or multithreading is more efficient            |
+| **Sample number**                    | Total number of samples in the analysis, including replicates or cohorts                                             | More samples → more processes → heavier scheduler load; the workflow may require scatter–gather to parallelise effectively and avoid bottlenecks                          |
+| **Data heterogeneity**               | Variability in file sizes, read depth, sample complexity, or quality across inputs                                   | Highly variable samples produce uneven resource usage; some processes may require per-sample resource overrides to prevent memory kills or slowdowns                      |
+| **Data type**                        | Whether data are short reads, long reads, single-cell, imaging derivatives, matrices, VCFs, etc.                     | Different data modalities have different computational profiles (I/O-heavy, CPU-heavy, memory-heavy); optimisation strategies should account for the modality’s behaviour |
+| **I/O intensity**                    | Frequency and volume of read/write operations (large temporary files, sort steps, indexing, BAM ↔ FASTQ conversions) | I/O-heavy processes benefit from local SSD or node-local scratch; misconfigured I/O can add hours to runtime on shared filesystems                                        |
+| **Parallelisability**                | Whether samples or chunks of data can be processed independently                                                     | Determines when scatter–gather is useful, how many jobs can run concurrently, and how well the workflow scales on HPC                                                     |
+| **Compression and indexing formats** | gzip vs bgzip, BAM vs CRAM, presence of .bai/.crai/.fai, CCS vs raw reads                                            | Impacts CPU time, memory, and I/O behaviour; inefficient formats slow down the entire workflow                                                                            |
+
+
+### 3. The sturcture of your worklfow 
+
+Even with the same tools and data, two workflows can behave differently depending on their structure: 
+
+* Number of processes 
+* Order of dependencies 
+* Opportunities for parallelism
+* Whether steps are CPU-bound, memory-bound, or I/O boind 
+* Incorporated tool's ability to multithread 
 
 ## What will we optimise?
 
