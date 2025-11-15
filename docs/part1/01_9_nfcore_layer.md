@@ -224,7 +224,7 @@ We saw that `sarek` wasn't well-optimised for such a small test dataset. In this
 
     Now that we have our custom configuration file created, we need to update our run script once again and add the new file to the `-c` option:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash title="run.sh" linenums="1" hl_lines="17"
         #!/bin/bash
@@ -320,7 +320,7 @@ Now that we have a fully-functioning run script and custom configuration, we can
 
     Update the `run.sh` script to use the full samplesheet with all three test samples. At the same time, add the `-resume` flag so that we don't have to re-run the previously run jobs for the first sample. When doing so, be sure to add a space and a backslash (` \`) to the preceding line to indicate that the command continues on the next line:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash title="run.sh" hl_lines="7 17-18"
         #!/bin/bash
