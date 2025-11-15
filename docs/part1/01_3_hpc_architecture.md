@@ -116,7 +116,7 @@ Getting the shape right matters. Underestimating the resources you job requires 
 
 To familiarise ourselves with submitting jobs to the scheduler, we will once again use `fastqc` as an example. We have an example script for running `fastqc` in the `scripts/` directory:
 
-=== "Gadi (PBS)"
+=== "Gadi (PBSpro)"
 
     ```bash title="scripts/fastqc.pbs.sh"
     #!/bin/bash
@@ -175,7 +175,7 @@ This is everything we need to run the job; we just have to submit the script to 
 
     In the **VSCode terminal** (`Ctrl + J` (Windows/Linux) / `Cmd + J` (Mac)), type in the following code. **Note the backslashes (`\`)**: these indicate that you will continue the command on the next line. When you type a backslash and press `Enter`, you will get a `>` character in your terminal prompt, indicating that you can continue writing your command here. **Ensure you put a space before the backslashes**.
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash
         qsub \
@@ -230,7 +230,7 @@ This is everything we need to run the job; we just have to submit the script to 
 
     Once submitted, you can monitor the progress of your job with the following command:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash
         qstat -u ${USER}
@@ -244,7 +244,7 @@ This is everything we need to run the job; we just have to submit the script to 
 
     This will output a list of all running jobs and their status:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```console title="Output"
         gadi-pbs:
@@ -292,7 +292,7 @@ The above command is quite long, and would be a pain to write out every time you
 
     Update your `fastqc.sh` script with the following header comments:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash title="fastqc.sh" hl_lines="2-9"
         #!/bin/bash
@@ -350,7 +350,7 @@ The above command is quite long, and would be a pain to write out every time you
 
     With the script updated, you can simply run your HPC submission command without any of the previously supplied parameters. We will also redirect the output of the submission command (which prints a message containing the job ID) to a file called `run_id.txt` for use in the next lesson.
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash
         qsub fastqc.sh > run_id.txt
@@ -375,7 +375,7 @@ The above command is quite long, and would be a pain to write out every time you
 
     Again, before moving on, delete the `results/` directory, as well as the scheduler outputs. **Do not delete the `run_id.txt` file**, as we will use that in the following lesson.
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash
         rm -r results fastqc.*
