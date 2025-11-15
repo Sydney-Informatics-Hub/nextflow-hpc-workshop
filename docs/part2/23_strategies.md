@@ -3,7 +3,7 @@
 !!! info "Learning objectives"
 
     - Identify the key factors that impact workflow performance on HPC systems
-    - Describe common workflow optimisation strategies
+    - Describe common workflow optimisation strategies in the context of Nextflow
 
 ## Overview
 
