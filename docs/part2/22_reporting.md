@@ -7,91 +7,147 @@
     - Know which fields help determine efficiency and HPC resource usage
     - Compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
 
-Once we get the workflow running without error on the scheduler, we need to enable Nextflow's reporting and monitoring functions. This allows us to view the resource requirements that each process uses, on our representative sample.
+In bioinformatics workflows, resource requirements are often not fixed. They can vary significantly depending on the size of input files, varying complexity of different genomic regions, the species you're working with, and sequencing format and depth. This means we can't assume CPU, memory, or time values will work the same for every sample. On HPC systems, where resources are shared and allocations may be charged, these differences matter. 
+
+You cannot set and forget resource values for an entire workflow, you need to build in flexibility. This requires you to have visiblity over pipeline behaviour at the process level. Nextflow provides several monitoring and reporting tools that help you understand this behaviour including `nextflow log`, trace files, and reports. 
+
+!!! note "Recall the trace file from Part 1"
+
+    TODO add a reference to how we did this in part 1 and comment on how we will explore further here. Link out when we have page structure of Part 1 ready.
+
+Now that our workflow is running without error on the scheduler, we will enable [Nextflow's reports](https://nextflow.io/docs/latest/reports.html). This allows us to view the resource usage of each process for our representative sample.
+
+
+## 2.2.1 Execution reports and timelines
+
+Nextflow can produce an [execution report](https://nextflow.io/docs/latest/reports.html#execution-report) at the end of your workflow run that summarises all process execution metrics. Similarly, it can create a [execution timeline](https://nextflow.io/docs/latest/reports.html#execution-timeline). These reports summarise how your workflow ran, which processes were executed, and how long they took. They are very helpful during development, troubleshooting, and performance optimisation. These reports can be created when running the pipeline using the `-with-report` and `-with-timeline` flags or by adding `timeline{}` and `report{}` directives to our configuration file. 
+
+Both directives allow us to specify a custom file name and choose whether or not you overwrite the file for each run. Rather than overwriting the same report file every time we run the pipeline, we will add a small timestamp parameter that automatically labels each report with the exact date and time the workflow was launched. This makes it easier to track multiple runs, especially when you are iterating qucikly and comparing resource usage. 
 
 !!! example "Exercise"
 
-    Enable all trace reporting available, with default/minimal settings.
-    We use the configured `trace` from Part 1.
+    Enable execution and timeline reports in our `custom.config` file. Copy the following into your `custom.config`:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
-        ```groovy title='config/custom.config' hl_lines="6-31"
-        process {
-            cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6 OR 9.1
-            memory = 4.GB
-        }
-
+        ```groovy title='config/custom.config'
+        // Name the reports according to when they were run
         params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
 
-        trace {
-             enabled = true
-             overwrite = false
-             file = "./runInfo/trace-${params.timestamp}.txt"
-             fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss'
-         }
-
+        // Generate timeline-timestamp.html timeline report 
         timeline {
             enabled = true
             overwrite = false
             file = "./runInfo/timeline-${params.timestamp}.html"
         }
 
+        // Generate report-timestamp.html execution report 
         report {
             enabled = true
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
-        }
-    
-        dag {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/dag-${params.timestamp}.html"
         }
         ```
 
     === "Setonix (Slurm)"
 
-        ```groovy title='config/custom.config' hl_lines="6-31"
-        process {
-            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
-            memory = 2.GB
-        }
-
+        ```groovy title='config/custom.config'
+        // Name the reports according to when they were run
         params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
 
-        trace {
-             enabled = true
-             overwrite = false
-             file = "./runInfo/trace-${params.timestamp}.txt"
-             fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss'
-         }
-
+        // Generate timeline-timestamp.html timeline report 
         timeline {
             enabled = true
             overwrite = false
             file = "./runInfo/timeline-${params.timestamp}.html"
         }
 
+        // Generate report-timestamp.html execution report 
         report {
             enabled = true
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
         }
-    
-        dag {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/dag-${params.timestamp}.html"
-        }
         ```
   
-    Run the workflow 
+    Run the workflow: 
     ```bash
     ./run.sh
     ```
-    Once the job completes, you should have a new folder called `runInfo`, where trace files are saved. Look at your first trace file:
 
+    Once the job completes, you should have a new folder called `runInfo`, where your timeline and report files are saved.
+
+!!! question "Question"
+    TODO a question about resource usage, timeline. 
+
+    ??? abstract "Answer"
+        TODO answer. 
+
+## 2.2.2 Fine-tune reporting with trace 
+
+[Trace reports](https://nextflow.io/docs/latest/reports.html#trace-file) can be customised to provide detailed records of each process executed within a pipeline. This file is generated by adding the `-with-trace` flag to your execution command or using the `trace{}` directive to your configuration file. While the HTML reports above focus on visual simmaries of the whole run, trace text files give you raw process-level data that you can slice, filter, and analyse as needed. Perfect for working on the HPC. Trace has a lot of functionality, not all fields are visible by default. 
+
+Before we add this to our configuration, lets trace a previous workflow run using the `nextflow log` utility. 
+
+!!! example "Exercise"
+
+    View the available fields using the Nextflow log command:
+
+    === "Gadi (PBSpro)"
+
+        ```groovy
+        nextflow log -list-fields
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```groovy
+        nextflow log -list-fields
+        ```
+    Extract some specific fields for a recent run, choose any fields you like:
+
+    === "Gadi (PBSpro)"
+
+        ```groovy
+        nextflow log <run name> -f name,status,exit,realtime,cpus,pcpu,memory,pmem,rss
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```groovy
+        nextflow log <run name> -f name,status,exit,realtime,cpus,pcpu,memory,pmem,rss
+        ```
+
+!!! question "Question"
+    TODO a question about trace. 
+
+    ??? abstract "Answer"
+        TODO answer. 
+
+The trace provides a great snapshot of the resource usage for all of our processes. These include the raw values for CPU and memory requested (`cpus`, `memory`), how much of it was utilised (`%cpu`, `%mem`), and how long it ran (`duration`, `walltime`).
+
+Displaying all the usage information in a single file can avoid needing to benchmark each process manually, as we saw in Part 1. 
+
+We can make this reproducible by adding the `trace{}` directive to our configuration file. This will save all this information to a text file `runInfo/` to keep our launch directory neat.
+
+!!! example "Exercise"
+
+    Add the following to your `custom.config` beneath the `report{}` and `timeline{}` directives: 
+    ```
+    trace {
+        enabled = true 
+        overwrite = false 
+        file = "./runInfo/trace-${params.timestamp}.txt"
+        fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss'
+    }
+    ```
+
+    Run your workflow again: 
+    ```bash
+    ./run.sh
+    ```
+
+    View you trace file:
     ```bash
     cat runInfo/trace-*.txt
     ```
@@ -120,21 +176,9 @@ Once we get the workflow running without error on the scheduler, we need to enab
         | STATS (1)                  | COMPLETED | 0    | 14.9s    | 1s       | 1    | 45.2%  | 2 GB   | 0.0% | 2 MB     |
         | MULTIQC                    | COMPLETED | 0    | 19.9s    | 5.3s     | 1    | 62.4%  | 2 GB   | 0.0% | 78.6 MB  |
 
-We want these fields because they provide a great snapshot of the resource usage for all of our processes. These include the raw values for CPU and memory requested (`cpus`, `memory`), how much of it was utilised (`%cpu`, `%mem`), and how long it ran (`duration`, `walltime`).
+## 2.2.3 Customise the trace file
 
-Displaying all the usage information in a single file can avoid needing to benchmark each process manually, as we saw in Part 1.
-
-The addition of timestamps and overwrite = false helps with benchmarking when you
-need to compare settings before vs. after changing a configuration setting. 
-
-We save this all into `runInfo/` to keep our launch directory neat.
-
-## Customising the trace file
-
-Currently, the trace file reports on the resources used per task. However,
-when a tasks errors or produces an unexpected result, it is recommended to
-view the work directory, or view the job run information with `qstat` or
-`sacct`.
+Currently, the trace file reports on the resources used per task. Trace offers additional, useful reporting functionality that makes it easier for us to track process execution when working in an HPC environment. When things go wrong with process execution, we often need to trawl through the work directory, or view the job run with `qstat` or `sacct` to gather information. Let's add this information to our trace file:
 
 !!! example "Exercise"
 
@@ -205,12 +249,6 @@ benchmarking such as using `time`.
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
         }
-    
-        dag {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/dag-${params.timestamp}.html"
-        }
         ```
 
     === "Setonix (Slurm)"
@@ -240,11 +278,5 @@ benchmarking such as using `time`.
             enabled = true
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
-        }
-    
-        dag {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/dag-${params.timestamp}.html"
         }
         ```
