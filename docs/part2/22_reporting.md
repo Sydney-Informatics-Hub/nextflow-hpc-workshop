@@ -136,7 +136,8 @@ We can make this reproducible by adding the `trace{}` directive to our configura
     ```
     trace {
         enabled = true 
-        file = "${params.outdir}/custom-resource-trace-${trace_timestamp}.txt"
+        overwrite = false 
+        file = "./runInfo/trace-${params.timestamp}.txt"
         fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss'
     }
     ```
@@ -248,12 +249,6 @@ benchmarking such as using `time`.
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
         }
-    
-        dag {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/dag-${params.timestamp}.html"
-        }
         ```
 
     === "Setonix (Slurm)"
@@ -283,11 +278,5 @@ benchmarking such as using `time`.
             enabled = true
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
-        }
-    
-        dag {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/dag-${params.timestamp}.html"
         }
         ```
