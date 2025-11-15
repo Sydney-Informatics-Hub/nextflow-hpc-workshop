@@ -83,7 +83,7 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
 
 !!! example "Exercise: Running the workflow on the compute nodes"
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         We have pre-made a very simple configuration file, `pbspro.config`, that will allow the example Nextflow pipeline to run on Gadi. Go ahead and run the workflow with the `pbspro.config` configuration file using the `-c pbspro.config` option. You will also need to define a new parameter: `pbspro_account` and pass it the project ID (`vp91`):
 
@@ -103,7 +103,7 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
 
     The output of your command should look something like this:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
         ```bash
         N E X T F L O W   ~  version 24.04.5
 
@@ -191,7 +191,7 @@ profiles {
 
     Run the workflow once more, this time using the executor profiles:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
         ```bash
          nextflow run config-demo-nf/main.nf -profile pbspro --pbspro_account vp91
         ```
@@ -202,7 +202,7 @@ profiles {
 
     The output of your command should be the same as before:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
         ```bash
         N E X T F L O W   ~  version 24.04.5
 
