@@ -7,7 +7,7 @@
     - Describe how containerisation works and understand how containers encapsulate software dependencies 
     - Justify why constainerisation is essential for building portable and reproducible workflows 
     
-As soon as we start using HPC, we’re working in a shared environment where we can’t control everything and that includes software installation.  
+As soon as we start using HPC, we’re working in a shared environment that we have limited control over. That affects our ability to install and manage software.   
 
 !!! warning "No sudo for you!"
 
