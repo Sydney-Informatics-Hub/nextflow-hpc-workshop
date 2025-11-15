@@ -137,6 +137,8 @@ As you can see, this contains just a single sample. For the inital part of this 
 
 ## 1.7.2 Write a simple run script
 
+To run the mapping stage of `sarek`, we need to execute the `nextflow run` command and include several parameters. We will use a run script to compose this command bit-by-bit to keep things organised.
+
 !!! example "Exercise: Create a run script for nf-core/sarek"
 
     In the current working directory, create a new blank file and name it `run.sh`. You can do this via VSCode's interface by right-clicking on the current directory (`part1`) in the explorer side bar, clicking on "New File...", writing "run.sh" and hitting the Enter key. You can also do this via the terminal:

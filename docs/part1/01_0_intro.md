@@ -2,6 +2,8 @@
 
 In the first part of this workshop, we will familarise ourselves with some foundational concepts required to effectively run bioinformatics workflows on HPC clusters. We will then apply these concepts to the configuration of a popular nf-core pipeline, Sarek. In part 2, we will further apply these concepts to a custom Nextflow workflow.
 
+![](./figs/00_workshop_overview.png){width=50%}
+
 !!! warning "Note the code blocks!"
 
     You’ll notice that many code examples in this workshop are presented in **tabs** for the different HPC systems we're using in this workshop.

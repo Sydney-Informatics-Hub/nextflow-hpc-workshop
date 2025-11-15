@@ -97,7 +97,7 @@ We will be providing the pipeline with FASTQ files and just running the `mapping
 7. `BAM_TO_CRAM_MAPPING`: This creates a CRAM file from the final BAM file per sample. CRAM files are **compressed** BAM files, and are common in genomics, where data sets are typically very large.
 8. `MULTIQC`: This run the `multiqc` tool to generate a final summary report of the whole pipeline run.
 
-![The mapping subsection of the nf-core/sarek pipeline](../assets/sarek_mapping.png)
+![The mapping subsection of the nf-core/sarek pipeline](./figs/00_mapping_dag.png){width=75%}
 
 ??? example "Additional content: the structure of a typical nf-core pipeline"
 

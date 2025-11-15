@@ -20,6 +20,8 @@
 
     Each process runs independently. When a channel contains multiple inputs, Nextflow automatically creates parallel tasks, each running in isolation, connected only by data passed through channels.
 
+    ![](./figs/00_nextflow_structure.png)
+
     Nextflow has a built-in concept called an **executor** which defines where Nextflow runs the workflow tasks. By default, this is the **local executor**, which executes all of the tasks on your own computer.
     
     This is great for development and small test runs, but as datasets grow, your laptop quickly runs out of CPU and memory. This is where HPCs come in.
