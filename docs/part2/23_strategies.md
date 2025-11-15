@@ -1,4 +1,4 @@
-# Optimising for HPC
+# Optimising Nextflow for HPC
 
 !!! info "Learning objectives"
 
@@ -7,23 +7,26 @@
 
 ## Overview
 
-Our workflow is now functional - it runs sucessfully with scheduler-specific settings and outputs useful trace files showing resource usage.
+Our workflow is now functional, it runs successfully with scheduler-specific settings and outputs useful trace files showing resource usage. From here, we will explore ways of optimising our workflow for more efficient execution on the HPC. 
 
-Now, we shift focus from making it run, to getting to run efficiently.
+!!! note "Why do we care about optimisation?"
 
-TODO: figure benchmarking progress e.g. it runs, it runs well, it scales
+    Bioinformatics data processing on HPCs has a significant carbon footprint due to the energy required to run our computations. We optimise our workflows to not only reduce their runtime but also adopt more sustaintable computing practices. 
 
-Workflow optimisation involves fine-tuning your pipeline to reduce runtime, resource waste, and cost (e.g. service units). This is particularly important on share HPC infrastructure where jobs are charged based on compute and memory usage.
+    *[This short editorial](https://www.nature.com/articles/s43588-023-00506-2) from Nature Computational Science highlights the challenges research computing faces in the context of the climate crisis*
+
+Workflow optimisation involves fine-tuning your pipeline to make it more efficient. It can be used to reduce runtime, idling hardware, and cost (e.g. when on a system that charges use based on service units). 
 
 ## Why optimise?
 
-Small inefficiencies for small, or infreuqently-run workflows may not make a large impact. Many users run nf-core pipelines on HPCs successfully, using the default configuration. Optimising workflows on HPC becomes increasingly valuable when:
+A small workflow run a handful of times might not benefit dramatically from optimisation. Many Nextflow workflows that employ good practices (e.g. nf-core) will run with default configuration, but defaults might not always fit your data and therefore the behaviour of your processes, or the constraints of your cluster. Think back to Part 1 and the configuration customisations we implemented for our nf-core workflow. 
 
-- You are running many samples or large data sets (high-throughput)
-- Your workflow will be run repeatedly
-- You are approaching allocation limits or want it to be more efficient 
+Optimising workflows on HPC becomes especially important when:
 
-TODO: figures would be useful to demo these
+- You are analysing large datasets or many samples 
+- You will execute your pipeline repeatedly 
+- You are operating on a system that uses a service unit or time-limited allocation model
+- Your processes have data-dependent resource usage 
 
 ## What affects performance?
 
