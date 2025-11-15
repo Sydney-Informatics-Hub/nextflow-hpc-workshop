@@ -81,6 +81,28 @@ At the centre of everything is the job scheduler. Rather than allowing users to 
 
 Schedulers like PBS Pro and Slurm use queues to group jobs that share similar resource and policy constraints. When you submit a job, it’s placed in the appropriate queue, and the scheduler continuously evaluates all queued jobs to decide which can start next.
 
+
+Each job’s shape is determined by three key factors:
+
+- **CPU**: how many processor cores it needs
+- **Memory**: how much RAM it requires
+- **Walltime**: how long it is allowed to run
+
+Once submitted, your job enters a **queue**, much like a waiting line for compute resources. But unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together, like sliding Tetris blocks, to maximise system usage.
+
+The order in which jobs run depends on several factors:
+
+- **Job priority**: determined by project, queue, and fair-share usage
+- **Requested resources**: smaller jobs can often “slot in” sooner
+- **Queue limits**: different queues prioritise short, long, or interactive jobs
+
+Getting the shape right matters. Understandably, underestimating the resources you job requires can cause it to fail. What is less immediately obvious is that overestimating your needs is also detrimental, as it makes your job harder to fit. Common outcomes from overestimating your job's requirements include:
+
+- **Longer queue times**: large, awkwardly-shaped jobs wait for space
+- **Wasted capacity**: unused cores or memory that could have run other jobs
+- **Wasted money**: HPC providers will charge you for the CPUs and memory you request. **Wasted capacity = wasted energy!**
+
+
 !!! note "Understanding Job Scheduling with Tetris"
 
     Think of the scheduler like a giant game of Tetris, where every job you submit has its own unique “shape.”
@@ -88,26 +110,6 @@ Schedulers like PBS Pro and Slurm use queues to group jobs that share similar re
     The scheduler’s task is to fit all these different pieces together as efficiently as possible across the available compute nodes.
 
     ![](figs/00_HPC_scheduler_tetris.png)
-
-    Each job’s shape is determined by three key factors:
-
-    - **CPU** – how many processor cores it needs
-    - **Memory** – how much RAM it requires
-    - **Walltime** – how long it is allowed to run
-
-    Once submitted, your job enters a **queue**, much like a waiting line for compute resources. But unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together, like sliding Tetris blocks, to maximise system usage.
-
-    The order in which jobs run depends on several factors:
-
-    - **Job priority** - determined by project, queue, and fair-share usage
-    - **Requested resources** - smaller jobs can often “slot in” sooner
-    - **Queue limits** - different queues prioritise short, long, or interactive jobs
-
-    Getting the shape right matters. Understandably, underestimating the resources you job requires can cause it to fail. What is less immediately obvious is that overestimating your needs is also detrimental, as it makes your job harder to fit. Common outcomes from overestimating your job's requirements include:
-
-    - **Longer queue times** – large, awkwardly-shaped jobs wait for space
-    - **Wasted capacity** – unused cores or memory that could have run other jobs
-    - **Wasted money** - HPC providers will charge you for the CPUs and memory you request - **wasted capacity = wasted energy!**
 
     Just like in Tetris, the scheduler aims to fill every gap and keep the system running smoothly.
     Small, well-shaped jobs often fall neatly into open spaces, while larger ones wait for the perfect fit.
