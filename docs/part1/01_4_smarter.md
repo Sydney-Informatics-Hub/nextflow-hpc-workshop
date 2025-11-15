@@ -18,7 +18,7 @@ HPC systems are constantly measuring your resource usage. You can use their buil
 
     At the end of the previous lesson, we saved the job ID to a file called `run_id.txt`. We can use that ID to inspect the resources used by the job:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash
         JOBID=$(cat run_id.txt)
@@ -262,7 +262,7 @@ An important issue when designing workflows for HPC is knowing how much it will 
 
 The specific calculation for how many SUs a job will use is system-specific, but generally you are charged based on the proportion of available CPUs or available memory that you use, whichever is larger. More specifically:
 
-=== "Gadi (PBS)"
+=== "Gadi (PBSpro)"
 
     On Gadi, SUs are calculated as:
 
