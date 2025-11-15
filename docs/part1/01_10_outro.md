@@ -8,7 +8,7 @@ Remember, you are working on a shared system with hundreds of other users. Becau
 
 ## Containers are your friend
 
-Controlling the verions of the software you use is vital for reproducible research. Out of the various different methods for running software on HPCs, containers provide the most freedom, allowing you to use any version of a tool you would like, without having to worry about dependency issues, version conflicts, or building the software yourself. Their self-contained nature and portability makes containers the recommended method for using software within your Nextflow workflows.
+Controlling the versions of the software you use is vital for reproducible research. Out of the various different methods for running software on HPCs, containers provide the most freedom, allowing you to use any version of a tool you would like, without having to worry about dependency issues, version conflicts, or building the software yourself. Their self-contained nature and portability makes containers the recommended method for using software within your Nextflow workflows.
 
 ## Nextflow is portable
 
@@ -16,7 +16,7 @@ The goal of Nextflow is to allow for the development of portable and reproducibl
 
 - Pipeline-specific configuration details should be kept in `nextflow.config` and other `.config` files bundled with the workflow code. These should never need to be altered from system to system.
 - Institutional-specific configuration details, such as HPC executor configuration, should be kept in a separate file (e.g. `gadi.config` or `setonix.config`) that can be used by multiple different pipelines. Ideally, this shouldn't need to be altered between pipelines on the same system.
-- Run-level configuration details, such as fine-tuning memory and CPU requriements for a particular dataset, should be kept in yet another configuration file that is specific to that instance of that pipeline.
+- Run-level configuration details, such as fine-tuning memory and CPU requirements for a particular dataset, should be kept in yet another configuration file that is specific to that instance of that pipeline.
 
 ## Fine-tuning workflows for your data
 
