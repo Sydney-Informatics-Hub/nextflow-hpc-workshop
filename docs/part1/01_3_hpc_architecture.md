@@ -77,10 +77,9 @@ All nodes are connected to a shared parallel filesystem. This is a large, high-s
 
 ### The job scheduler
 
-At the centre of everything is the job scheduler. Rather than allowing users to run programs directly, HPCs rely on a scheduling system (e.g. Slurm or PBS Pro) to manage fair access to shared compute resources. When a job is submitted, it enters a queue where the scheduler decides when and where it will run. Jobs are matched to compute nodes based on requested resources like CPU, memory and runtime. Understanding how the scheduler behaves is essential for designing workflows that run efficiently.
+At the centre of everything is the job scheduler. Rather than allowing users to run programs directly, HPCs rely on a scheduling system (e.g. Slurm or PBS Pro) to manage fair access to shared compute resources. When a job is submitted, it enters a queue where the scheduler decides when and where it will run. Jobs are matched to compute nodes based on requested resources like CPU, memory and runtime.
 
 Schedulers like PBS Pro and Slurm use queues to group jobs that share similar resource and policy constraints. When you submit a job, it’s placed in the appropriate queue, and the scheduler continuously evaluates all queued jobs to decide which can start next.
-
 
 Each job’s shape is determined by three key factors:
 
@@ -88,7 +87,7 @@ Each job’s shape is determined by three key factors:
 - **Memory**: how much RAM it requires
 - **Walltime**: how long it is allowed to run
 
-Once submitted, your job enters a **queue**, much like a waiting line for compute resources. But unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together, like sliding Tetris blocks, to maximise system usage.
+Once submitted, your job enters a **queue**. Unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together to maximise system usage.
 
 The order in which jobs run depends on several factors:
 
@@ -96,12 +95,11 @@ The order in which jobs run depends on several factors:
 - **Requested resources**: smaller jobs can often “slot in” sooner
 - **Queue limits**: different queues prioritise short, long, or interactive jobs
 
-Getting the shape right matters. Understandably, underestimating the resources you job requires can cause it to fail. What is less immediately obvious is that overestimating your needs is also detrimental, as it makes your job harder to fit. Common outcomes from overestimating your job's requirements include:
+Getting the shape right matters. Underestimating the resources you job requires will cause it to fail. What is less immediately obvious is that overestimating your needs is also detrimental, as it makes your job harder to fit. Common outcomes from overestimating your job's requirements include:
 
 - **Longer queue times**: large, awkwardly-shaped jobs wait for space
 - **Wasted capacity**: unused cores or memory that could have run other jobs
 - **Wasted money**: HPC providers will charge you for the CPUs and memory you request. **Wasted capacity = wasted energy!**
-
 
 !!! note "Understanding Job Scheduling with Tetris"
 
