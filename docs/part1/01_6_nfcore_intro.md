@@ -1,4 +1,4 @@
-# 2.1 - nf-core
+# 1.6 Intro to nf-core
 
 !!! info "Learning objectives"
 
@@ -8,7 +8,7 @@
 
 We have now seen how a Nextflow pipeline can be configured to run on an HPC. In tomorrow's section of the workshop, we will further explore optimising a custom Nextflow pipeline to efficiently utilise HPC resources. However, whenever you are considering building a workflow, it is always important to check whether a suitable tool already exists - after all, the goal of Nextflow is to build reproducible workflows, and we shouldn't re-invent the wheel if we don't have to! For the rest of this session, we will be looking at the **nf-core** project, which aims to address this very issue and provide a collection of bioinformatics Nextflow pipelines.
 
-## 2.1.1 What is nf-core?
+## 1.6.1 What is nf-core?
 
 ![nf-core logo](../assets/nf-core-logo.png)
 
@@ -27,7 +27,7 @@ The key Features of nf-core workflows are:
 
 nf-core is published in Nature Biotechnology: [Nat Biotechnol 38, 276–278 (2020). Nature Biotechnology](https://www.nature.com/articles/s41587-020-0439-x)
 
-## 2.1.2 Where to find nf-core pipelines
+## 1.6.2 Where to find nf-core pipelines
 
 The nf-core website - [https://nf-co.re](https://nf-co.re) - hosts a list of all of the current nf-core pipelines, as well as their documentation, information for developers and users, and links to community forums, training sessions, and more.
 
@@ -58,9 +58,23 @@ By default, Nextflow will pull the default git branch of the pipeline unless a s
 
 **Note** that in today's workshop, for full transparency and consistency, we **will** be pulling the pipeline directly from GitHub rather than using the shortcut method above.
 
-## 2.1.5 Introducing today's pipeline: `nf-core/sarek`
+## 1.6.3 Introducing today's pipeline: `nf-core/sarek`
 
-As mentioned above, the rest of today's workshop will be focussing on the `nf-core/sarek` pipeline. This is a large workflow dedicated to performing variant calling on genome sequencing data. It is highly configurable and incoroprates a wide variety of tools and methods for detecting both germline and somatic variants.
+As mentioned above, the rest of today's workshop will be focussing on the `nf-core/sarek` pipeline. As part of the [workshop setup](./01_0_intro.md#102-setup-the-workspace), the pipeline source code was downloaded into your workspace. You should see the `sarek/` folder in your current directory:
+
+```bash
+ls -1
+```
+
+```console title="Output" hl_lines="3"
+config/
+README.md
+sarek/
+scripts/
+singularity/
+```
+
+The `nf-core/sarek` pipeline is a large workflow dedicated to performing variant calling on genome sequencing data. It is highly configurable and incoroprates a wide variety of tools and methods for detecting both germline and somatic variants.
 
 ![The structure of the nf-core/sarek pipeline](../assets/sarek_subway.png)
 
@@ -83,33 +97,14 @@ We will be providing the pipeline with FASTQ files and just running the `mapping
 7. `BAM_TO_CRAM_MAPPING`: This creates a CRAM file from the final BAM file per sample. CRAM files are **compressed** BAM files, and are common in genomics, where data sets are typically very large.
 8. `MULTIQC`: This run the `multiqc` tool to generate a final summary report of the whole pipeline run.
 
-![The mapping subsection of the nf-core/sarek pipeline](../assets/sarek_mapping.png)
+![The mapping subsection of the nf-core/sarek pipeline](./figs/00_mapping_dag.png){width=75%}
 
-## 2.1.3 nf-core pipeline structure
+??? example "Additional content: the structure of a typical nf-core pipeline"
 
-At the [start of today](./01_0_intro.md#102-setup-the-project-space), we ran some setup scripts that downloaded the `nf-core/sarek` pipeline. You should see the `sarek/` folder in your current directory:
-
-```bash
-ls -1
-```
-
-```console title="Output" hl_lines="3"
-config/
-README.md
-sarek/
-scripts/
-singularity/
-```
-
-Let's take a few minutes to explore the `sarek/` directory and understand the strucutre of a typical nf-core pipeline.
-
-!!! example "Exercise: review the `nf-core/sarek` pipeline structure"
-
-    First, let's list the directory structure of the `sarek` pipeline:
+    For those who are interested in diving a bit deeper into the structure of an nf-core pipeline, let's list the directory structure of the `sarek` pipeline:
 
     ```bash
-    cd sarek/
-    ls -1
+    ls sarek/
     ```
 
     ```console title="Output"
@@ -149,14 +144,14 @@ Let's take a few minutes to explore the `sarek/` directory and understand the st
     Diving a little deeper, you will see that the `modules/` and `subworkflows/` directories both contain two sub-folders: `local/` and `nf-core/`:
 
     ```bash
-    ls modules subworkflows
+    ls sarek/modules sarek/subworkflows
     ```
 
     ```console title="Output"
-    modules:
+    sarek/modules:
     local   nf-core
 
-    subworkflows:
+    sarek/subworkflows:
     local   nf-core
     ```
 
@@ -164,45 +159,43 @@ Let's take a few minutes to explore the `sarek/` directory and understand the st
 
     ![](./figs/00_nfcore-structure.png)
 
-As you can see, nf-core pipelines can be quite complex. This is due to the attempt to heavily standardise and modularise these workflows. There are significant benefits to this, primarily in that it gives everyone a common template to work from and helps to break down the workflows into smaller, more manageable and maintainable chunks. However, it can also make it difficult to analyse and troubleshoot the code when developing them.
+    As you can see, nf-core pipelines can be quite complex. This is due to the attempt to heavily standardise and modularise these workflows. There are significant benefits to this, primarily in that it gives everyone a common template to work from and helps to break down the workflows into smaller, more manageable and maintainable chunks. However, it can also make it difficult to analyse and troubleshoot the code when developing them.
 
-The configuration for `nf-core/sarek` is split up into many different files. The main configuration file, `nextflow.config`, is set up to:
+    The configuration for `nf-core/sarek` is split up into many different files. The main configuration file, `nextflow.config`, is set up to:
 
-- Define and set the defaults for various parameters, including input files and the reference genome.
-- Define several **profiles** that specify groups of settings important for various backends like docker, singularity, and conda. There are also several test profiles defined.
-- Import module-specific configuration files.
+    - Define and set the defaults for various parameters, including input files and the reference genome.
+    - Define several **profiles** that specify groups of settings important for various backends like docker, singularity, and conda. There are also several test profiles defined.
+    - Import module-specific configuration files.
 
-One of the major configuration files that is importedby `nextflow.config` is `conf/base.config`. This file defines the default resources for processes, as well as resources that are applied to many processes at once with the `withLabel` and `withName` selectors:
+    One of the major configuration files that is importedby `nextflow.config` is `conf/base.config`. This file defines the default resources for processes, as well as resources that are applied to many processes at once with the `withLabel` and `withName` selectors:
 
-```groovy title="Default resource configuration in conf/base.config" linenums="11"
-process {
+    ```groovy title="Default resource configuration in conf/base.config" linenums="11"
+    process {
 
-    // TODO nf-core: Check the defaults for all processes
-    cpus   = { 1      * task.attempt }
-    memory = { 6.GB   * task.attempt }
-    time   = { 4.h    * task.attempt }
-```
+        // TODO nf-core: Check the defaults for all processes
+        cpus   = { 1      * task.attempt }
+        memory = { 6.GB   * task.attempt }
+        time   = { 4.h    * task.attempt }
+    ```
 
-```groovy title="Specific resource configuration for FASTP in conf/base.config" linenums="66"
-withName: 'FASTP'{
-    cpus   = { 12   * task.attempt }
-    memory = { 4.GB * task.attempt }
-}
-```
+    ```groovy title="Specific resource configuration for FASTP in conf/base.config" linenums="66"
+    withName: 'FASTP'{
+        cpus   = { 12   * task.attempt }
+        memory = { 4.GB * task.attempt }
+    }
+    ```
 
-```groovy title="Resource configuration fo the 'process_medium' label in conf/base.config" linenums="42"
-withLabel:process_medium {
-    cpus   = { 6     * task.attempt }
-    memory = { 36.GB * task.attempt }
-    time   = { 8.h   * task.attempt }
-}
-```
+    ```groovy title="Resource configuration fo the 'process_medium' label in conf/base.config" linenums="42"
+    withLabel:process_medium {
+        cpus   = { 6     * task.attempt }
+        memory = { 36.GB * task.attempt }
+        time   = { 8.h   * task.attempt }
+    }
+    ```
 
-This highlights the **layered** nature of Nextflow's configuration; initially, sensible default values for CPUs, memory, and walltime are defined, followed by more specific values for jobs that have different computational requirements, e.g. more CPUs but less memory for the `FASTP` process.
+    This highlights the **layered** nature of Nextflow's configuration; initially, sensible default values for CPUs, memory, and walltime are defined, followed by more specific values for jobs that have different computational requirements, e.g. more CPUs but less memory for the `FASTP` process.
 
-!!! example "Advanced content: Configuring resources dynamically"
-
-    Note the use of the curly braces and the `* task.attempt` in each line. This is an example of a **dynamically calculated resource**. Nextflow keeps track of how many times a given task has been attempted and stores it in the variable `task.attempt`; this can be used in case of a failure to increase the required resources on the next try. In this case, by default, jobs will be given 1 CPU, 6GB of memory, and 4h of walltime on the first try; on the second try, they will get 2 CPUs, 12GB of memory, and 8h of time. `conf/base.config` also sets `maxRetries = 1`, so this will only happen the one time, and failures won't cause an infinite loop of retries.
+    Note also the use of the curly braces and the `* task.attempt` in each line. This is an example of a **dynamically calculated resource**. Nextflow keeps track of how many times a given task has been attempted and stores it in the variable `task.attempt`; this can be used in case of a failure to increase the required resources on the next try. In this case, by default, jobs will be given 1 CPU, 6GB of memory, and 4h of walltime on the first try; on the second try, they will get 2 CPUs, 12GB of memory, and 8h of time. `conf/base.config` also sets `maxRetries = 1`, so this will only happen the one time, and failures won't cause an infinite loop of retries.
 
     !!! warning "The pros and cons of task.attempt"
 
@@ -226,12 +219,4 @@ This highlights the **layered** nature of Nextflow's configuration; initially, s
         }
         ```
 
-Now we have seen what a typical nf-core pipeline looks like, in the next section we will write a script to try and run it!
-
-!!! note "Move back to the parent directory"
-
-    Before we move on, be sure to move back to the partent directory (`part1/`):
-
-    ```bash
-    cd ../
-    ```
+Let's now move to the next section, where we will write a script to run the pipeline!

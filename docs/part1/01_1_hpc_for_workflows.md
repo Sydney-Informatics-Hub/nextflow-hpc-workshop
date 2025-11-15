@@ -83,7 +83,7 @@ Running this workflow end-to-end captures many challenges that running on HPC us
 
 - Many independent jobs: each sample can be processed separately for many steps
 - Resource diversity: tools used at each step require different amounts of CPU, memory, and walltime
-- Large IO demands: reading and writing of multi-gigabyte files benefits from parallel filesystems
+- Large I/O demands: reading and writing of multi-gigabyte files benefits from parallel filesystems
 
 Throughout the workshop we will implement and explore different parts of this workflow in slightly different ways in order to highlight the lessons being taught.
 

@@ -20,6 +20,8 @@
 
     Each process runs independently. When a channel contains multiple inputs, Nextflow automatically creates parallel tasks, each running in isolation, connected only by data passed through channels.
 
+    ![](./figs/00_nextflow_structure.png)
+
     Nextflow has a built-in concept called an **executor** which defines where Nextflow runs the workflow tasks. By default, this is the **local executor**, which executes all of the tasks on your own computer.
     
     This is great for development and small test runs, but as datasets grow, your laptop quickly runs out of CPU and memory. This is where HPCs come in.
@@ -42,9 +44,11 @@ We'll use a demo workflow, [config-demo-nf](https://github.com/Sydney-Informatic
 
 ![](figs/00_config_demo_nf_v3.png)
 
-!!! example "Download the example workflow"
+!!! warning "Ensure you have a copy of the example workflow"
 
-    Use git to clone the workflow code base to your working directory:
+    You should already have a copy of the `config-demo-nf` directory in your working directory, as it was copied there as part of the [setup process](./01_0_intro.md#102-setup-the-workspace).
+    
+    **If it is missing**, use the following `git` command to clone the workflow code base to your working directory now:
 
     ```bash
     git clone https://github.com/Sydney-Informatics-Hub/config-demo-nf.git
@@ -77,9 +81,9 @@ Because configs are separate from the workflow logic, you can:
 
 In short, configs are what make Nextflow workflows portable, scalable, and cluster-aware.
 
-!!! example "Running the workflow on the compute nodes"
+!!! example "Exercise: Running the workflow on the compute nodes"
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         We have pre-made a very simple configuration file, `pbspro.config`, that will allow the example Nextflow pipeline to run on Gadi. Go ahead and run the workflow with the `pbspro.config` configuration file using the `-c pbspro.config` option. You will also need to define a new parameter: `pbspro_account` and pass it the project ID (`vp91`):
 
@@ -99,7 +103,7 @@ In short, configs are what make Nextflow workflows portable, scalable, and clust
 
     The output of your command should look something like this:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
         ```bash
         N E X T F L O W   ~  version 24.04.5
 
@@ -183,11 +187,11 @@ profiles {
 }
 ```
 
-!!! example "Running the workflow on the compute nodes with profiles"
+!!! example "Exercise: Running the workflow on the compute nodes with profiles"
 
     Run the workflow once more, this time using the executor profiles:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
         ```bash
          nextflow run config-demo-nf/main.nf -profile pbspro --pbspro_account vp91
         ```
@@ -198,7 +202,7 @@ profiles {
 
     The output of your command should be the same as before:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
         ```bash
         N E X T F L O W   ~  version 24.04.5
 
