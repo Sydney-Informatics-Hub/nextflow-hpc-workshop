@@ -155,7 +155,7 @@ To run the mapping stage of `sarek`, we need to execute the `nextflow run` comma
 
     Next, we'll start the run command by adding the following lines:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash title="run.sh"
         #!/bin/bash
@@ -218,7 +218,7 @@ To run the mapping stage of `sarek`, we need to execute the `nextflow run` comma
 
     At the end, the `run.sh` script should look like the following:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash title="run.sh" linenums="1"
         #!/bin/bash
