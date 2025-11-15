@@ -114,7 +114,7 @@ Getting the shape right matters. Underestimating the resources you job requires 
 
 ## 1.3.2 Submitting scripts to the scheduler
 
-To start getting familiar with working with the scheduler and submitting jobs, we will once again use `fastqc` as an example. We have an example script for running `fastqc` in the `scripts/` directory:
+To familiarise ourselves with submitting jobs to the scheduler, we will once again use `fastqc` as an example. We have an example script for running `fastqc` in the `scripts/` directory:
 
 === "Gadi (PBS)"
 
@@ -152,7 +152,15 @@ To start getting familiar with working with the scheduler and submitting jobs, w
         --format fastq ${READS_1} ${READS_2}
     ```
 
-The script does a few things. First, it loads the `singularity` module; we'll need this to run the `fastqc` command when the job gets submitted to the compute node. Next, it defines a few bash variables that point to the input FASTQ data. It then creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`. And finally, it runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`. Note that we have already pre-loaded the `fastqc` singularity container image at `../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`.
+The script does a few things: 
+
+1. It loads the `singularity` module. We'll need this to run the `fastqc` command when the job gets submitted to the compute node  
+2. It defines a few bash variables that point to the input FASTQ data  
+3. It creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`
+4. It runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`. 
+
+!!! note "Your container is ready to go!" 
+    For the sake of expediency, we have pre-downloaded the `fastqc` singularity container image for you at `../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`.
 
 This is everything we need to run the job; we just have to submit the script to the HPC scheduler. In doing so, we will provide the following details to the scheduler:
 
@@ -268,7 +276,7 @@ This is everything we need to run the job; we just have to submit the script to 
     NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip
     ```
 
-    Before moving on, **delete the `results/` directory:
+    Before moving on, delete the `results/` directory:
 
     ```bash
     rm -r results
