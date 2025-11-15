@@ -19,7 +19,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     Start by creating a new blank file in the `config` directory called `hpc.config`. You can do this via the VSCode explorer window (right-click the `config` folder and select "New File...") or via the terminal:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash
         touch config/gadi.config
@@ -41,7 +41,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     Within the process scope, define the `executor` option and set it to the relevant executor for your system:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="2"
         process {
@@ -61,7 +61,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     For our purposes, we will keep our queued job limit to 30, and limit the number of jobs we can submit at once to 20 per minute. We will also tell Nextflow to request for status updates on our jobs once every 15 seconds.
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="5-10"
         process {
@@ -95,7 +95,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     In the `run.sh` script, update the following highlighted lines by adding a ` \` to the end of the old command and adding the new configuration file with the `-c` option:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash title="run.sh" linenums="1" hl_lines="16-17"
         #!/bin/bash
@@ -243,7 +243,7 @@ To start using containers in Nextflow, we need to enable the `singularity` backe
 
     At the bottom of our configuration file, we will now add a `singularity` scope and enable the containerisation software. At the same time, we will also define the Singularity cache directory.  We can define this in the `singularity` configuration scope by setting the `cacheDir` option. We will provide the full path to this directory, which is at `/scratch/<PROJECT>/<USER>/nextflow-on-hpc-materials/singularity`. The current project ID and username are both accessible as environment variables on both Gadi and Setonix; we access these with the groovy function `System.getenv()`:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="11-15"
         process {
@@ -285,7 +285,7 @@ To start using containers in Nextflow, we need to enable the `singularity` backe
 
     Enabling the use of Singularity will tell Nextflow to run our tasks using a `singularity exec` command, similar to what we used earlier today. However, you may remember that the `singularity` command isn't available to use by default on the HPC systems: we needed to run `module load` first. If we tried to run the workflow now, we would get an error that `singularity` couldn't be found. Luckily, Nextflow has us covered here once again: the `process.module` configuration option lets us define modules that we want to load when running a process. Go ahead and update the `process` scope to define the `singularity` module:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="3"
         process {
@@ -341,7 +341,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     Let's start with defining the project we want to use. Most HPCs will assign each user a default project to use when submitting jobs, but it is good practice to be explicit about it, especially if you are part of several HPC projects and switch between the often. We can do this with the `process.clusterOptions` setting, which lets us pass arbitrary parameters to the scheduler:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         On Gadi, we set the project via the `-P` option. We will again use the groovy function `System.getenv()` to grab the value of the `$PROJECT` environment variable, which holds our default project ID, and pass that to the `-P` option:
 
@@ -416,7 +416,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     Nextflow lets us define the queue that we want via the `queue` option in the `process` scope. We can dynamically specify the queue by using curly braces to wrap around a conditional statement that tests how much memory each job needs:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         On Gadi, the `normalbw` queue supports tasks with up to 128GB of memory. If we need more than that, we want to use the `hugemembw` queue. We can achieve this using a short-hand if-else statement in groovy: `<condition> ? <value if true> : <value if false>`. We can ask whether the memory required by the current task (`task.memory`) is less than 128GB; if so, we set `queue` to `normalbw`, otherwise we set it to `hugemembw`. By wrapping the whole statement in curly braces, we ensure that it is evaluated when the task runs:
 
@@ -481,7 +481,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     Let's set these two options now:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="7-8"
         process {
@@ -534,7 +534,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     We now have a fully-functioning HPC configuration file! We will, however, add just one more feature that will help us monitor the resources we are using and optimise our workflow. This is the `trace` file, and the next few lines that we add will enable it, set its file name (including a time stamp), and set the values that we want to keep track of:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="22-30"
         process {
@@ -751,7 +751,7 @@ You might be wondering: since these HPCs are so widely used by many researchers,
 
 In fact, the configs we have built in this lesson are slightly simplified versions of the published [NCI Gadi](https://nf-co.re/configs/nci_gadi/) and [Pawsey Setonix](https://nf-co.re/configs/pawsey_setonix/) configs on the nf-core website:
 
-=== "Gadi (PBS)"
+=== "Gadi (PBSpro)"
 
     ```title="Our gadi.config file"
     process {
