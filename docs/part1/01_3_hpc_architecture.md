@@ -376,20 +376,6 @@ The above command is quite long, and would be a pain to write out every time you
     NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip
     ```
 
-    Again, before moving on, delete the `results/` directory, as well as the scheduler outputs. **Do not delete the `run_id.txt` file**, as we will use that in the following lesson.
-
-    === "Gadi (PBSpro)"
-
-        ```bash
-        rm -r results fastqc.*
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        rm -r results slurm-*
-        ```
-
 !!! question "How are you going?"
 
     If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.

@@ -63,11 +63,11 @@ HPC systems are constantly measuring your resource usage. You can use their buil
         Project:            vp91
         Exit Status:        0
         Service Units:      0.00
-        NCPUs Requested:    1                      NCPUs Used: 1               
-                                                CPU Time Used: 00:00:04        
-        Memory Requested:   1.0GB                 Memory Used: 440.7MB         
-        Walltime requested: 00:01:00            Walltime Used: 00:00:08        
-        JobFS requested:    100.0MB                JobFS used: 0B              
+        NCPUs Requested:    1                      NCPUs Used: 1
+                                                CPU Time Used: 00:00:04
+        Memory Requested:   1.0GB                 Memory Used: 440.7MB
+        Walltime requested: 00:01:00            Walltime Used: 00:00:08
+        JobFS requested:    100.0MB                JobFS used: 0B
         ======================================================================================
         ```
 
@@ -105,6 +105,20 @@ HPC systems are constantly measuring your resource usage. You can use their buil
 
         We can see that in this example run, CPU usage was at 23.53%. Since we only requested 1 CPU, there is no more room for improvement here. We can also see that the memory efficiency was ~36%, using ~368 MB of the requested 1 GB.
 
+    Before moving on, delete the `results/` directory, as well as the scheduler outputs.
+
+    === "Gadi (PBSpro)"
+
+        ```bash
+        rm -r results fastqc.*
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```bash
+        rm -r results slurm-*
+        ```
+
 ## 1.4.2 Resource awareness: right sizing
 
 At its core, HPC efficiency is about matching the structure of your workflow to the available compute. It is therefore beneficial to be "resource aware" in your approach to running jobs. This involves understanding how much time, CPU, and memory each tool in your workflow actually needs and requesting enough.
@@ -123,11 +137,11 @@ Let's look again at our workflow:
 
 As we touched on in [HPC for workflows](./01_1_hpc_for_workflows.md#114-introducing-our-workshop-scenario-wgs-short-variant-calling), each stage of this workflow has differeing resource requirements and bottlenecks:
 
-| Step                | Dominant resource | Characteristics                            |
-| ------------------- | ----------------- | ------------------------------------------ |
-| **Quality control** | I/O-bound         | Reads many files; CPU idle time high       |
-| **Read alignment**  | CPU-bound         | CPU pegged near 100%; memory stable        |
-| **Variant calling** | CPU + memory      | CPU ~90%, high steady memory usage         |
+| Step                | Dominant resource | Characteristics                      |
+| ------------------- | ----------------- | ------------------------------------ |
+| **Quality control** | I/O-bound         | Reads many files; CPU idle time high |
+| **Read alignment**  | CPU-bound         | CPU pegged near 100%; memory stable  |
+| **Variant calling** | CPU + memory      | CPU ~90%, high steady memory usage   |
 
 We will observe these constraints in subsequent lessons when we run and optimise our workflows.
 
@@ -157,12 +171,12 @@ Values near 1 mean your job used all the CPUs efficiently. Values much lower tha
 As an example, suppose you requested 4 CPUs for a job which ran for 1 hour (walltime). If each CPU was utilised for 100% of the time, then CPU time would be **4 hours** and CPU efficiency would be:
 
 !!! note ""
-    4 hours CPU time / 1 hour walltime / 4 CPUs = 100%
-    
+4 hours CPU time / 1 hour walltime / 4 CPUs = 100%
+
 On the other hand, if the job actually only used 1 of those CPUs for that entire hour, then CPU time would only be 1 hour and CPU efficiency would be:
 
 !!! note ""
-    1 hour CPU time / 1 hour walltime / 4 CPUS = 25%
+1 hour CPU time / 1 hour walltime / 4 CPUS = 25%
 
 ### Memory (RAM) efficiency
 
@@ -187,7 +201,7 @@ In bioinformatics workflows, there are 2 main strategies used for increasing eff
 
 ![](./figs/00_smarter_multi_diagram.png)
 
-We can explore parallelisation methods of multi-threading and multi-processing in the context of our variant calling workflow and some small dummy data. 
+We can explore parallelisation methods of multi-threading and multi-processing in the context of our variant calling workflow and some small dummy data.
 
 !!! warning "Beware of the overheads"
 
@@ -243,7 +257,7 @@ While many tools benefit from multi-threading, [FastQC is not one of them](https
 ### Parallelisation: multi-processing
 
 The other main approach to parallelisation is multi-processing, which means running independent processes at the same time, each with its own memory space and input data. Rather than speeding up a single task, it increases overall throughput by running many tasks in parallel. In bioinformatics workflows, this usually looks like processing multiple samples or genomic regions simultaneously.
-    
+
 Multi-processing is typically implemented by the user in workflow design, rather than by a tool itself.
 
 A common multi-processing pattern is called **scatter-gather**. This involves initially splitting a dataset up into many independent jobs and later merging the results back together again. For example, within the context of short variant calling, a common practice is to run the variant calling tools on each chromosome separately. Since a sequencing read can only originate from one chromosome, and because these variants only affect one genomic region at a time, we can safely split the data up per chromosome and treat them independently. Once the data has been processed, the per-chromosome results can be merged back together for downstream analysis.
@@ -278,7 +292,7 @@ The specific calculation for how many SUs a job will use is system-specific, but
     - **Walltime Used** = the total number of hours the job ran for (**not** the requested walltime)
 
     **Note** that due to the shared, fair-use nature of HPCs, for billing purposes, NCI divides its memory up evenly per CPU and charges you based on the proportion of either the node's CPUs or memory you use, whichever is greater. For example, on the `normal` queue, each node has 190 GB of memory and 48 CPUs, meaning there is approximately 4 GB of memory per CPU. If you use less than 4 GB of memory per CPU you request, you will be charged based on the number of CPUs you request; while if you use more than 4 GB of memory per CPU you request, you will be charged based on the amount of memory you use.
-    
+
     For **purely cost-based optimisation**, the ideal ratio of memory per CPU for the `normal` queue is 190 / 48 = ~4 GB per CPU.
 
     This SU calculation is described further on NCI's [Job Costs documentaiton page](https://opus.nci.org.au/spaces/Help/pages/236880942/Job+Costs...)
@@ -301,7 +315,7 @@ The specific calculation for how many SUs a job will use is system-specific, but
     - **Walltime Used** = the total number of hours the job ran for (**not** the requested walltime)
 
     **Note** that due to the shared, fair-use nature of HPCs, for billing purposes, Pawsey charges you based on the proportion of available CPUs, memory, or GPUs that you request, whichever is greater. For example, on the `work` queue, each node has 230 GB of memory and 64 CPUs. If you request 1 CPU (1 / 64) and 23 GB memory (1 / 10), you pay for the memory proportion used. If you request 6 CPUs (~ 1 / 10) and 1 GB of memory (1 / 230), you pay for the CPU proportion used.
-    
+
     For **purely cost-based optimisation**, the ideal ratio of memory per CPU for the `work` queue is 230 / 64 = ~3.5 GB per CPU.
 
     This SU calculation is described further on Pawsey's [Setonix General Information page](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929028/Setonix+General+Information)
