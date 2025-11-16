@@ -19,40 +19,61 @@ Recall that splitting your data up across too many cores can lead to diminishing
 
 ## Multithreading `bwa mem`
 
-Recall that multithreading spawns `n` tasks for a single job on the one data set. In Part 1, we explored multithreading using `bwa mem`, and saw that more threads can reduce runtime, with diminishing returns observed at 6 and 8 threads. Now that we know `bwa mem` performs best at 4 threads, we will formalise this into the pipeline configuration.
+In this section we will look at implementing another multithreading example with `bwa mem`, used in the `ALIGN` process. These are the example benchmarking results from Part 1, with the CPU efficiency calculated for you. 
 
-!!! question "Discussion"
+| Cores | Walltime (s) | CPU time (s) | CPU efficiency |
+|-------|--------------|--------------|----------------|
+| 2     | 0.744        | 1.381        | 93%            |
+| 4     | 0.456        | 1.537        | 84%            |
+| 6     | 0.355        | 1.618        | 76%            |
+| 8     | 0.291        | 1.628        | 70%            |
 
-    Given we want the `ALIGN` process to consistently use 4 CPUs, what approaches
-    to configuration would you take on the system you are using?
+These values were taken from the `time` command output:
 
-    Things to consider include:
+- Walltime = `real`
+- CPU time = `user` + `sys`
+- CPU efficiency = `cpu time / (cpu time * cores)`
 
-    - Which `.config` file would you want to use? (`nextflow.config` - workflow-specific, system-agnostic; `custom.config` - workflow-specific, system-specific)
-    - How much extra memory can you utilise if required? (Consider the effective RAM/CPUs
+!!! info "CPU efficiency"
+
+    Recall that CPU efficiency is a measure of how many cpus were actually used, in comparison to how many cpus were requested. A high CPU efficiency (100%) means that all of the CPUs were utilised, while a low efficiency suggests that too many were requested.
+
+In this example, we have to consider the trade offs between each run and what we would like to optimise for. 
+
+Providing 2 cores has the slowest walltime but utilises the 2 CPUs efficiently (93%).
+
+On the other hand, providing 8 cores provides ~40% speed up in walltime with reduced CPU efficiency.
+
+As responsible users of shared systems, we will select the option that maintains high CPU efficiency. While this is not prescriptive, aim for >80% CPU efficiency ensures we are not reserving resources in excess, that others' can use for their own jobs.
+
+!!! question "Poll"
+
+    TODO: Add first question to poll
+
+    1. How many cores would you choose to provide `ALIGN` to ensure that it still uses the CPUs efficiently, but with a speed up in walltime? 
+    2. Which `.config` file would you want to use? (`nextflow.config` - workflow-specific, system-agnostic; `custom.config` - workflow-specific, system-specific)
+    3. How much extra memory can you utilise if required? (Consider the effective RAM/CPUs
     proportion of the queue or partition)
 
     === "Gadi (PBS)"
 
         ??? note "Answers"
 
+            - 4 CPUs has > 80% CPU efficiency  
             - `custom.config` to ensure it is tuned for the `normalbw` queue.
-            - 4 CPUs with 9 GB memory
-            - This is the same configuration as `FASTQC`, therefore `withLabel`
-            will be used
-            - TODO: confirm 4 CPUs with 16 GB vs 4CPU9GB
+            - 4 CPUs with 16-18 GB memory
 
     === "Setonix (Slurm)"
 
         ??? note "Answers"
 
+            - 4 CPUs has > 80% CPU efficiency  
             - `custom.config` to ensure it fits the `work` partition.
-            - 4 CPUs with 7 GB memory
-            - No other configuration are similar, therefore a new configuration
-            is needed using `withName`.
-            - TODO: confirm 4 CPUs with 6 GB memory vs. 4 CPUS with less GB
+            - 4 CPUs with 7-8 GB memory
 
 !!! example "Exercise"
+
+    TODO untruncate
 
     In `conf/custom.config`, add the following inside the `process` scope:
 
@@ -63,7 +84,7 @@ Recall that multithreading spawns `n` tasks for a single job on the one data set
         // truncated
 
         	withName: 'ALIGN' {
-        		cpus = 4 // Optimal threads
+        		cpus = 4 // Efficient number of cores
         		memory = 18.GB // 4 CPUs * 4.6 GB
         		time = 2.min
         	}
@@ -77,14 +98,16 @@ Recall that multithreading spawns `n` tasks for a single job on the one data set
         // truncated
 
         	withName: 'ALIGN' {
-        		cpus = 4 // Optimal threads
+        		cpus = 4 // Efficient number of cores
         		memory = 7.GB // 4 CPUs * 1.8 GB
         		time = 2.min
         	}
         }
         ```
 
-    Save your file and run with
+    Note: our `ALIGN` process (`modules/align.nf`) has `-t $task.cpus` already defined, so you do not need to amend it.
+
+    Save your file and run with:
     
     ```
     ./run.sh
@@ -364,3 +387,5 @@ These are some strategies to consider for your own pipelines. Run benchmarks,
 identify long-running or inefficent processes and consider which one of these
 approaches are supported by the tools (multi-threading), or can be split and
 processed in parallel.
+
+TODO add final code changes
