@@ -117,214 +117,86 @@ As responsible users of shared systems, we will select the option that maintains
 
     All software and bioinformatics tools are all built differently. Some support multi-threading, some can only run things with a single thread. Overlooking these details may not be crucial when running on systems where you have autonomy and access to all resources (personal compute, cloud instances), however, these are important parts of configuring your workflow on HPC shared systems to set reasonable limits and requests.
 
-## Multi-processing with 'scatter-gather'
+## Scatter-gathering alignment
 
 ![](figs/00_Scatter_gather_fig.png)
 
-One of the core benefits of running bioinformatics workflows on HPC is access to increased processing power and hardware. By leveraging multi-processing on HPC, if configured correctly, we can run many jobs simultaneously and reduce the overall walltime required to run the workflow. 
+One of the core benefits of running bioinformatics workflows on HPC is access to increased processing power and hardware. For jobs that can be conducted indepdenently of each other, if configured correctly, we can run many jobs simultaneously and reduce the overall walltime required to run the workflow. One strategy to implement this is by:
+
+1. Splitting/scattering the data
+2. Processing each of the data chunks separately
+3. Combining/gathering the processed outputs back into a single file
 
 !!! note "Not everything can or should be split"
 
     Recall from Part 1 that we can't split everything - it should only be done if the particular processing step can be conducted independently of each other. Scattering taks does not make sense when results depend on comparing all data together, such as detecting structural variants across multiple chromosomes.
 
-We will multi-process the alignment step. Scatter-gathering in this step is widely
-used as whole genome data is large, time-consuming, and the reads can be mapped
-to a reference independently of each other.
-
-This requires replacing several modules:
-
-| Before | After       | Notes                                                            |
-| ------ | ----------- | ---------------------------------------------------------------- |
-| -      | SPLIT_FASTQ | Takes the paired-end FASTQ files and splits them into `n` chunks |
-| ALIGN  | ALIGN_CHUNK | Align reads to the reference genome                              |
-| -      | MERGE_BAMS  | Combines aligned BAM files into a single one                     | 
+We will scatter-gather the alignment step. This is a widely approach for mapping reads, as whole genome data is large, can be time-consuming, and mapping can be conducted independently of each other. To do so, we will leverage Nextflow's built-in [`splitFastq`](https://www.nextflow.io/docs/latest/reference/operator.html#splitfastq) operator.
 
 !!! example "Exercise"
 
-    Replace the module imports:
+    Add the following chunk to your `main.nf` file:
 
-    _Before:_
-
-    ```groovy title="main.nf" hl_lines="2"
-    include { FASTQC } from './modules/fastqc'
-    include { ALIGN } from './modules/align'
-    include { GENOTYPE } from './modules/genotype'
-    include { JOINT_GENOTYPE } from './modules/joint_genotype'
-    include { STATS } from './modules/stats'
-    include { MULTIQC } from './modules/multiqc'
+    ```groovy title="main.nf"
+    // Split FASTQs for each sample
+    split_fqs = reads
+        .splitFastq(limit: 3, pe: true, file: true)
+        .view()
     ```
 
-    _After:_
+- The `reads` channel is taken as input. It contains the `[ sample_name, fastq_r1, fastq_r2 ]`
+- `.splitFastq` splits each paired `.fastq` file (`pe: true`) into three files (`limit: 3`)
+- `file: true` stores each split `.fastq` file in the work directory and avoids out-of-memory issues
+- We include `.view()` to inspect the contents of the `split_fqs` channel we just created
 
-    ```groovy title="main.nf" hl_lines="2-4"
-    include { FASTQC } from './modules/fastqc'
-    include { SPLIT_FASTQ } from './modules/split_fastq'
-    include { ALIGN_CHUNK } from './modules/align_chunk'
-    include { MERGE_BAMS } from './modules/merge_bams'
-    include { GENOTYPE } from './modules/genotype'
-    include { JOINT_GENOTYPE } from './modules/joint_genotype'
-    include { STATS } from './modules/stats'
-    ```
-
-!!! note
-
-    Recall that modules are useful to keep things modular and avoid cluttering our main.nf! It is far easier to swap out the module imports, in comparison to deleting the process definitions or commenting them out. We may want to reuse our revert back to our original processes too. Modules, combined with the workflow definition and groovy operators are what allow applying scatter-gather patterns (multiprocessing) to your Nextflow with ease.
-
-Next, we need to update our workflow scope to facilitate the scatter-gather.
-
-TODO: Note some key parts. e.g. getting chunk_id, .groupTuple().map{}.MERGE_BAMS()
-to merge again correctly by sample.
+Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` files.
 
 !!! example "Exercise"
 
-    _Before:_
+    In `main.nf`, in the `workflow` scope, replace the input argument to `ALIGN` from `ALIGN(reads, bwa_index)` to `ALIGN(split_fqs, bwa_index)`.
 
-    TODO: untruncated for easier copying
+    ```groovy title="main.nf"
+    // Split FASTQs for each sample
+    split_fqs = reads
+        .splitFastq(limit: 3, pe: true, file: true)
+        .view()
 
-    ```groovy title="main.nf" hl_lines="7-11"
-    workflow {
-    // truncated
-
-        // Run the fastqc step with the reads_in channel
-        FASTQC(reads)
-
-        // Run the align step with the reads_in channel and the genome reference
-        ALIGN(reads, bwa_index)
-
-        // Run genotyping with aligned bam and genome reference
-        GENOTYPE(ALIGN.out.aligned_bam, ref)
-
-        // Gather gvcfs and run joint genotyping
-        all_gvcfs = GENOTYPE.out.gvcf
-            .map { _sample_id, gvcf, gvcf_idx -> [ params.cohort_name, gvcf, gvcf_idx ] }
-            .groupTuple()
-        JOINT_GENOTYPE(all_gvcfs, ref)
-
-    // truncated
-    }
+    ALIGN(split_fqs, bwa_index)
     ```
 
-    _After:_
-
-    ```groovy title="main.nf" hl_lines="7-42"
-    workflow {
-    // truncated
-
-        // Run the fastqc step with the reads_in channel
-        FASTQC(reads)
-
-        // Perform a scatter/gather workflow by splitting the FASTQs into multiple chunks,
-        // aligning each chunk separately, then merging the BAMs together at the end
-
-        // Split FASTQs for each sample
-        reads_to_split = reads
-            .map { it + [ params.split_n ] }
-        SPLIT_FASTQ(reads_to_split)
-
-        // Extract the chunk ID from the split FASTQs and run ALIGN_CHUNK
-        // TODO: simplify
-        split_fqs_r1 = SPLIT_FASTQ.out.split_fq
-            .map { sample_id, fqs_1, _fqs_2 -> [ sample_id, fqs_1 ] }
-            .transpose()
-            .map { sample_id, fq1 -> {
-                def chunk_id = fq1.baseName.tokenize(".")[0]
-                [ sample_id, chunk_id, fq1 ]
-            } }
-        split_fqs_r2 = SPLIT_FASTQ.out.split_fq
-            .map { sample_id, _fqs_1, fqs_2 -> [ sample_id, fqs_2 ] }
-            .transpose()
-            .map { sample_id, fq2 -> {
-                def chunk_id = fq2.baseName.tokenize(".")[0]
-                [ sample_id, chunk_id, fq2 ]
-            } }
-        split_fqs = split_fqs_r1.join(split_fqs_r2, by: [0, 1])
-
-        ALIGN_CHUNK(split_fqs, bwa_index)
-
-        // Gather all BAM chunks for a sample and run MERGE_BAMS
-        gathered_bams = ALIGN_CHUNK.out.aligned_bam
-            .groupTuple()
-            .map { sample_id, chunk_id, bams, bais -> [ sample_id, bams, bais ] }
-        MERGE_BAMS(gathered_bams)
-
-        // Run genotyping with aligned bam and genome reference
-        GENOTYPE(MERGE_BAMS.out.aligned_bam, ref)
-
-        // Gather gvcfs and run joint genotyping
-        all_gvcfs = GENOTYPE.out.gvcf
-            .map { _sample_id, gvcf, gvcf_idx -> [ params.cohort_name, gvcf, gvcf_idx ] }
-            .groupTuple()
-        JOINT_GENOTYPE(all_gvcfs, ref)
-
-    // truncated
-    }
+    Save the file, and run:
+    ```bash
+    ./run.sh
     ```
 
- <!--- If you run the workflow now, it will fail because params.split_n is
- not defined. Could be a troubleshooting exercise --->
+    ??? abstract Show output
+
+        ```console title="Output"
+        [NA12877, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/86/7ca90d09bee8f0f952b82e0b791d66/NA12877_chr20-22.R1.1.fq, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/c8/f6d055eae92f2336aa98b2d2790623/NA12877_chr20-22.R2.1.fq]
+        [NA12877, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/86/7ca90d09bee8f0f952b82e0b791d66/NA12877_chr20-22.R1.2.fq, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/c8/f6d055eae92f2336aa98b2d2790623/NA12877_chr20-22.R2.2.fq]
+        [NA12877, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/86/7ca90d09bee8f0f952b82e0b791d66/NA12877_chr20-22.R1.3.fq, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/c8/f6d055eae92f2336aa98b2d2790623/NA12877_chr20-22.R2.3.fq]
+        executor >  slurm (8)
+        [f1/dea318] process > FASTQC (fastqc on NA12877) [100%] 1 of 1 ✔
+        [79/d85144] process > ALIGN (2)                  [100%] 3 of 3 ✔
+        [4d/c80183] process > GENOTYPE (1)               [100%] 1 of 1 ✔
+        [63/8a26ab] process > JOINT_GENOTYPE (1)         [100%] 1 of 1 ✔
+        [61/5157d0] process > STATS (1)                  [100%] 1 of 1 ✔
+        [1e/b0a7c0] process > MULTIQC                    [100%] 1 of 1 ✔
+        Completed at: 16-Nov-2025 21:24:28
+        Duration    : 1m 47s
+        CPU hours   : (a few seconds)
+        Succeeded   : 8
+        ```
+
+Let's take a look at the stdout printed.
 
 !!! tip "Scatter-gather patterns"
 
     How you implement the scatter-gather pattern in Nextflow will be highly dependent on your workflow structure, and input and output files. [Nextflow patterns](https://nextflow-io.github.io/patterns/) provides examples of commonly used patterns that support a range of different needs, such as splitting text and CSV files, and collecting outputs multiple outputs into a single file or groups.
 
-Lastly, a new parameter, `params.split_n` was defined in workflow logic. This determines how many "chunks" each paired-end FASTQ will be split into, and importantly determines how many processes will run in parallel.
+!!! note
 
-!!! example "Exercise"
-
-    - In `nextflow.config` within the `params` scope, define `split_n`.
-    - Provide a default value of `split_n = 3`. This will split the FASTQ file
-    into three chunks.
-
-    ??? note "Answer"
-
-        ```groovy title="nextflow.config" hl_lines="12"
-        // Define params
-        params {
-            samplesheet = "$projectDir/samplesheet_single.csv"
-            ref_prefix = "$projectDir/../data/ref/Hg38.subsetchr20-22"
-            ref_fasta = "${params.ref_prefix}.fasta"
-            ref_fai = "${params.ref_prefix}.fasta.fai"
-            ref_dict = "${params.ref_prefix}.dict"
-            bwa_index = "$projectDir/../data/ref"
-            bwa_index_name = "Hg38.subsetchr20-22.fasta"
-            cohort_name = "cohort"
-            outdir = "results"
-            split_n = 3
-        }
-        ```
-
-**TODO: REPLACE LABELS IN CONFIG**
-
-Lastly, add the `process_small` labels to each of the modules:
-
-- `SPLIT_FASTQ`
-- `ALIGN_CHUNK`
-- `MERGE_BAMS`
-
-!!! example "Exercise"
-
-    TODO: configure the three modules withName
-
-    now run the parallelised pipeline
-    ```bash
-    ./run.sh
-    ```
-
-    Your output should look similar to this
-    ```groovy
-    [82/d867f8] FASTQC (fastqc on NA12877)             [100%] 1 of 1 ✔
-    [43/40bd7e] SPLIT_FASTQ (split fastqs for NA12877) [100%] 1 of 1 ✔
-    [0a/0ef899] ALIGN_CHUNK (2)                        [100%] 3 of 3 ✔
-    [c1/79d4cf] MERGE_BAMS (1)                         [100%] 1 of 1 ✔
-    [f8/c1663c] GENOTYPE (1)                           [100%] 1 of 1 ✔
-    [a7/a67522] JOINT_GENOTYPE (1)                     [100%] 1 of 1 ✔
-    [49/418d69] STATS (1)                              [100%] 1 of 1 ✔
-    [2e/1b5029] MULTIQC                                [100%] 1 of 1 ✔
-    Completed at: 11-Nov-2025 11:59:08
-    Duration    : 4m 31s
-    CPU hours   : (a few seconds)
-    Succeeded   : 10
-    ```
+    Recall that modules are useful to keep things modular and avoid cluttering our main.nf! It is far easier to swap out the module imports, in comparison to deleting the process definitions or commenting them out. We may want to reuse our revert back to our original processes too. Modules, combined with the workflow definition and groovy operators are what allow applying scatter-gather patterns (multiprocessing) to your Nextflow with ease.
 
     NOTE: The alignment module was updated to use a scatter-gather approach. Instead of aligning the entire FASTQ in one go with the ALIGN module, the workflow now:
 
