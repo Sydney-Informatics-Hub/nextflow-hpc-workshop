@@ -152,15 +152,15 @@ To familiarise ourselves with submitting jobs to the scheduler, we will once aga
         --format fastq ${READS_1} ${READS_2}
     ```
 
-The script does a few things: 
+The script does a few things:
 
-1. It loads the `singularity` module. We'll need this to run the `fastqc` command when the job gets submitted to the compute node  
-2. It defines a few bash variables that point to the input FASTQ data  
+1. It loads the `singularity` module. We'll need this to run the `fastqc` command when the job gets submitted to the compute node
+2. It defines a few bash variables that point to the input FASTQ data
 3. It creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`
-4. It runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`. 
+4. It runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`.
 
-!!! note "Your container is ready to go!" 
-    For the sake of expediency, we have pre-downloaded the `fastqc` singularity container image for you at `../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`.
+!!! note "Your container is ready to go!"
+For the sake of expediency, we have pre-downloaded the `fastqc` singularity container image for you at `../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`.
 
 This is everything we need to run the job; we just have to submit the script to the HPC scheduler. In doing so, we will provide the following details to the scheduler:
 
@@ -290,9 +290,10 @@ The above command is quite long, and would be a pain to write out every time you
 
     A good practice is to specify as many of the scheduler parameters within the header of the script itself as special comments. Note, however, that only static - i.e. unchanging - parameters can use this feature; if you need to dynamically assign resources to jobs, you will still need to use the commandline parameters.
 
-    Update your `fastqc.sh` script with the following header comments:
-
     === "Gadi (PBSpro)"
+
+        Update your `scripts/fastqc.pbs.sh` script with the following header comments:
+
 
         ```bash title="fastqc.sh" hl_lines="2-9"
         #!/bin/bash
@@ -321,6 +322,8 @@ The above command is quite long, and would be a pain to write out every time you
         Note how we need to explicitly state the project name for both the `-P` and `-l storage` parameters.
 
     === "Setonix (Slurm)"
+
+        Update your `scripts/fastqc.slurm.sh` script with the following header comments:
 
         ```bash title="fastqc.sh" hl_lines="2-9"
         #!/bin/bash
@@ -353,13 +356,13 @@ The above command is quite long, and would be a pain to write out every time you
     === "Gadi (PBSpro)"
 
         ```bash
-        qsub fastqc.sh > run_id.txt
+        qsub scripts/fastqc.pbs.sh > run_id.txt
         ```
 
     === "Setonix (Slurm)"
 
         ```bash
-        sbatch fastqc.sh > run_id.txt
+        sbatch scripts/fastqc.slurm.sh > run_id.txt
         ```
 
     The job can be monitored the same way as before, and once complete, should produce the exact same output:
