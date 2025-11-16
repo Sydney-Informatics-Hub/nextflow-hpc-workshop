@@ -188,7 +188,93 @@ Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` fi
         Succeeded   : 8
         ```
 
-Let's take a look at the stdout printed.
+Let's take a look at the `stdout` printed.
+
+The output of `reads.splitFastq()` include three separate arrays that contain:
+
+- The name of the sample
+- The path to the R1 `.fastq` file
+- The path to the R2 `.fastq` file
+
+Note that each `.fastq` file is now identified with a chunk number (e.g. `.../NA12877_chr20-22.R2.**1**.fq`).
+
+The following line indicates that the `ALIGN` process is now run three times successfully:
+
+```
+[79/d85144] process > ALIGN (2)                  [100%] 3 of 3 ✔
+```
+
+However, the `GENOTYPE` process was run only once - is this intended? Given that we now have three separate outputs from `ALIGN`, we would expect that `GENOTYPE` is run three times for each of the outputs. Let's take a look.
+
+!!! example "Exercise"
+    
+    First, inspect the outputs of the `ALIGN` process by adding `.view()`.
+
+    ```groovy title="main.nf" hl_lines="7"
+    // Split FASTQs for each sample
+    split_fqs = reads
+        .splitFastq(limit: 3, pe: true, file: true)
+        .view()
+    
+    ALIGN(split_fqs, bwa_index)
+    ALIGN.out.view()
+    ```
+
+    Save the file, and run with `-resume`
+
+    ```
+    ./run.sh 
+    ```
+
+    ??? abstract Output
+
+        ```console title="Output"
+        # full work directory paths have been truncated with '...'
+        [NA12877, .../NA12877_chr20-22.R1.1.fq, .../NA12877_chr20-22.R2.1.fq]
+        [NA12877, .../NA12877_chr20-22.R1.2.fq, .../NA12877_chr20-22.R2.2.fq]
+        [NA12877, .../NA12877_chr20-22.R1.3.fq, .../NA12877_chr20-22.R2.3.fq]
+        [NA12877, .../NA12877.bam, .../NA12877.bam.bai]
+        [NA12877, .../NA12877.bam, .../NA12877.bam.bai]
+        [NA12877, .../NA12877.bam, .../NA12877.bam.bai]
+        ```
+
+        A few things to note in the output:
+
+            - The first three lines are the outputs of our `.splitFastq()` operation, this has not changed since the last time the workflow was run
+            - The last three lines are the outputs emitted from the `ALIGN` process. One output reflects the run for one of the chunks processed. However, all the output names are the same.
+
+Now that we have an idea of what is being passed in and out of the process, let's inspect how the `GENOTYPE` process is running.
+
+!!! example "Exercise"
+
+    Locate and inspect the work directory for `GENOTYPE` using one of the approaches we have used in previous lessons. For example, if you have included the `workdir` field in your trace, you can use that.
+
+    ??? Code
+
+        ```bash
+        cd <workdir>
+        tree -a
+        ```
+        ```console title="Output"
+        .
+        ├── .command.begin
+        ├── .command.err
+        ├── .command.log
+        ├── .command.out
+        ├── .command.run
+        ├── .command.sh
+        ├── .command.trace
+        ├── .exitcode
+        ├── Hg38.subsetchr20-22.dict -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/data/ref/Hg38.subsetchr20-22.dict
+        ├── Hg38.subsetchr20-22.fasta -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/data/ref/Hg38.subsetchr20-22.fasta
+        ├── Hg38.subsetchr20-22.fasta.fai -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/data/ref/Hg38.subsetchr20-22.fasta.fai
+        ├── NA12877.bam -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/74/0acd4e174e207f603ab756b3dd069e/NA12877.bam
+        ├── NA12877.bam.bai -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/74/0acd4e174e207f603ab756b3dd069e/NA12877.bam.bai
+        ├── NA12877.g.vcf.gz
+        └── NA12877.g.vcf.gz.tbi
+        ```
+
+        
 
 !!! tip "Scatter-gather patterns"
 
