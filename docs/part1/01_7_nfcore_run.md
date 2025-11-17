@@ -266,11 +266,7 @@ To run the mapping stage of `sarek`, we need to execute the `nextflow run` comma
     
     If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.
 
-<<<<<<< HEAD:docs/part1/02_2_nfcore_run.md
-## 2.2.3 Not quite ready!
-=======
 ## 1.7.3 Not quite ready!
->>>>>>> origin/main:docs/part1/01_7_nfcore_run.md
 
 We've created a full run script for our pipeline, but we won't run it just yet, because we haven't actually told Nextflow to use the HPC scheduler. If we were to run the workflow, it would attempt to run on the login node where we are currently working!
 
