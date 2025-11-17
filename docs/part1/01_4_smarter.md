@@ -1,4 +1,4 @@
-# 1.4 Work smarter, not harder
+# 1.4 Work smarter, not harder!
 
 !!! info "Learning objectives"
 
@@ -10,13 +10,15 @@
 
 HPC systems give us access to large amounts of compute, but that doesn’t mean we should use resources carelessly. Misusing compute leads to long queue times, wasted allocation, unstable workflows and unhappy HPC administrators. Designing resource-aware workflows is essential for performance and fair use.
 
+## 1.4.1 Know thyself: tracking resource usage of your jobs
+
 HPC systems are constantly measuring your resource usage. You can use their built in tools to measure actual use. The tools available to you will depend on the job scheduler and the administrator's implementation of the scheduler.
 
 !!! example "Exercise: Inspect a previous job"
 
     At the end of the previous lesson, we saved the job ID to a file called `run_id.txt`. We can use that ID to inspect the resources used by the job:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash
         JOBID=$(cat run_id.txt)
@@ -61,11 +63,11 @@ HPC systems are constantly measuring your resource usage. You can use their buil
         Project:            vp91
         Exit Status:        0
         Service Units:      0.00
-        NCPUs Requested:    1                      NCPUs Used: 1               
-                                                CPU Time Used: 00:00:04        
-        Memory Requested:   1.0GB                 Memory Used: 440.7MB         
-        Walltime requested: 00:01:00            Walltime Used: 00:00:08        
-        JobFS requested:    100.0MB                JobFS used: 0B              
+        NCPUs Requested:    1                      NCPUs Used: 1
+                                                CPU Time Used: 00:00:04
+        Memory Requested:   1.0GB                 Memory Used: 440.7MB
+        Walltime requested: 00:01:00            Walltime Used: 00:00:08
+        JobFS requested:    100.0MB                JobFS used: 0B
         ======================================================================================
         ```
 
@@ -103,7 +105,21 @@ HPC systems are constantly measuring your resource usage. You can use their buil
 
         We can see that in this example run, CPU usage was at 23.53%. Since we only requested 1 CPU, there is no more room for improvement here. We can also see that the memory efficiency was ~36%, using ~368 MB of the requested 1 GB.
 
-## 1.4.1 Resource awareness: right sizing
+    Before moving on, delete the `results/` directory, as well as the scheduler outputs.
+
+    === "Gadi (PBSpro)"
+
+        ```bash
+        rm -r results fastqc.*
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```bash
+        rm -r results slurm-*
+        ```
+
+## 1.4.2 Resource awareness: right sizing
 
 At its core, HPC efficiency is about matching the structure of your workflow to the available compute. It is therefore beneficial to be "resource aware" in your approach to running jobs. This involves understanding how much time, CPU, and memory each tool in your workflow actually needs and requesting enough.
 
@@ -121,11 +137,11 @@ Let's look again at our workflow:
 
 As we touched on in [HPC for workflows](./01_1_hpc_for_workflows.md#114-introducing-our-workshop-scenario-wgs-short-variant-calling), each stage of this workflow has differeing resource requirements and bottlenecks:
 
-| Step                | Dominant resource | Characteristics                            |
-| ------------------- | ----------------- | ------------------------------------------ |
-| **Quality control** | I/O-bound         | Reads many files; CPU idle time high       |
-| **Read alignment**  | CPU-bound         | CPU pegged near 100%; memory stable        |
-| **Variant calling** | CPU + memory      | CPU ~90%, high steady memory usage         |
+| Step                | Dominant resource | Characteristics                      |
+| ------------------- | ----------------- | ------------------------------------ |
+| **Quality control** | I/O-bound         | Reads many files; CPU idle time high |
+| **Read alignment**  | CPU-bound         | CPU pegged near 100%; memory stable  |
+| **Variant calling** | CPU + memory      | CPU ~90%, high steady memory usage   |
 
 We will observe these constraints in subsequent lessons when we run and optimise our workflows.
 
@@ -155,12 +171,12 @@ Values near 1 mean your job used all the CPUs efficiently. Values much lower tha
 As an example, suppose you requested 4 CPUs for a job which ran for 1 hour (walltime). If each CPU was utilised for 100% of the time, then CPU time would be **4 hours** and CPU efficiency would be:
 
 !!! note ""
-    4 hours CPU time / 1 hour walltime / 4 CPUs = 100%
-    
+4 hours CPU time / 1 hour walltime / 4 CPUs = 100%
+
 On the other hand, if the job actually only used 1 of those CPUs for that entire hour, then CPU time would only be 1 hour and CPU efficiency would be:
 
 !!! note ""
-    1 hour CPU time / 1 hour walltime / 4 CPUS = 25%
+1 hour CPU time / 1 hour walltime / 4 CPUS = 25%
 
 ### Memory (RAM) efficiency
 
@@ -172,7 +188,7 @@ Note that it is a good idea to **slightly** over-request memory, since it is qui
 
 As mentioned above, walltime is the real-world time it takes for your job to run from start to finish. Schedulers use this value to plan future jobs being run by yourself and others. Overestimating walltime will keep you job in the queue for longer as it will have to wait for a suitable time slot to run. However, if you underestimate walltime, the job will be killed mid-run. As such, like memory, it is usually a good idea to **slightly** over-request walltime, esepcially since you are usually only charged for **actual walltime used**.
 
-## 1.4.2 Optimising your jobs for efficiency
+## 1.4.3 Optimising your jobs for efficiency
 
 Once you understand how your workflow uses resources, you can start to optimise it. Optimisation is about balancing speed, efficiency, and fair use of the system.
 
@@ -185,7 +201,7 @@ In bioinformatics workflows, there are 2 main strategies used for increasing eff
 
 ![](./figs/00_smarter_multi_diagram.png)
 
-We can explore parallelisation methods of multi-threading and multi-processing in the context of our variant calling workflow and some small dummy data. 
+We can explore parallelisation methods of multi-threading and multi-processing in the context of our variant calling workflow and some small dummy data.
 
 !!! warning "Beware of the overheads"
 
@@ -197,7 +213,7 @@ We can explore parallelisation methods of multi-threading and multi-processing i
 
     See [this great explainer](https://gatk.broadinstitute.org/hc/en-us/articles/360035532012-Parallelism-Multithreading-Scatter-Gather) of parallelism from the GATK team.
 
-## Parallelisation: multi-threading
+### Parallelisation: multi-threading
 
 !!! note "What is multi-threading?"
 
@@ -211,228 +227,22 @@ bwa mem -t 4 ref.fasta sample_R1.fq.gz sample_R2.fq.gz > alignment.sam
 
 You're telling BWA to use 4 worker threads for parts of the alignment process that can be parallelised. Not all parts of the process can be parallelised.
 
-!!! example "Does more threads always speed up a job?"
+Be aware: not all tools can make use of threads effectively, and some are entirely single-threaded. This can stem from biological reasons, i.e. the computational problem simply needs to be run in a sequential manner. In other cases, the tool itself may simply not implement the `--threads` flag effectively.
 
-    We've provided a script for you to examine the effects of multi-threading when running `bwa mem`:
+For example, the following graph was produced from CPU time and walltime data collected from several runs of `bwa mem` and `fastqc`, each with different numbers of threads:
 
-    !!! warning "Disclaimer: avoid loops in HPC jobs!"
+![](./figs/00_bwa_vs_fastqc_threads.png)
 
-        Note that the following scripts are for example purposes only. In a real-world scenario, you would never run `bwa mem` in a loop like this; instead, you would submit each run of `bwa mem` as a separate job to the HPC.
+Notice that for `bwa mem`, as the number of threads went up, the walltime (i.e. the number of real-world seconds it took for the job to complete) went down. Also notice that the CPU time stays mostly the same. This indicates that the same amount of computational time was being spent on the job, but because it was spread across more threads and run in parallel, it took fewer seconds to complete.
 
-    === "Gadi (PBS)"
+While many tools benefit from multi-threading, [FastQC is not one of them](https://www.biostars.org/p/9598335/). It is designed to process one file per thread rather than splitting a single file across multiple threads. As you can see in the example above, the walltime for `fastqc` fluctuates a bit with increasing numbers of threads, but doesn't significantly decrease over time. The CPU time also stays fairly stable. This indicates that `fastqc` didn't speed up with additional threads.
 
-        The Gadi version of the script is located at `/scripts/bwa-multithreaded.pbs.sh`:
+!!! warning "A note on terminology: threads ≠ cores"
 
-        ```bash title="scripts/bwa-multithreaded.pbs.sh"
-        #!/bin/bash
-        #PBS -P vp91
-        #PBS -N bwa
-        #PBS -q normalbw
-        #PBS -l ncpus=8
-        #PBS -l mem=1GB
-        #PBS -l walltime=00:02:00
-        #PBS -l storage=scratch/vp91
-        #PBS -l wd
+    Often times you may see terms like "core", and "thread" used interchangeably, but in reality, these are related but distinct concepts.
 
-        module load bwa/0.7.17
-
-        for NCPUS in 2 4 6 8
-        do
-            echo "NCPUS: ${NCPUS}"
-            time ( bwa mem -t ${NCPUS} -o /dev/null ../data/ref/Hg38.subsetchr20-22.fasta ../data/fqs/NA12878_chr20-22.R1.fq.gz ../data/fqs/NA12878_chr20-22.R2.fq.gz > /dev/null 2> /dev/null ) 2>&1
-            echo "-----"
-        done > bwa_times.txt
-        ```
-
-    === "Setonix (Slurm)"
-
-        The Setonix version of the script is located at `/scripts/bwa-multithreaded.slurm.sh`:
-
-        ```bash title="scripts/bwa-multithreaded.slurm.sh"
-        #!/bin/bash
-        #SBATCH --account=courses01
-        #SBATCH --job-name=bwa
-        #SBATCH --partition=work
-        #SBATCH --nodes=1
-        #SBATCH --ntasks=1
-        #SBATCH --cpus-per-task=8
-        #SBATCH --mem=1GB
-        #SBATCH --time=00:02:00
-
-        module load bwa/0.7.17--h7132678_9
-
-        for NCPUS in 2 4 6 8
-        do
-            echo "NCPUS: ${NCPUS}"
-            time ( bwa mem -t ${NCPUS} -o /dev/null ../data/ref/Hg38.subsetchr20-22.fasta ../data/fqs/NA12878_chr20-22.R1.fq.gz ../data/fqs/NA12878_chr20-22.R2.fq.gz > /dev/null 2> /dev/null ) 2>&1
-            echo "-----"
-        done > bwa_times.txt
-        ```
-
-    The script runs a loop, increasing the number of threads given to `bwa mem` by 2 each time. At the end, you will get a file called `bwa_times.txt`. Submit this script to the HPC and once it finishes, inspect the output:
-
-    === "Gadi (PBS)"
-
-        ```bash
-        qsub scripts/bwa-multithreaded.pbs.sh
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        sbatch scripts/bwa-multithreaded.slurm.sh
-        ```
-
-    The output in `bwa_times.txt` should look something like the following:
-
-    ```console title="Output"
-    NCPUS: 2
-
-    real	0m0.744s
-    user	0m1.296s
-    sys	0m0.085s
-    -----
-    NCPUS: 4
-
-    real	0m0.456s
-    user	0m1.399s
-    sys	0m0.138s
-    -----
-    NCPUS: 6
-
-    real	0m0.355s
-    user	0m1.520s
-    sys	0m0.098s
-    -----
-    NCPUS: 8
-
-    real	0m0.291s
-    user	0m1.519s
-    sys	0m0.109s
-    -----
-    ```
-
-    We've used the `time` command to see how long each run of `bwa mem` takes. Notice that as the number of CPUs goes up, the `real` time (that is, the walltime, the number of real-world seconds it took for the job to complete) went down. Also notice that the `user` time (which is effectively the number of CPU hours spent on the job) stays mostly the same, or even increases slightly. This indicates that the same amount of computational time was being spent on the job, but because it was spread across more CPUs and run in parallel, it took fewer seconds to complete.
-
-    In the example above, the `user` time actually increased with additional CPUs, which is not unexpected. As mentioned above, parallelism and multi-threading come with additional overhead costs, as the software needs to track each thread and merge the results at the end. So once again, only use multi-threading where it is appropriate - for small datasets, it can actually make your pipeline less efficient!
-
-Be aware that not all tools can make use of threads effectively. This can stem from biological reasons, i.e. the computational problem simply needs to be run in a sequential manner. In other cases, the tool itself may simply not implement the `--threads` flag effectively.
-
-!!! example "Does more threads always speed up a job?"
-
-    While many tools benefit from multi-threading, [FastQC is not one of them](https://www.biostars.org/p/9598335/). It is designed to process one file per thread rather than splitting a single file across multiple threads.
-
-    We created another benchmarking script for `fastqc` that repeats the test we ran above with `bwa mem`.
-
-    === "Gadi (PBS)"
-
-        The Gadi version of the script is located at `/scripts/fastqc-multithreaded.pbs.sh`:
-
-        ```bash title="scripts/fastqc-multithreaded.pbs.sh"
-        #!/bin/bash
-        #PBS -P vp91
-        #PBS -N fastqc
-        #PBS -q normalbw
-        #PBS -l ncpus=8
-        #PBS -l mem=1GB
-        #PBS -l walltime=00:02:00
-        #PBS -l storage=scratch/vp91
-        #PBS -l wd
-
-        module load fastqc
-
-        SAMPLE_ID="NA12878_chr20-22"
-        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
-
-        for NCPUS in 2 4 6 8
-        do
-            mkdir -p "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs"
-            echo "NCPUS: ${NCPUS}"
-            time ( fastqc -t ${NCPUS} --outdir "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs" --format fastq ${READS_1} ${READS_2} > /dev/null 2> /dev/null ) 2>&1
-            echo "-----"
-        done > fastqc_times.txt
-        ```
-
-    === "Setonix (Slurm)"
-
-        The Setonix version of the script is located at `/scripts/fastqc-multithreaded.slurm.sh`:
-
-        ```bash title="scripts/fastqc-multithreaded.slurm.sh"
-        #!/bin/bash
-        #SBATCH --account=courses01
-        #SBATCH --job-name=fastqc
-        #SBATCH --partition=work
-        #SBATCH --nodes=1
-        #SBATCH --ntasks=1
-        #SBATCH --cpus-per-task=8
-        #SBATCH --mem=1GB
-        #SBATCH --time=00:02:00
-
-        module load fastqc/0.11.9--hdfd78af_1
-
-        SAMPLE_ID="NA12878_chr20-22"
-        READS_1="../data/fqs/${SAMPLE_ID}.R1.fq.gz"
-        READS_2="../data/fqs/${SAMPLE_ID}.R2.fq.gz"
-
-        for NCPUS in 2 4 6 8
-        do
-            mkdir -p "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs"
-            echo "NCPUS: ${NCPUS}"
-            time ( fastqc -t ${NCPUS} --outdir "results/fastqc_${SAMPLE_ID}_${NCPUS}_logs" --format fastq ${READS_1} ${READS_2} > /dev/null 2> /dev/null ) 2>&1
-            echo "-----"
-        done > fastqc_times.txt
-        ```
-
-    Once again, the script runs a loop, increasing the number of threads given to `fastqc` by 2 each time. At the end, you will get a file called `fastqc_times.txt`. Submit this script to the HPC and once it finishes, inspect the output:
-
-    === "Gadi (PBS)"
-
-        ```bash
-        qsub scripts/fastqc-multithreaded.pbs.sh
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```bash
-        sbatch scripts/fastqc-multithreaded.slurm.sh
-        ```
-
-    The output in `fastqc_times.txt` should look something like the following:
-
-    ```console title="Output"
-    NCPUS: 2
-
-    real	0m0.064s
-    user	0m0.039s
-    sys	0m0.009s
-    -----
-    NCPUS: 4
-
-    real	0m0.057s
-    user	0m0.032s
-    sys	0m0.010s
-    -----
-    NCPUS: 6
-
-    real	0m0.064s
-    user	0m0.038s
-    sys	0m0.009s
-    -----
-    NCPUS: 8
-
-    real	0m0.064s
-    user	0m0.039s
-    sys	0m0.010s
-    -----
-    ```
-
-    As you can see in the example above, the `real` time fluctuates a bit, but doesn't significantly decrease over time. The `user` time also stays fairly stable. This indicates that `fastqc` didn't speed up with additional threads.
-
-!!! warning "Threads ≠ cores "
-
-    - **A core** is a physical processing unit on a computer node, it can execute one thread at a time.
-    - **A thread** is a software-level unit of execution, a single stream of instructions within a process
+    - **A thread** is a software-level unit of execution. Each thread represents a single stream of instructions within a process.
+    - **A core** is a physical processing unit on a computer node. Each core can execute one thread at a time.
 
     In practice, when you run a command like:
 
@@ -440,12 +250,14 @@ Be aware that not all tools can make use of threads effectively. This can stem f
     bwa mem -t 8
     ```
 
-    You're telling bwa to spawn 8 threads. For those threads to be executed in parallel, you must **also** request 8 cores from the HPC for those threads to run on. If you were to request only 4 cores, those 8 threads will be competing for 4 cores which causes inefficiency and slower run times. On the other hand, if you ask for more CPUs than threads, those extra CPUs will sit idle, wasting allocation and increasing queue time. In summary, always try to request the exact number of cores your job requires. If you have a mixture of tools where one uses lots of threads and another is single-threaded, consider separating them out into separate jobs so that you use the HPC resources efficiently.
+    You're telling bwa to spawn 8 threads. For those threads to be executed in parallel, you must **also** request 8 cores from the HPC for those threads to run on. If you were to request only 4 cores, those 8 threads will be competing for 4 cores which causes inefficiency and slower run times. On the other hand, if you ask for more cores than threads, those extra cores will sit idle, wasting allocation and increasing queue time. In summary, always try to request the exact number of cores your job requires. If you have a mixture of tools where one uses lots of threads and another is single-threaded, consider separating them out into separate jobs so that you use the HPC resources efficiently.
 
-## Parallelisation: multiprocessing
+    You may also see the term **CPU** used interchangeably with **core**. Technically speaking, the CPU is the physical piece of hardware on the computer, composed of one or more cores. However, in practice, we are much more interested in the number of **cores** we are using than the number of physical CPUs. When you ask Gadi or Setonix for "CPUs", you are actually requesting **cores**.
+
+### Parallelisation: multi-processing
 
 The other main approach to parallelisation is multi-processing, which means running independent processes at the same time, each with its own memory space and input data. Rather than speeding up a single task, it increases overall throughput by running many tasks in parallel. In bioinformatics workflows, this usually looks like processing multiple samples or genomic regions simultaneously.
-    
+
 Multi-processing is typically implemented by the user in workflow design, rather than by a tool itself.
 
 A common multi-processing pattern is called **scatter-gather**. This involves initially splitting a dataset up into many independent jobs and later merging the results back together again. For example, within the context of short variant calling, a common practice is to run the variant calling tools on each chromosome separately. Since a sequencing read can only originate from one chromosome, and because these variants only affect one genomic region at a time, we can safely split the data up per chromosome and treat them independently. Once the data has been processed, the per-chromosome results can be merged back together for downstream analysis.
@@ -458,13 +270,13 @@ A common multi-processing pattern is called **scatter-gather**. This involves in
 
     Paralellisation does not make sense when results depend on comparing all data together e.g. joint genotyping, genome assembly, or detecting structural variants across multiple chromosomes.
 
-## 1.4.3 Optimising your jobs for cost
+## 1.4.4 Optimising your jobs for cost
 
 An important issue when designing workflows for HPC is knowing how much it will cost to run. HPCs will typically charge you based on the proportion of available resources you are using, multiplied by some pre-defined rate for the given queue. Both NCI and Pawsey define an intermediate unit called a **service unit** (SU) that captures the effective resource cost of your job; the final real-world cost of the job will be proportional to the number of SUs you use.
 
 The specific calculation for how many SUs a job will use is system-specific, but generally you are charged based on the proportion of available CPUs or available memory that you use, whichever is larger. More specifically:
 
-=== "Gadi (PBS)"
+=== "Gadi (PBSpro)"
 
     On Gadi, SUs are calculated as:
 
@@ -480,7 +292,7 @@ The specific calculation for how many SUs a job will use is system-specific, but
     - **Walltime Used** = the total number of hours the job ran for (**not** the requested walltime)
 
     **Note** that due to the shared, fair-use nature of HPCs, for billing purposes, NCI divides its memory up evenly per CPU and charges you based on the proportion of either the node's CPUs or memory you use, whichever is greater. For example, on the `normal` queue, each node has 190 GB of memory and 48 CPUs, meaning there is approximately 4 GB of memory per CPU. If you use less than 4 GB of memory per CPU you request, you will be charged based on the number of CPUs you request; while if you use more than 4 GB of memory per CPU you request, you will be charged based on the amount of memory you use.
-    
+
     For **purely cost-based optimisation**, the ideal ratio of memory per CPU for the `normal` queue is 190 / 48 = ~4 GB per CPU.
 
     This SU calculation is described further on NCI's [Job Costs documentaiton page](https://opus.nci.org.au/spaces/Help/pages/236880942/Job+Costs...)
@@ -503,7 +315,7 @@ The specific calculation for how many SUs a job will use is system-specific, but
     - **Walltime Used** = the total number of hours the job ran for (**not** the requested walltime)
 
     **Note** that due to the shared, fair-use nature of HPCs, for billing purposes, Pawsey charges you based on the proportion of available CPUs, memory, or GPUs that you request, whichever is greater. For example, on the `work` queue, each node has 230 GB of memory and 64 CPUs. If you request 1 CPU (1 / 64) and 23 GB memory (1 / 10), you pay for the memory proportion used. If you request 6 CPUs (~ 1 / 10) and 1 GB of memory (1 / 230), you pay for the CPU proportion used.
-    
+
     For **purely cost-based optimisation**, the ideal ratio of memory per CPU for the `work` queue is 230 / 64 = ~3.5 GB per CPU.
 
     This SU calculation is described further on Pawsey's [Setonix General Information page](https://pawsey.atlassian.net/wiki/spaces/US/pages/51929028/Setonix+General+Information)
