@@ -631,7 +631,12 @@ While we could manually run the Nextflow command each time, using a run script c
 
 !!! example "Exercise"
 
-    Run your newly configured pipeline using by executing `./run.sh` in the terminal.
+    Run the workflow: 
+
+    ```bash
+    ./run.sh
+    ```
+
     ??? note "Results"
 
         On both Gadi and Setonix, both runs should now be successful and
