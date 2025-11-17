@@ -44,11 +44,9 @@ Providing 2 cores has the slowest walltime but utilises the 2 CPUs efficiently (
 
 On the other hand, providing 8 cores provides ~40% speed up in walltime with reduced CPU efficiency.
 
-As responsible users of shared systems, we will select the option that maintains high CPU efficiency. While this is not prescriptive, aim for >80% CPU efficiency ensures we are not reserving resources in excess, that others' can use for their own jobs.
+As responsible users of shared systems, we will select the option that maintains high CPU efficiency. While this is not prescriptive, aiming for >80% CPU efficiency ensures we are not reserving resources in excess, that others' can use for their own jobs.
 
 !!! question "Poll"
-
-    TODO: Add first question to poll
 
     1. How many cores would you choose to provide `ALIGN` to ensure that it still uses the CPUs efficiently, but with a speed up in walltime? 
     2. Which `.config` file would you want to use? (`nextflow.config` - workflow-specific, system-agnostic; `custom.config` - workflow-specific, system-specific)
@@ -285,21 +283,126 @@ There are several ways to resolve this, such as adding the chunk name to the out
 
 ### Gather: combining our alignments
 
-Now that we have sucessfully split our reads, 
+Now that we have sucessfully split our reads, we will implement a gather pattern to bring our alignments into a single file again.
 
-!!! tip "Scatter-gather patterns"
+!!! tip "Different patterns for different needs"
 
-    How you implement the scatter-gather pattern in Nextflow will be highly dependent on your workflow structure, and input and output files. [Nextflow patterns](https://nextflow-io.github.io/patterns/) provides examples of commonly used patterns that support a range of different needs, such as splitting text and CSV files, and collecting outputs multiple outputs into a single file or groups.
+    There is no one-size-fits-all approach for scattering and gathering. How this is implemented in Nextflow will be highly dependent on your workflow structure, and input and output files. [Nextflow patterns](https://nextflow-io.github.io/patterns/) provides examples of commonly used patterns that support a range of different needs, such as splitting text and CSV files, to re-grouping and organising results for downstream processing.
 
-!!! note
+    Whole‑genome alignment is an excellent use case for scatter–gather as the alignment of each chunk can run independently, dramatically reducing walltime for this heavy step. Once alignment is complete, the BAM files are merged and the workflow proceeds as normal.
 
-    Recall that modules are useful to keep things modular and avoid cluttering our main.nf! It is far easier to swap out the module imports, in comparison to deleting the process definitions or commenting them out. We may want to reuse our revert back to our original processes too. Modules, combined with the workflow definition and groovy operators are what allow applying scatter-gather patterns (multiprocessing) to your Nextflow with ease.
+    Where you choose to re‑gather your data will depend on where your bottlenecks are and at which points you need to process the dataset as a whole again.
 
-    NOTE: The alignment module was updated to use a scatter-gather approach. Instead of aligning the entire FASTQ in one go with the ALIGN module, the workflow now:
+!!! example "Exercise"
 
-    1. Splits the FASTQ into 3 chunks (SPLIT_FASTQ).
-    2. Aligns each chunk in parallel (ALIGN_CHUNK, see the 3 of 3 completed).
-    3. Merges the aligned chunks into a single BAM (MERGE_BAMS).
+    Import the `MERGE_BAMS` module in your `main.nf` file.
+
+    ```groovy title="main.nf" hl_lines="4"
+    include { FASTQC } from './modules/fastqc'
+    include { SPLIT_FASTQ } from './modules/split_fastq'
+    include { ALIGN } from './modules/align'
+    include { MERGE_BAMS } from './modules/merge_bams'
+    include { GENOTYPE } from './modules/genotype'
+    include { JOINT_GENOTYPE } from './modules/joint_genotype'
+    include { STATS } from './modules/stats'
+    include { MULTIQC } from './modules/multiqc'
+    ```
+
+    Update the workflow script:
+
+    ```groovy title ="main.nf"
+        // Split FASTQs for each sample
+    split_fqs = reads
+        .splitFastq(limit: 3, pe: true, file: true)
+        .map { sample, r1, r2 ->
+            def chunk_id = r1.toString().tokenize('.')[2]
+            return [ sample, r1, r2, chunk_id ]
+        }
+    
+    ALIGN(split_fqs, bwa_index)
+
+    gathered_bams = ALIGN.out.aligned_bam
+        .groupTuple()
+
+    MERGE_BAMS(gathered_bams)
+
+    // Run genotyping with aligned bam and genome reference
+    GENOTYPE(MERGE_BAMS.out.aligned_bam, ref)
+    ```
+
+    And update the `ALIGN` module to take the `chunk_id`:
+
+    ```
+    process ALIGN {
+
+        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
+        publishDir "${params.outdir}/alignment"
+
+        input:
+        tuple val(sample_id), path(reads_1), path(reads_2), val(chunk_id)
+        tuple val(ref_name), path(bwa_index)
+
+        output:
+        tuple val(sample_id), path("${sample_id}.${chunk_id}.bam"), path("${sample_id}.${chunk_id}.bam.bai"), emit: aligned_bam
+
+        script:
+        """
+        bwa mem -t $task.cpus -R "@RG\\tID:${sample_id}\\tPL:ILLUMINA\\tPU:${sample_id}\\tSM:${sample_id}\\tLB:${sample_id}\\tCN:SEQ_CENTRE" ${bwa_index}/${ref_name} $reads_1 $reads_2 | samtools sort -O bam -o ${sample_id}.${chunk_id}.bam
+        samtools index ${sample_id}.${chunk_id}.bam
+        """
+
+    }
+    ```
+
+    Re-run the pipeline
+    ```
+    ./run.sh
+    ```
+
+Now, let's re-inspect that the merge worked as intended.
+
+!!! example "Exercise"
+
+    ```bash
+    tree -a
+    ```
+    ```console title="Output"
+    .
+    ├── .command.begin
+    ├── .command.err
+    ├── .command.log
+    ├── .command.out
+    ├── .command.run
+    ├── .command.sh
+    ├── .command.trace
+    ├── .exitcode
+    ├── NA12877.1.bam -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/fc/bebb980d3d81cba7dacb6d052faf08/NA12877.1.bam
+    ├── NA12877.1.bam.bai -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/fc/bebb980d3d81cba7dacb6d052faf08/NA12877.1.bam.bai
+    ├── NA12877.2.bam -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/ec/b16bfd4ccc0c627553eb0e55337b21/NA12877.2.bam
+    ├── NA12877.2.bam.bai -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/ec/b16bfd4ccc0c627553eb0e55337b21/NA12877.2.bam.bai
+    ├── NA12877.3.bam -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/c7/b93c40ec2e8c9eebe4cce19ac96ef7/NA12877.3.bam
+    ├── NA12877.3.bam.bai -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/c7/b93c40ec2e8c9eebe4cce19ac96ef7/NA12877.3.bam.bai
+    ├── NA12877.bam
+    └── NA12877.bam.bai
+    ```
+
+    ```bash
+    cat .command.sh
+    ```
+    ```console title="Output"
+    #!/bin/bash -ue
+    samtools cat NA12877.3.bam NA12877.2.bam NA12877.1.bam | samtools sort -O bam -o NA12877.bam
+    samtools index NA12877.bam
+    ```
+
+    We can now see that each bam was merged into a single bam file for the sample, and the rest of the workflow progressed as normal.
+
+To sum up this step, you successfully:
+
+    1. Split the paried FASTQ reads into 3 chunks using `.splitFastq`
+    2. Aligned each chunk in parallel
+    3. Merged the aligned chunks into a single BAM (`MERGE_BAMS()`)
+    4. Ran the remainder of the workflow as usual
 
     This change optimises performance for large datasets by leveraging parallel processing.
 

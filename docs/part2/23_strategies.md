@@ -64,7 +64,7 @@ Data shapes the computational behaviour of bioinformatics workflows. Even two wo
 | **Compression and indexing formats** | gzip vs bgzip, BAM vs CRAM, presence of .bai/.crai/.fai, CCS vs raw reads                                            | Impacts CPU time, memory, and I/O behaviour; inefficient formats slow down the entire workflow                                                                            |
 
 
-### 3. The sturcture of your worklfow 
+### 3. The structure of your workflow 
 
 Even with the same tools and data, two workflows can behave differently depending on their structure: 
 
