@@ -12,7 +12,7 @@
 
 Recall that splitting your data up across too many cores can lead to diminishing returns, such as increased SU usage and walltime. Parallelisation requires benchmarking to find the right balance between the walltime, CPU efficiency, and service unit consumption. We want to avoid over-parallelising our workflows.
 
-## Multithreading `bwa mem`
+## 2.5.1 Multithreading `bwa mem`
 
 In this section we will look at implementing another multithreading example with `bwa mem`, used in the `ALIGN` process. These are the example benchmarking results from Part 1, with the CPU efficiency calculated for you. 
 
@@ -316,7 +316,7 @@ As configuration generally does not trigger the re-run of processes, we need to 
         }
         ```
 
-## Scatter-gathering alignment
+## 2.5.2 Scatter-gathering alignment
 
 ![](figs/00_Scatter_gather_fig.png)
 
@@ -791,7 +791,7 @@ This change optimises performance for large datasets by leveraging parallel proc
     }
     ```
 
-## A note on dynamic resourcing
+## 2.5.3 A note on dynamic resourcing
 
 Since our data is small and similar-sized, we can apply the same resource configurations within the same process and it will still run successfully. However, it is common that we need to **run the same process with input data of widely variying sizes**. For example, if we were to run variant calling with reads from the whole genome, human chromosome 1 is nearly 4x larger than chromosome 20.
 
