@@ -2,17 +2,15 @@
 
 !!! info "Learning objectives"
 
-    - Inspect workflow performance and resource usage utilising Nextflow's
-    in-built monitoring features
-    - Know which fields help determine efficiency and HPC resource usage
-    - Compare the trade-offs between Nextflow's profiling features in comparison to unix tools such as `time` or `gprof`
+    - Apply Nextflow's monitoring features to understand process-level resource usage on HPC
+    - Analyse key resource metrics to assess workflow efficiency and identify processes that require tuning 
+    - Use nextflow log and custom trace fields to locate, track, debug workflow execution.
 
 In bioinformatics workflows, resource requirements are often not fixed. They can vary significantly depending on the size of input files, varying complexity of different genomic regions, the species you're working with, and sequencing format and depth. This means we can't assume CPU, memory, or time values will work the same for every sample. On HPC systems, where resources are shared and allocations may be charged, these differences matter. 
 
 You cannot set and forget resource values for an entire workflow, you need to build in flexibility. This requires you to have visiblity over pipeline behaviour at the process level. Nextflow provides several monitoring and reporting tools that help you understand this behaviour including `nextflow log`, trace files, and reports. 
 
 Now that our workflow is running without error on the scheduler, we will enable [Nextflow's reports](https://nextflow.io/docs/latest/reports.html). This allows us to view the resource usage of each process for our representative sample.
-
 
 ## 2.2.1 Execution reports and timelines
 
