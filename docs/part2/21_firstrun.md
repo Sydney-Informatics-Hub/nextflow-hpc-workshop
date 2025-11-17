@@ -6,8 +6,6 @@
     - Diagnose and troubleshoot workflow failures by inspecting logs and files in work directories 
     - Construct a reproducible configuration file for an HPC environment.
 
-TODO these learning objectives arent accurate, update them
-
 !!! warning "Testing and developing in the right environment"
 
     For the workshop, we have pre-pulled containers and use them from the cache,
@@ -539,8 +537,6 @@ In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory
 ## 2.1.4 Why do we have so many configuration files?
 
 ![](figs/00_custom_configs.png)
-
-[TODO] update figure
 
 We use three different configuration files to keep our Nextflow workflows reproducible, modular, and portable across different systems. 
 This setup not only ensures consistency when running the same pipeline in different environments, but also allows reuse of configuration components across multiple pipelines.
