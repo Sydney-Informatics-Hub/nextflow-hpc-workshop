@@ -131,6 +131,8 @@ One of the core benefits of running bioinformatics workflows on HPC is access to
 
     Recall from Part 1 that we can't split everything - it should only be done if the particular processing step can be conducted independently of each other. Scattering taks does not make sense when results depend on comparing all data together, such as detecting structural variants across multiple chromosomes.
 
+### Scatter: splitting our reads
+
 We will scatter-gather the alignment step. This is a widely approach for mapping reads, as whole genome data is large, can be time-consuming, and mapping can be conducted independently of each other. To do so, we will leverage Nextflow's built-in [`splitFastq`](https://www.nextflow.io/docs/latest/reference/operator.html#splitfastq) operator.
 
 !!! example "Exercise"
@@ -172,20 +174,35 @@ Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` fi
     ??? abstract Show output
 
         ```console title="Output"
-        [NA12877, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/86/7ca90d09bee8f0f952b82e0b791d66/NA12877_chr20-22.R1.1.fq, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/c8/f6d055eae92f2336aa98b2d2790623/NA12877_chr20-22.R2.1.fq]
-        [NA12877, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/86/7ca90d09bee8f0f952b82e0b791d66/NA12877_chr20-22.R1.2.fq, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/c8/f6d055eae92f2336aa98b2d2790623/NA12877_chr20-22.R2.2.fq]
-        [NA12877, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/86/7ca90d09bee8f0f952b82e0b791d66/NA12877_chr20-22.R1.3.fq, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/c8/f6d055eae92f2336aa98b2d2790623/NA12877_chr20-22.R2.3.fq]
-        executor >  slurm (8)
-        [f1/dea318] process > FASTQC (fastqc on NA12877) [100%] 1 of 1 ✔
-        [79/d85144] process > ALIGN (2)                  [100%] 3 of 3 ✔
-        [4d/c80183] process > GENOTYPE (1)               [100%] 1 of 1 ✔
-        [63/8a26ab] process > JOINT_GENOTYPE (1)         [100%] 1 of 1 ✔
-        [61/5157d0] process > STATS (1)                  [100%] 1 of 1 ✔
-        [1e/b0a7c0] process > MULTIQC                    [100%] 1 of 1 ✔
-        Completed at: 16-Nov-2025 21:24:28
-        Duration    : 1m 47s
-        CPU hours   : (a few seconds)
-        Succeeded   : 8
+         N E X T F L O W   ~  version 24.10.0
+
+        Launching `main.nf` [suspicious_wiles] DSL2 - revision: de5d65b946
+
+        [47/e84f4d] FASTQC (fastqc on NA12877) [100%] 1 of 1 ✔
+        [c5/6d69ea] ALIGN (3)                  [100%] 3 of 3 ✔
+        [a7/7a6424] GENOTYPE (2)               [100%] 3 of 3 ✔
+        [47/e84f4d] FASTQC (fastqc on NA12877) [100%] 1 of 1 ✔
+        [c5/6d69ea] ALIGN (3)                  [100%] 3 of 3 ✔
+        [a7/7a6424] GENOTYPE (2)               [100%] 3 of 3 ✔
+        [-        ] JOINT_GENOTYPE             -
+        [-        ] STATS                      -
+        [-        ] MULTIQC                    -
+        [NA12877, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/a0/569c8d068367a6f922be0841dce142/NA12877_chr20-22.R1.1.fq, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/9e/c4cab021b4ecfa15e1f9a059ffd8e7/NA12877_chr20-22.R2.1.fq]
+        [NA12877, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/a0/569c8d068367a6f922be0841dce142/NA12877_chr20-22.R1.2.fq, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/9e/c4cab021b4ecfa15e1f9a059ffd8e7/NA12877_chr20-22.R2.2.fq]
+        [NA12877, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/a0/569c8d068367a6f922be0841dce142/NA12877_chr20-22.R1.3.fq, /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/9e/c4cab021b4ecfa15e1f9a059ffd8e7/NA12877_chr20-22.R2.3.fq]
+        ERROR ~ Error executing process > 'JOINT_GENOTYPE (1)'
+
+        Caused by:
+          Process `JOINT_GENOTYPE` input file name collision -- There are multiple input files for each of the following file names: NA12877.g.vcf.gz, NA12877.g.vcf.gz.tbi
+
+
+
+        Container:
+          /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/singularity/quay.io-biocontainers-gatk4-4.6.2.0--py310hdfd78af_1.img
+
+        Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
+
+         -- Check '.nextflow.log' file for details
         ```
 
 Let's take a look at the `stdout` printed.
@@ -196,28 +213,38 @@ The output of `reads.splitFastq()` include three separate arrays that contain:
 - The path to the R1 `.fastq` file
 - The path to the R2 `.fastq` file
 
-Note that each `.fastq` file is now identified with a chunk number (e.g. `.../NA12877_chr20-22.R2.**1**.fq`).
+Note that each `.fastq` file is now identified with a chunk number (e.g. `.../NA12877_chr20-22.R2.1.fq`) - we have successfully split the reads into three.
 
-The following line indicates that the `ALIGN` process is now run three times successfully:
+The following line indicates that the `ALIGN` and `GENOTYPE` processes now run three times, successfully:
 
+```console
+        [c5/6d69ea] ALIGN (3)                  [100%] 3 of 3 ✔
+        [a7/7a6424] GENOTYPE (2)               [100%] 3 of 3 ✔
 ```
-[79/d85144] process > ALIGN (2)                  [100%] 3 of 3 ✔
+
+!!! note
+
+    Three separate tasks were automatically generated and scheduled by Nextflow without any extra instructions from us. Because we have already configured `ALIGN` and `GENOTYPE` in our config files, all scattered tasks used those resource settings automatically.
+
+    Setting up your channels and using groovy operators can be a bit tricky at first, however, once these are set up correctly, Nextflow will take care of the scatter–gather orchestration for you. This makes it straightforward to parallelise work at scale with minimal additional code.
+
+However, you should have received an error before `JOINT_GENOTYPE` was run:
+
+```console title="Output"
+ Caused by:
+          Process `JOINT_GENOTYPE` input file name collision -- There are multiple input files for each of the following file names: NA12877.g.vcf.gz, NA12877.g.vcf.gz.tbi
 ```
 
-However, the `GENOTYPE` process was run only once - is this intended? Given that we now have three separate outputs from `ALIGN`, we would expect that `GENOTYPE` is run three times for each of the outputs. Let's take a look.
+Let's troubleshoot by inspecting the output of the `GENOTYPE` process
 
 !!! example "Exercise"
     
     First, inspect the outputs of the `ALIGN` process by adding `.view()`.
 
-    ```groovy title="main.nf" hl_lines="7"
-    // Split FASTQs for each sample
-    split_fqs = reads
-        .splitFastq(limit: 3, pe: true, file: true)
-        .view()
-    
-    ALIGN(split_fqs, bwa_index)
-    ALIGN.out.view()
+    ```groovy title="main.nf" hl_lines="3"
+    // Run genotyping with aligned bam and genome reference
+    GENOTYPE(ALIGN.out.aligned_bam, ref)
+    GENOTYPE.out.view()
     ```
 
     Save the file, and run with `-resume`
@@ -229,52 +256,36 @@ However, the `GENOTYPE` process was run only once - is this intended? Given that
     ??? abstract Output
 
         ```console title="Output"
-        # full work directory paths have been truncated with '...'
+        # workdirs have been truncated with '...' for readability
         [NA12877, .../NA12877_chr20-22.R1.1.fq, .../NA12877_chr20-22.R2.1.fq]
         [NA12877, .../NA12877_chr20-22.R1.2.fq, .../NA12877_chr20-22.R2.2.fq]
         [NA12877, .../NA12877_chr20-22.R1.3.fq, .../NA12877_chr20-22.R2.3.fq]
-        [NA12877, .../NA12877.bam, .../NA12877.bam.bai]
-        [NA12877, .../NA12877.bam, .../NA12877.bam.bai]
-        [NA12877, .../NA12877.bam, .../NA12877.bam.bai]
+        [NA12877, .../NA12877.g.vcf.gz, .../NA12877.g.vcf.gz.tbi]
+        [NA12877, .../NA12877.g.vcf.gz, .../NA12877.g.vcf.gz.tbi]
+        [NA12877, .../NA12877.g.vcf.gz, .../NA12877.g.vcf.gz.tbi]
+        ERROR ~ Error executing process > 'JOINT_GENOTYPE (1)'
+
+        Caused by:
+          Process `JOINT_GENOTYPE` input file name collision -- There are multiple input files for each of the following file names: NA12877.g.vcf.gz, NA12877.g.vcf.gz.tbi
+
+
+        Container:
+          /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/singularity/quay.io-biocontainers-gatk4-4.6.2.0--py310hdfd78af_1.img
+
+        Tip: view the complete command output by changing to the process work dir and entering the command `cat .command.out`
+
+         -- Check '.nextflow.log' file for details
+
         ```
 
-        A few things to note in the output:
+        - The first three lines are the outputs of our `.splitFastq()` operation, this has not changed since the last time the workflow was run
+        - The last three lines are the outputs emitted from the `GENOTYPE` process. One output reflects the run for one of the chunks processed. However, all the **output names are the same**. This is the cause of the error.
 
-            - The first three lines are the outputs of our `.splitFastq()` operation, this has not changed since the last time the workflow was run
-            - The last three lines are the outputs emitted from the `ALIGN` process. One output reflects the run for one of the chunks processed. However, all the output names are the same.
+There are several ways to resolve this, such as adding the chunk name to the outputs, similar to how `.splitFastq()` manages this. In the next section, we will implement the "gather" pattern in our pipeline to fix this.
 
-Now that we have an idea of what is being passed in and out of the process, let's inspect how the `GENOTYPE` process is running.
+### Gather: combining our alignments
 
-!!! example "Exercise"
-
-    Locate and inspect the work directory for `GENOTYPE` using one of the approaches we have used in previous lessons. For example, if you have included the `workdir` field in your trace, you can use that.
-
-    ??? Code
-
-        ```bash
-        cd <workdir>
-        tree -a
-        ```
-        ```console title="Output"
-        .
-        ├── .command.begin
-        ├── .command.err
-        ├── .command.log
-        ├── .command.out
-        ├── .command.run
-        ├── .command.sh
-        ├── .command.trace
-        ├── .exitcode
-        ├── Hg38.subsetchr20-22.dict -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/data/ref/Hg38.subsetchr20-22.dict
-        ├── Hg38.subsetchr20-22.fasta -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/data/ref/Hg38.subsetchr20-22.fasta
-        ├── Hg38.subsetchr20-22.fasta.fai -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/data/ref/Hg38.subsetchr20-22.fasta.fai
-        ├── NA12877.bam -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/74/0acd4e174e207f603ab756b3dd069e/NA12877.bam
-        ├── NA12877.bam.bai -> /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/part2/work/74/0acd4e174e207f603ab756b3dd069e/NA12877.bam.bai
-        ├── NA12877.g.vcf.gz
-        └── NA12877.g.vcf.gz.tbi
-        ```
-
-        
+Now that we have sucessfully split our reads, 
 
 !!! tip "Scatter-gather patterns"
 
