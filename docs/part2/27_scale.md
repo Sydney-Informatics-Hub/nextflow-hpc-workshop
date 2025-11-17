@@ -6,8 +6,6 @@
     - Understand sample-level and within-sample parallelism
     - Recall best practices for running multi-sample data with samplesheets
 
-TODO: Figure for benchmarking process single sample -> optimise and benchmark -> multi sample
-
 Now that we have a pipeline that runs successfully and configured for a representative sample, we will now run it on multiple samples.
 
 Nextflow's "dataflow" model and channels makes this easy to execute. Every additional sample can run independently, in parallel, using the same code and resources we've configured. For more information, refer to the Nextflow for the Life Science's explainers on [Queue Channels](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part1/05_inputs/#queue-channels) and [input samplesheets](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part2/02_fastqc/#223-reading-files-with-a-samplesheet).
@@ -26,7 +24,7 @@ We will now replace the samplesheet we used by modifying our run script with res
         module load nextflow/24.04.5
         module load singularity
 
-        nextflow run main.nf -profile pbspro --pbspro_account vp91 -c config/custom.config --samplesheet "samplesheet_full.csv" -resume
+        nextflow run main.nf -profile pbspro -c config/custom.config --samplesheet "samplesheet_full.csv" -resume
         ```
 
     === "Setonix (Slurm)"
@@ -37,7 +35,7 @@ We will now replace the samplesheet we used by modifying our run script with res
         module load nextflow/24.10.0
         module load singularity/4.1.0-slurm
 
-        nextflow run main.nf -profile slurm --slurm_account courses01 -c config/custom.config --samplesheet "samplesheet_full.csv" -resume
+        nextflow run main.nf -profile slurm -c config/custom.config --samplesheet "samplesheet_full.csv" -resume
         ```
 
     Save your script and re-run!
@@ -50,7 +48,7 @@ We will now replace the samplesheet we used by modifying our run script with res
 
     === "Gadi (PBS)"
 
-        ```groovy
+        ```console title="Output"
         N E X T F L O W   ~  version 24.04.5
 
         Launching `main.nf` [irreverent_hilbert] DSL2 - revision: 029efd6fbc
@@ -72,7 +70,7 @@ We will now replace the samplesheet we used by modifying our run script with res
 
     === "Setonix (Slurm)"
 
-        ```groovy
+        ```console title="Output"
         N E X T F L O W   ~  version 24.10.0
 
         Launching `main.nf` [fabulous_panini] DSL2 - revision: 029efd6fbc
@@ -94,7 +92,15 @@ We will now replace the samplesheet we used by modifying our run script with res
 
 !!! example "Exercise" 
 
-    Open the timeline file - note the parallel
+    Download the timeline file to your local computer and view it in your local browser.
+
+    Which processes were run in parallel?
+
+    ??? abstract "Show timeline"
+
+        ![](figs/timeline.png)
+
+        
 
 ## Next steps
 

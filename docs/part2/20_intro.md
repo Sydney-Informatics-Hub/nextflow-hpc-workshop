@@ -13,20 +13,20 @@ Log in to your assigned HPC with the user account and password provided to you o
 === "Gadi"
 
     ```bash
-    ssh username@gadi.nci.org.au
+    ssh <username>@gadi.nci.org.au
     ```
 
 === "Setonix"
 
     ```bash
-    ssh username@setonix.pawsey.org.au
+    ssh <username>@setonix.pawsey.org.au
     ```
 
 !!! note
 
-    Be sure substitute your assigned user name for `username` in the above code example.
+    Be sure substitute your assigned user name for `<username>` in the above code example.
 
-Navigate to the scratch space for the workshop project, then open your cloned part2 repository:
+Navigate to the scratch space for the workshop project, then open your cloned part2 repository. Note that `$USER` is an environment variable that automatically expands to your username, so you do not need to replace this with your training username.
 
 === "Gadi"
 
@@ -44,11 +44,11 @@ Navigate to the scratch space for the workshop project, then open your cloned pa
 
 Part 2 of this workshop builds on the foundational HPC and Nextflow configuration concepts introduced in Part 1. We will now apply these concepts to configure a custom variant calling pipeline for efficient execution on HPC systems.
 
-To keep the focus on configuration, the pipeline code and logic are provided for you and will not be reviewing the contents of input and output files in detail, beyond configuration needs. 
+To keep the focus on configuration, the pipeline code and logic are provided for you and we will not be reviewing the contents of input and output files in detail, beyond configuration needs. 
 
 !!! info "Learn to build custom Nextflow workflows"
 
-    See our Nextflow For the [Life Sciences materials](https://sydney-informatics-hub.github.io/hello-nextflow-2025/) for an introduction to building Nextflow workflows. This workshop builds on Nextflow for the Life Sciences.   
+    See our [Nextflow For the Life Sciences](https://sydney-informatics-hub.github.io/hello-nextflow-2025/) materials for an introduction to building Nextflow workflows. This workshop expands on Nextflow for the Life Sciences.   
 
 We’ll begin by getting the pipeline running on the HPC, then progressively explore how to benchmark performance, understand HPC-specific constraints, and implement optimisations to improve efficiency and resource use.
 
@@ -64,7 +64,7 @@ Throughout this section, we’ll continue using the variant calling example to d
     - Performance trade-offs (e.g. with different `cpus` or `memory` settings) may be **less noticeable** than with real-world data.
     - HPC scheduling behaviour may differ slightly - smaller jobs are often scheduled more quickly and occupy less system space.
 
-    When running real data sets on HPC systems, you may encounter different behaviours, longer runtimes, and additional errors.
+    When running real data sets on HPC systems, you may encounter different behaviours, longer runtimes, and additional errors. During Part 2 you will gain practice in identifying and debugging workflow errors, to build the skills you will need to run your own data analyses with Nextflow on HPC.  
 
 ## 2.0.3 Why do you need custom pipelines?
 
@@ -77,7 +77,7 @@ Nextflow pipeline:
 
 ## 2.0.3 The scenario: variant calling on HPC
 
-Our use case for today is taking raw DNA sequence data from a number of human patients and using a number of data processing steps to obtain a final results file containing genetic variants for each patient. 
+Our use case for today is taking raw DNA sequence data from a number of human patients and using a series of data processing steps to obtain a final results file containing genetic variants for each patient. 
 
 Remember, it does not matter if you are unfamiliar with the biology or the tools used; the focus is on learning how to efficiently run Nextflow pipelines on HPC.
 
@@ -86,7 +86,6 @@ We start with an unoptimised and minimally configured pipeline (like something t
 The diagram below shows a high level overview of the workflow we will be creating, starting with the raw data for each patient, mapping it against a human reference genome file, and then identifying and summarising the genetic variants found in the input data.  
 
 ![](../part1/figs/00_workflow_illustration.png)
-TODO revise this diagram to describe steps, 
 
 ## 2.0.4 The pipeline file anatomy
 
@@ -99,8 +98,6 @@ Recall the demo Nextflow workflow we explored in [lesson 1.5.2](../part1/01_5_nf
 
 - `conf/` to house our custom configuration files
 - `modules/`to house our process files as `.nf` files
-
-TODO diagram including `conf/` and `modules/` showing how they connect to nextflow.config and main.nf, extending on docs/part1/figs/00_config_demo_nf_v2.excalidraw
 
 At a glance:
 
@@ -129,8 +126,6 @@ tree -L 2
 ```
 
 Consider a basic Nextflow run command with this structure, where a user needs to specify some parameters and (optionally) a configuration file: 
-
-TODO make one of these: https://sydney-informatics-hub.github.io/template-nf-guide/figs/template_command.png 
 
 - `main.nf` is the executable file that identifies the workflow structure, inputs, and processes that are pulled from `modules/`
 - `--parameter` flag matches a parameter initialised in the `nextflow.config` and applies to the workflow execution 
@@ -186,7 +181,8 @@ workflow {
 
     bwa_index = Channel.fromPath(params.bwa_index)
         .map { idx -> [ params.bwa_index_name, idx ] }
-    ref = Channel.of( [ file(params.ref_fasta), file(params.ref_fai), file(params.ref_dict) ] )
+        .first()
+    ref = Channel.of( [ file(params.ref_fasta), file(params.ref_fai), file(params.ref_dict) ] ).first()
 
     // Run the fastqc step with the reads_in channel
     FASTQC(reads)
@@ -272,7 +268,7 @@ Nextflow’s configuration files define how and where each process runs, includi
 In the context of HPCs, this means specifying:
 
 - How many CPUs, memory, and time a process should use
-- The appropriate executor (e.g. PBSpro on Gadi or SLURM on Setonix)
+- The appropriate executor (e.g. PBS Pro on Gadi or SLURM on Setonix)
 - The default queue/partition and optional account/project codes
 - Whether and how to use Singularity containers
 

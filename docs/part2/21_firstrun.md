@@ -2,25 +2,21 @@
 
 !!! info "Learning objectives"
 
-    - Identify best practices for benchmarking and configuring pipelines,
-    step-by-step
-    - Troubleshoot common HPC and scheduling errors by inspecting task logs
-    and interpretting exit codes and error messages
-    - Know how to find and specify system-dependent HPC values such as queues/partitions
-    - Recall how Nextflow interacts with HPC components
-
-TODO these learning objectives arent accurate, update them
+    - Execute a custom Nextflow pipeline on HPC, applying system-specific configurations
+    - Diagnose and troubleshoot workflow failures by inspecting logs and files in work directories 
+    - Construct a reproducible configuration file for an HPC environment.
 
 !!! warning "Testing and developing in the right environment"
 
-    For the workshop, we have pre-pulled containers and use them from the cache,
-    and as data is small and the workflow runs quickly, we will be running them
-    on login nodes.
+    **Containers**
+    For the workshop, we have pre-pulled containers and use them from the cache. In real-world scenarios, pulling containers may take time. Consideration to whether your HPC system allows internet access from compute nodes is also important.
+
+    **Running the Nextflow head job**
+    As our test data is small and the workflow runs quickly, we will be running the Nextflow `run` command directly on the login nodes. On HPC, this is neither permitted nor feasible for real data analyses, as HPC login nodes typically kill long-running commands. 
     
-    We recommend using **interactive jobs** for testing and debugging 
-    workflows directly on compute nodes instead of the login nodes. Alternatively, 
-    if you want to schedule your Nextflow head job, ensure that your `run.sh` 
-    script includes the appropriate scheduler options.
+    We recommend using **interactive jobs** for testing and debugging workflows directly on compute nodes instead of the login nodes. This has the added benefit of testing in the same hardware environment as the final workflow will run. 
+    
+    Some HPCs have dedicated workflow queues/partitions to which the Nextflow head job can be submitted. These nodes are set up to support long-running jobs with low resource requirements, as workflow processes that require higher resources are each submitted to different queues/partitions based on the resources specified within the custom infrastructure config. 
 
     See the recommendations on running the head job for [Gadi](https://opus.nci.org.au/spaces/Help/pages/241926895/Persistent+Sessions) and [Setonix](https://pawsey.atlassian.net/wiki/spaces/US/pages/286097469/How+to+Run+Workflows+on+the+Workflow+Nodes).
 
@@ -34,12 +30,12 @@ It is useful to develop your pipelines using a small, representative subset of y
 
 ## 2.1.1 Run without configuration
 
-We will start configuring our custom pipeline with using a subset of raw reads from a single individual (NA1287) in our sample cohort. This is a good proxy for the other two samples as they all contain the same subset of chromosomes (20, 21, and 22) and have been sequenced to the same depth. Once we’re confident everything works as intended, we will scale up to run on the full dataset.
+We will start configuring our custom pipeline with using a subset of raw reads from a single individual (NA1287) in our sample cohort. This is a good proxy for the other two samples as they are all of the same input data type and about the same size. Once we’re confident everything works as intended, we will scale up to run on the full set of samples.
 
 Let's start by running the pipeline out of the box to identify what we need to configure: 
 
 
-!!! example "Exercise"
+!!! example "Exercise: Run out of the box"
 
     1. Load the Nextflow module, following the same method we learnt yesterday:
 
@@ -154,18 +150,18 @@ Let's start by running the pipeline out of the box to identify what we need to c
             ```
 
 !!! question "Why did it fail?"
-    Use the output printed to your screen, `.nextflow.log` file in your current directory, and `.command` files in the work directory of the failed task to identify what caused your workflow run to fail. 
+    Use the output printed to your screen, `.nextflow.log` file in your current directory, as well as the `.command.log`, `.command.err`, and `.exitcode ` files in the work directory of the failed task to identify what caused your workflow run to fail. 
 
     ??? abstract "Answer"
         Our run stopped because one or more processes failed. [Exit status `127` in Linux environments](https://linuxconfig.org/how-to-fix-bash-127-error-return-code) means your system was not able to find the command referenced in the process. This suggests the software is not available in our environment. 
 
-## 2.1.2 And run with containers
+## 2.1.2 Enabling containers
 
 All our process modules specify a container to run inside. This can only happen if Singularity is explicitly enabled in our configuration. Let's enable this in our system-specific configuration files and attempt to run again:  
 
-!!! example "Exercise"
+!!! example "Exercise: Enable Singularity"
 
-    Load the Singularity modules, following the same method we learnt yesterday:
+    1. Load the Singularity module, following the same method we learnt yesterday:
 
     === "Gadi (PBSpro)"
         ```bash
@@ -177,60 +173,211 @@ All our process modules specify a container to run inside. This can only happen 
         module load singularity/4.1.0-slurm
         ```
 
-    Add the following to your system-specific config file that you can find in `config/`. Remember, we have already enabled profiles in our `nextflow.config`, so no need to edit that file. 
+    2. Add the following to your system-specific config file that you can find in `config/`. Remember, we have already enabled profiles in our `nextflow.config`, so no need to edit that file. 
 
     === "Gadi (PBSpro)"
-        ```console
+        ```groovy title="config/pbspro.sh"
         process {
-        // Load the globally installed singularity module before running any process
-        module = 'singularity'
+            // Load the globally installed singularity module before running any process
+            module = 'singularity'
         }
 
         singularity {
-        // Explicitly turns on container execution
-        enabled = true
-        // Automatically bind-mount working directory on scratch and common system paths
-        autoMounts = true
-        // Define location of stored container images 
-        cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity""${projectDir}/singularity" 
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
-
         ```
 
     === "Setonix (Slurm)"
-        ```console
-
+        ```groovy title="config/slurm.config"
         process {
-        // Load the globally installed singularity/4.1.0-slurm module before running any process
-        module = 'singularity/4.1.0-slurm'
+            // Load the globally installed singularity/4.1.0-slurm module before running any process
+            module = 'singularity/4.1.0-slurm'
         }
 
         singularity {
-        // Explicitly turns on container execution
-        enabled = true
-        // Automatically bind-mount working directory on scratch and common system paths
-        autoMounts = true
-        // Define location of stored container images 
-        cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
         ```
 
-    
     3. Run your updated Nextflow command:
 
     === "Gadi (PBSpro)"
 
         ```bash
-        nextflow run main.nf -profile pbspro 
+        nextflow run main.nf -profile pbspro
         ```
 
         ??? abstract "Output"
 
+            ```console title="Output"
+             N E X T F L O W   ~  version 24.04.5
+
+            Launching `main.nf` [big_picasso] DSL2 - revision: e34a5e5f9d
+
+            executor >  local (6)
+            [c3/dda9c5] FASTQC (fastqc on NA12877) | 1 of 1 ✔
+            [b4/210425] ALIGN (1)                  | 1 of 1 ✔
+            [89/5b15d9] GENOTYPE (1)               | 1 of 1 ✔
+            [7d/a18133] JOINT_GENOTYPE (1)         | 1 of 1 ✔
+            [3f/1db7ee] STATS (1)                  | 1 of 1 ✔
+            [be/fd841e] MULTIQC                    | 1 of 1 ✔
             ```
-            executor >  pbspro (5)
-            [e4/dc7852] FASTQC (fastqc on NA12889) | 3 of 3 ✔
-            [3f/c0e6ae] ALIGN (1)                  | 1 of 1 ✔
-            [d0/6677c4] GENOTYPE (1)               | 1 of 1, failed: 1 ✘
+
+    === "Setonix (Slurm)"
+
+        ```bash
+        nextflow run main.nf -profile slurm
+        ```
+
+        ??? abstract "Output"
+
+            ```console
+             N E X T F L O W   ~  version 24.10.0
+
+            Launching `main.nf` [distracted_angela] DSL2 - revision: e34a5e5f9d
+
+            executor >  local (6)
+            [bb/ddf5ff] FASTQC (fastqc on NA12877) | 1 of 1 ✔
+            [1f/b0906a] ALIGN (1)                  | 1 of 1 ✔
+            [34/f0234b] GENOTYPE (1)               | 1 of 1 ✔
+            [07/08074e] JOINT_GENOTYPE (1)         | 1 of 1 ✔
+            [e0/b78049] STATS (1)                  | 1 of 1 ✔
+            [27/35c181] MULTIQC                    | 1 of 1 ✔
+            ```
+
+Your workflow should have run successfully, however, there is one grave mistake when running on the HPC - **all processes were run on the login node!** This is Nextflow's default behaviour when no executor is specified. 
+
+## 2.1.3 Scheduling jobs
+
+Recall from Part 1 that Nextflow's executor is the part of the workflow engine that talks to the computing environment (whether it's a laptop or HPC). When running on a shared HPC system, these settings are important to include so they are **queued properly on a compute node**.
+
+To have processes run on the compute nodes, `executor` needs to be set to the appropriate job scheduler in our system-specific config files to avoid the default executor (`local`) being used. 'Local' executions means to run in the same environment as the head job, whether that be your local laptop or the login node of an HPC. 
+
+Although Gadi and Setonix both run Nextflow with Singularity, each has different environment variables, filesystem layouts, job schedulers, queue structures, module names/versions, and container cache behaviour. These differences affect how Nextflow executes each process. To have Nextflow submit our processes as separate compute jobs, we need to instruct which **job scheduler** and **queue/partition** should be used. 
+
+The job scheduler is specified with the Nextflow configuration option `executor` while the queue/partition to submit jobs to is specified by the `queue` option. 
+
+!!! note
+
+    In Part 2 we will use the same queues and partitions:
+
+    - The `normalbw` queue on Gadi
+    - The `work` partition on Pawsey
+
+    These are low-cost queues suitable for general compute jobs.
+
+Let's add both the `executor` and `queue` configuration options to our system-specific configs to tell Nextflow **where** to run the processes. 
+
+!!! example "Exercise: Configure executor and queue"
+
+    === "Gadi (PBSpro)"
+
+        ```groovy title="config/pbspro.config" hl_lines="4-6"
+        process {
+            // Load the globally installed singularity module before running any process
+            module = 'singularity'
+            // Run using the pbspro scheduler on the 'normalbw' queue
+            executor = 'pbspro'
+            queue = 'normalbw'
+        }
+
+        singularity {
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```groovy title="config/slurm.config" hl_lines="4-6"
+        process {
+            // Load the globally installed singularity/4.1.0-slurm module before running any process
+            module = 'singularity/4.1.0-slurm'
+            // Run using the pbspro scheduler on the 'normalbw' queue
+            executor = 'slurm'
+            queue = 'work'
+        }
+
+        singularity {
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+
+
+Before we re-run our pipeline, we want to add a few more settings to ensure we are using the HPC responsibly. These include options so you don't overwhelm the system by submitting too many jobs or job queries at once (`queueSize`, `pollInterval`, `queueStatInterval`), and options to avoid generating duplicate files (`cache`, `stageInMode`). 
+
+Note that for Setonix, we have specified a `reservation`. This enables us to use reserved resources on Setonix for the duration of the workshop. If you are running Nextflow on Setonix outside of the workshop, this option should be omitted.
+
+!!! example "Exercise: Further config options"
+
+        1. Add the additional config options to your system-specific config file: 
+
+    === "Gadi (PBSpro)"
+    
+        ```groovy title="config/pbspro.config" hl_lines="1 2 3 4 5 6 14 15 16 17 18"
+        executor {
+            // For high-throughput jobs, these values should be higher
+            queueSize = 30
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
+        }
+
+        process {
+            // Load the globally installed singularity module before running any process
+            module = 'singularity'
+            // Run using the pbspro scheduler on the 'normalbw' queue
+            executor = 'pbspro'
+            queue = 'normalbw'
+            clusterOptions = "-P ${System.getenv('PROJECT')}"
+            storage = "scratch/${System.getenv('PROJECT')}"
+            cache = 'lenient'
+            stageInMode = 'symlink'
+        }
+    
+        singularity {
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+        2. Save the file and run the pipeline:
+
+        ```bash
+        nextflow run main.nf -profile pbspro
+        ```
+
+
+        ??? abstract "Output"
+
+            ```console title="Output"
+            executor >  pbspro (3)
+            [51/e95140] FASTQC (fastqc on NA12877) | 1 of 1 ✔
+            [bb/c54519] ALIGN (1)                  | 1 of 1 ✔
+            [93/a8ecf4] GENOTYPE (1)               | 1 of 1, failed: 1 ✘
             [-        ] JOINT_GENOTYPE             -
             [-        ] STATS                      -
             [-        ] MULTIQC                    | 0 of 1
@@ -251,52 +398,86 @@ All our process modules specify a container to run inside. This can only happen 
               (empty)
 
             Command error:
+                ...
+
+            Work dir:
+             /scratch/vp91/xyz777/nextflow-on-hpc-materials/part2/work/93/a8ecf466a33f67f23eb0ca12b0b753
+
+            Tip: view the complete command output by changing to the process work dir and entering the command `cat .command.out`
+
+            -- Check '.nextflow.log' file for details
             ```
-
+    
     === "Setonix (Slurm)"
+    
+        ```groovy title="config/slurm.config" hl_lines="1 2 3 4 5 6 14 15 16"
+        executor {
+            // For high-throughput jobs, these values should be higher
+            queueSize = 30
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
+        }
 
+        process {
+            // Load the globally installed singularity/4.1.0-slurm module before running any process
+            module = 'singularity/4.1.0-slurm'
+            // Run using the pbspro scheduler on the 'normalbw' queue
+            executor = 'slurm'
+            queue = 'work'
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
+            cache = 'lenient'
+            stageInMode = 'symlink'
+        }
+    
+        singularity {
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+        Save your file and run the pipeline:
         ```bash
-        nextflow run main.nf -profile slurm 
+        nextflow run main.nf -profile slurm
         ```
 
         ??? abstract "Output"
 
-            ```console
-            N E X T F L O W   ~  version 24.10.0                 14:13:57
+            ```
+             N E X T F L O W   ~  version 24.10.0
 
-            Launching `main.nf` [dreamy_cuvier] DSL2 - revision: 5e5c4f57e0
+            Launching `main.nf` [wise_venter] DSL2 - revision: e34a5e5f9d
 
-            executor >  slurm (8)
-            [c4/babfde] FASTQC (fastqc on NA12877) | 3 of 3 ✔
-            [6f/7a523b] ALIGN (1)                  | 1 of 1 ✔
-            [bf/525fc9] GENOTYPE (1)               | 1 of 1 ✔
-            [5c/ea7cb0] JOINT_GENOTYPE (1)         | 1 of 1 ✔
-            [7f/4e64dc] STATS (1)                  | 1 of 1 ✔
-            [70/254c9e] MULTIQC                    | 1 of 1 ✔
-            
-            Completed at: 05-Nov-2025 13:59:02
-            Duration    : 2m 21s
+            executor >  slurm (6)
+            [ec/2e1a61] FASTQ | 1 of 1 ✔
+            [6a/e63199] ALIGN | 1 of 1 ✔
+            [07/5dea67] GENOT | 1 of 1 ✔
+            [76/bac7dd] JOINT | 1 of 1 ✔
+            [1e/4c035e] STATS | 1 of 1 ✔
+            [f3/c78e59] MULTI | 1 of 1 ✔
+            Completed at: 17-Nov-2025 12:41:33
+            Duration    : 2m 46s
             CPU hours   : (a few seconds)
-            Succeeded   : 8
+            Succeeded   : 6
             ```
 
 !!! question "Zoom react!"
 
-    1. If your job has finished succesfully, react "Yes" on Zoom, and "No" if it returned an error
-    2. Similarly, react "Yes" if you are running it on Gadi, and "No" for Setonix
-
-Although both systems run Nextflow with Singularity, Gadi and Setonix have different environmental variables, filesystem layouts, job schedulers, queue structures, module names, and container cache behaviour. These differences affect how Nextflow executes each process. 
+    If your job has finished succesfully, react "Yes" on Zoom, and "No" if it returned an error
 
 Let's explore what resources were actually used and compare them to what was allocated, by inspecting the logs and system job information using the methods from Part 1.
 
 We will use the respective job scheduler introspection tools to observe the resources used on both both systems.
 
-!!! example "Exercises"
+!!! example "Exercise: Inspect resource usage"
 
-    Find the Job ID of the failed or completed `GENOTYPE` process in your `.nextflow.log`:
+    1. Find the Job ID of the failed or completed `GENOTYPE` process in your `.nextflow.log`: 
 
     ```bash
-    grep GENOTYPE .nextflow.log | grep jobId
+    grep -w GENOTYPE .nextflow.log | grep jobId
     ```
 
     The output should look something like:
@@ -307,11 +488,11 @@ We will use the respective job scheduler introspection tools to observe the reso
 
     The value we need in this example is `154278383` - this corresponds to the job id that was scheduled.
 
-    Then, inspect the job resource usage. There are different tools used for different schedulers.
+    2. Then, use this job ID and the specific job introspection command for your HPC system to view the resource usage of the `GENOTYPE` process:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
-        Use `qstat -xf <job_id>` to query for the resource usage and allocation
+        Use `qstat -xf <job_id>` for a comprehensive summary of job allocation, environment variables, and resource usage:
 
         ```bash
         qstat -xf <job_id>
@@ -319,7 +500,7 @@ We will use the respective job scheduler introspection tools to observe the reso
         ```console
         Job Id: 154038474.gadi-pbs
         Job_Name = nf-GENOTYPE_1
-        Job_Owner = fj9712@gadi-login-05.gadi.nci.org.au
+        Job_Owner = user@gadi-login-05.gadi.nci.org.au
         resources_used.cpupercent = 94
         resources_used.cput = 00:02:50
         resources_used.jobfs = 0b
@@ -329,75 +510,81 @@ We will use the respective job scheduler introspection tools to observe the reso
         resources_used.walltime = 00:03:03
         job_state = F
         queue = normal-exec
+        ...
         ```
 
     === "Setonix (Slurm)"
 
-        Use `sacct` with formatting to view key stats related to resource usage:
+        Use `seff` for a simple summary of job resource usage:
 
         ```bash
-        sacct -j <job_id> --format=JobID,JobName,User,CPUTime,TotalCPU,NCPUS,Elapsed,State,MaxRSS,MaxVMSize,Partition
+        seff <job_id>
         ```
         ```console
-        JobID           JobName      User    CPUTime   TotalCPU      NCPUS    Elapsed      State     MaxRSS  MaxVMSize  Partition
-        ------------ ---------- --------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-        34325657     nf-GENOTY+     fjaya   00:01:50  01:07.026          2   00:00:55  COMPLETED                             work
-        34325657.ba+      batch             00:01:50  01:07.023          2   00:00:55  COMPLETED   1566932K          0
-        34325657.ex+     extern             00:01:50  00:00.003          2   00:00:55  COMPLETED          0          0
+        Job ID: 34903205
+        Cluster: setonix
+        User/Group: cou057/cou057
+        State: COMPLETED (exit code 0)
+        Nodes: 1
+        Cores per node: 2
+        CPU Utilized: 00:00:19
+        CPU Efficiency: 36.54% of 00:00:52 core-walltime
+        Job Wall-clock time: 00:00:26
+        Memory Utilized: 682.74 MB
+        Memory Efficiency: 37.11% of 1.80 GB (920.00 MB/core)
         ```
 
-In both cases, we can observe that the jobs were assigned the following resources:
+These reporting tools show that the jobs were assigned the following resources:
 
 |         | CPU   | Memory   |
 | ------- | ----- | -------- |
 | Gadi    | 1     | 512 MB   |
-| Setonix | 2     | 1.6 GB   |
+| Setonix | 2     | 1.8 GB   |
+
+
+We have observed that the default of 1.8 GB RAM allocated to the Setonix `GENOTYPE` job was sufficient, but the default of 512 MB on Gadi was not.
 
 This is why **explicit resource configuration** is important. Even though the pipeline technically ran (or failed), these defaults are unsuitable for real data.
 
-In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory. Let's explicitly configure that in the next step.
+Many Nextflow workflows provide test data that can be used to help get the pipleline running on your HPC. Researchers can be left confused when a successful test run is followed by a failed run on their own data. The test data is often small and requires minimal resources, while real data can be orders of magnitude larger and more complex. This discrepancy can lead to unexpected failures if the workflow is not properly configured for the actual data being processed. 
 
-## 2.1.3 Why do we have so many configuration files?
+We will now go on to look at how we can create a custom configuration file to specify appropriate resources for our data and HPC environment.
+
+
+## 2.1.4 Custom workflow configuration files
+
+So far we have applied the default `nextflow.config` file that contains details required to run the workflow on any platform. We have then gone on to create and apply an infrastructure-specific configuration file (`config/pbspro.config` or `config/slurm.config`) to tell Nextflow how and where to run on a particular HPC system. Next we will create a third configuration file (`config/custom.config`) to specify resource requirements that are appropriate for our data and HPC environment.
 
 ![](figs/00_custom_configs.png)
 
-[TODO] update figure
+At this point, you may be wondering "**Why do we have so many configuration files?** We use three different configuration files to keep our Nextflow workflows reproducible, modular, and portable across different systems. 
 
-We use three different configuration files to keep our Nextflow workflows reproducible, modular, and portable across different systems. 
-This setup not only ensures consistency when running the same pipeline in different environments, but also allows reuse of configuration components across multiple pipelines.
+This setup:
+
+- Ensures consistency when running the same pipeline in different environments
+- Allows re-use of configuration components across multiple pipelines
+- Simplifies maintenance by isolating system-specific settings from workflow logic
 
 Each configuration file serves a distinct purpose:
 
-- `nextflow.config` is the main configuration file that defines the core behaviour of the workflow itself (e.g. main.nf). It includes parameters (params), and references to profiles. To maintain reproducibility, **this file should not be modified during system-specific tuning**. It should only change if the underlying workflow logic changes - that is, what gets run.
+- `nextflow.config` is the main configuration file that defines the core behaviour of the workflow itself (e.g. `main.nf`). It includes parameters (params), and references to profiles. To maintain reproducibility, **this file should not be modified during system-specific tuning**. It should only change if the underlying workflow logic changes - that is, what gets run.
 
-- `config/pbspro.config` and `config/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS or SLURM), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting.
+- `config/pbspro.config` and `config/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS Pro or SLURM), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting. Working on a new HPC? You'll need to make a new config file for it! But the good news is you can still ***use the same `nextflow.config` file***.
 
-- `config/custom.config` is where we bring it all together. This file contains system-specific process settings such as CPU and memory requests. It links what the workflow does with how it runs on a specific system. When developing or adapting a custom pipeline for an HPC environment, this is typically where most tuning happens to fit the specific node architecture, queue constraints, and resource optimisation.
+- `config/custom.config` is an additional system-specific customisation layer that defines process settings such as CPU and memory requests. When developing or adapting a custom pipeline for an HPC environment, this is typically where most tuning happens to fit the specific node architecture, queue constraints, and resource requirements of the data being processed. While these settings *could* be included within the same config that defines the executor and other system-specific settings, separating them into a distinct file allows for easier management and modification of resource allocations without altering the core system configuration. This modularity is especially useful when experimenting with different resource configurations during pipeline development and testing or when adapting the pipeline for different datasets with varying resource needs.
 
-While this structure is a useful starting point, it is not the only way to structure your configuration. The nf-core community have their own set of standards with some presets for some instutitions (there are ones available for Gadi and Setonix!). However, it is important to double check that these configs are suitable and optimal for your purposes. For more information see [nf-core/configs](https://nf-co.re/configs/)
+While this structure is a useful starting point, it is not the only way to structure your configuration. The nf-core community have their own set of standards with some presets for some instutitions (including Gadi and Setonix!). However, it is important to double check that these configs are suitable and optimal for your purposes. For more information see [nf-core/configs](https://nf-co.re/configs/).
 
-## 2.1.4 Minimal configuration to run on HPC
+## 2.1.5 Assigning default resources
 
-We will continue to get the pipeline running with a minimum viable configuration. This serves as a baseline to confirm everything is working correctly (such as scheduling, containers are enabled, etc.), prior to any fine tuning. We want to ensure that:
+Now that we have an appreciation of the layers of configuration for running Nextflow workflows on HPC, we will continue to get the pipeline running by specifying what resources should be run, instead of relying on the system-specific default. We want to ensure that:
 
 - Jobs are being scheduled correctly
 - All process tasks and the pipeline complete successfully
 
-TODO scheduler specific configs, instead of system-specifc configs.
+Note that the resources assigned differ across sytems - these values are based on the average memory available per core and will be revisited in the upcoming lesson on resourcing.
 
-!!! note
-
-    In Part 2 we will use the same queues and partitions:
-
-    - The `normalbw` queue on Gadi
-    - The `work` partition on Pawsey
-
-    These are low-cost queues suitable for general compute jobs.
-
-    Here we assign the average number of cores available based on memory
-    requirements. This will be revisited in the resourcing section.
-
-!!! example "Exercises"
+!!! example "Exercise: Create custom resource config"
 
     1. Create a new file `config/custom.config`
 
@@ -405,9 +592,9 @@ TODO scheduler specific configs, instead of system-specifc configs.
         touch config/custom.config
         ```
 
-    2. Add the following contents based on your HPC
+    2. Open the new empty file, and add the following contents based on your HPC
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy title='custom.config'
         process {
@@ -425,74 +612,9 @@ TODO scheduler specific configs, instead of system-specifc configs.
         }
         ```
 
-Recall from Part 1 that Nextflow's executor is the part of the workflow engine that talks to the computing environment (whether it's a laptop or HPC). When running on a shared HPC system, these settings are important to include so you don't overwhelm the system (`queueSize`, `pollInterval`, `queueStatInterval`), or generate duplicated files in excess (`cache`, `stageInMode`), or run things in the wrong place (options).
+Since we have been repeatedly running the same Nextflow run command, it makes sense to save this into a run script. This can reduce human error (for example missing a flag, typos) and is easier to re-run. This is especially useful in the testing and benchmarking stages and can later be adapted into a job submission script if your HPC has a queue where you can run Nextflow head jobs
 
-TODO queue rate limit
-
-!!! example "Exercises"
-
-    Open the pbspro.config or slurm.config and edit. We will add these HPC-friendly options.
-
-    === "Gadi (PBS)"
-
-        ```groovy title="config/pbspro.config" hl_lines="3 4 5 6 7 8 15 16 17"
-        params.pbspro_account = ""
-
-        executor {
-            // For high-throughput jobs, these values should be higher
-            queueSize = 30
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
-        }
-
-        process {
-            executor = 'pbspro'
-            module = 'singularity'
-            queue = 'normalbw'
-            clusterOptions = "-P ${System.getenv('PROJECT')}"
-            storage = "scratch/${System.getenv('PROJECT')}"
-            cache = 'lenient'
-            stageInMode = 'symlink'
-        }
-
-        singularity {
-            enabled = true
-            autoMounts = true
-            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
-        }
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```groovy title="config/slurm.config" hl_lines="3 4 5 6 7 8 15 16"
-        params.slurm_account = ""
-
-        executor {
-            // For high-throughput jobs, these values should be higher
-            queueSize = 30
-            pollInterval = '5 sec'
-            queueStatInterval = '5 sec'
-        }
-
-        process {
-            executor = 'slurm'
-            module = 'singularity/4.1.0-slurm'
-            queue = 'work'
-            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
-            cache = 'lenient'
-            stageInMode = 'symlink'
-        }
-
-        singularity {
-            enabled = true
-            autoMounts = true
-            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
-        }
-        ```
-
-While we could manually run the Nextflow command each time, using a run script can reduce human error (missing a flag, typos) and is easier to re-run. This is especially useful in the testing and benchmarking stages.
-
-!!! example "Exercises"
+!!! example "Exercise: Create and use a run script"
 
     1. Create a new file called `run.sh`
 
@@ -500,9 +622,9 @@ While we could manually run the Nextflow command each time, using a run script c
         touch run.sh
         ```
 
-    2. Copy and paste the following code based on your HPC:
+    2. Open the new empty file, and copy-paste the following code based on your HPC:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy title="run.sh"
         #!/bin/bash
@@ -510,7 +632,7 @@ While we could manually run the Nextflow command each time, using a run script c
         module load nextflow/24.04.5
         module load singularity
 
-        nextflow run main.nf -profile pbspro --pbspro_account vp91 -c config/custom.config
+        nextflow run main.nf -profile pbspro -c config/custom.config
         ```
 
     === "Setonix (Slurm)"
@@ -521,26 +643,28 @@ While we could manually run the Nextflow command each time, using a run script c
         module load nextflow/24.10.0
         module load singularity/4.1.0-slurm
 
-        nextflow run main.nf -profile slurm --slurm_account courses01 -c config/custom.config
+        nextflow run main.nf -profile slurm -c config/custom.config
         ```
 
-    3. Save the run.sh file (Windows: Ctrl+S, macOS: Cmd+S).
-    4. Provide execute permission by running
+    3. Save the file (Windows: Ctrl+S, macOS: Cmd+S)
+
+    4. Provide execute permission by running:
 
         ```bash
         chmod +x run.sh
         ```
 
-!!! example "Exercise"
+    5. Run the workflow using the new run script: 
 
-    Run your newly configured pipeline using by executing `./run.sh` in the terminal.
+    ```bash
+    ./run.sh
+    ```
+
     ??? note "Results"
 
-        On both Gadi and Setonix, both runs should now be successful and
-        executed on the respective scheduler.
+        On both Gadi and Setonix, the workflow should now be successful and executed end-to-end on the respective scheduler.
 
-
-        === "Gadi (PBS)"
+        === "Gadi (PBSpro)"
 
             ```bash
             Loading nextflow/24.04.5
@@ -584,6 +708,93 @@ While we could manually run the Nextflow command each time, using a run script c
             Succeeded   : 6
             ```
 
-## Summary
+## 2.1.6 Summary
 
-You’ve now built the scaffolding needed to begin fine-tuning your resource requests and exploring monitoring and optimisation techniques. In the next section, we'll start measuring actual resource usage and configuring processes more precisely for efficient use for the specific HPC system.
+You’ve now built the scaffolding needed to begin fine-tuning your resource requests and exploring monitoring and optimisation techniques. In the next section, we'll start measuring actual resource usage and configuring processes more precisely for efficient implementation on the underlying HPC system.
+
+## 2.1.7 Code checkpoint
+
+Complete code at the end of Section 2.1:
+
+??? abstract "Show code"
+
+    === "Gadi (PBSpro)"
+
+        ```groovy title="config/pbspro.config"
+        executor {
+            // For high-throughput jobs, these values should be higher
+            queueSize = 30
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
+        }
+
+        process {
+            // Load the globally installed singularity module before running any process
+            module = 'singularity'
+            // Run using the pbspro scheduler on the 'normalbw' queue
+            executor = 'pbspro'
+            queue = 'normalbw'
+            clusterOptions = "-P ${System.getenv('PROJECT')}"
+            storage = "scratch/${System.getenv('PROJECT')}"
+            cache = 'lenient'
+            stageInMode = 'symlink'
+        }
+
+        singularity {
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+        ```groovy title="run.sh"
+        #!/bin/bash
+
+        module load nextflow/24.04.5
+        module load singularity
+
+        nextflow run main.nf -profile pbspro -c config/custom.config
+        ```
+
+    === "Setonix (Slurm)"  
+
+        ```groovy title="slurm.config"
+        executor {
+            // For high-throughput jobs, these values should be higher
+            queueSize = 30
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
+        }
+
+        process {
+            // Load the globally installed singularity/4.1.0-slurm module before running any process
+            module = 'singularity/4.1.0-slurm'
+            // Run using the pbspro scheduler on the 'normalbw' queue
+            executor = 'slurm'
+            queue = 'work'
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            cache = 'lenient'
+            stageInMode = 'symlink'
+        }
+
+        singularity {
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+        ```groovy title="run.sh"
+        #!/bin/bash
+
+        module load nextflow/24.10.0
+        module load singularity/4.1.0-slurm
+
+        nextflow run main.nf -profile slurm -c config/custom.config
+        ```
