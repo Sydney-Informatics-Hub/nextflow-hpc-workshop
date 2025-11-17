@@ -491,7 +491,7 @@ We will use the respective job scheduler introspection tools to observe the reso
         ```console
         Job Id: 154038474.gadi-pbs
         Job_Name = nf-GENOTYPE_1
-        Job_Owner = fj9712@gadi-login-05.gadi.nci.org.au
+        Job_Owner = user@gadi-login-05.gadi.nci.org.au
         resources_used.cpupercent = 94
         resources_used.cput = 00:02:50
         resources_used.jobfs = 0b
