@@ -640,7 +640,7 @@ We will resolve this by conducting updating our channels to include the chunk id
 
 ### Gather: combining our alignments
 
-Now that we have sucessfully split our reads, we will implement a gather pattern to bring our alignments into a single file again. 
+Now that we have sucessfully split our reads and uniquely identified the output bam files, we will implement a gather pattern to bring our alignments into a single file again. 
 
 !!! tip "Different patterns for different needs"
 
@@ -665,28 +665,31 @@ Now that we have sucessfully split our reads, we will implement a gather pattern
     include { MULTIQC } from './modules/multiqc'
     ```
 
+    Insert the following lines in `main.nf`, after `ALIGN.out.view()`. Update the `GENOTYPE` process so it takes in our merged bams. 
+
+    ```groovy title="main.nf" 
+        gathered_bams = ALIGN.out.aligned_bam
+            .groupTuple()
+
+        MERGE_BAMS(gathered_bams)
+
+        // Run genotyping with aligned bam and genome reference
+        GENOTYPE(MERGE_BAMS.out.aligned_bam, ref)
+    ```
 
     Re-run the pipeline
     ```
     ./run.sh
     ```
 
-
-    ```
-    gathered_bams = ALIGN.out.aligned_bam
-        .groupTuple()
-
-    MERGE_BAMS(gathered_bams)
-
-    // Run genotyping with aligned bam and genome reference
-    GENOTYPE(MERGE_BAMS.out.aligned_bam, ref)
-    ```
 Now, let's re-inspect that the merge worked as intended.
 
 !!! example "Exercise"
 
+    Locate the work directory for the `MERGE_BAM` process using the trace file, if you have the `workdir` field, or use the nextflow log.
+
     ```bash
-    tree -a
+    tree -a <workdir>
     ```
     ```console title="Output"
     .
@@ -708,6 +711,8 @@ Now, let's re-inspect that the merge worked as intended.
     └── NA12877.bam.bai
     ```
 
+    View the `.command.sh` - have the expected files been merged?
+
     ```bash
     cat .command.sh
     ```
@@ -721,18 +726,94 @@ Now, let's re-inspect that the merge worked as intended.
 
 To sum up this step, you successfully:
 
-    1. Split the paried FASTQ reads into 3 chunks using `.splitFastq`
-    2. Aligned each chunk in parallel
-    3. Merged the aligned chunks into a single BAM (`MERGE_BAMS()`)
-    4. Ran the remainder of the workflow as usual
+1. Split the paried FASTQ reads into 3 chunks using `.splitFastq`
+2. Aligned each chunk in parallel
+3. Merged the aligned chunks into a single BAM (`MERGE_BAMS()`)
+4. Ran the remainder of the workflow as usual
 
-    This change optimises performance for large datasets by leveraging parallel processing.
+This change optimises performance for large datasets by leveraging parallel processing.
 
-!!! What about multiple samples?
+!!! question "What about multiple samples?"
 
     You have now applied a multi-processing approach on a single-sample. As processes are run independently of each other this does not always need to apply to single sample that is split. Running multiple samples is also a form of multi-processing and comes shipped with Nextflow's dataflow model. Once your pipeline is configured to run well with a single sample, [queue channels](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part1/05_inputs/#queue-channels) make adding additional samples relatively easy.
-
+    
     We will revisit this in the next section.
+
+### Checkpoint
+
+??? abstract "Show code"
+
+    ```groovy title="main.nf"
+    include { FASTQC } from './modules/fastqc'
+    include { ALIGN } from './modules/align'
+    include { MERGE_BAMS } from './modules/merge_bams'
+    include { GENOTYPE } from './modules/genotype'
+    include { JOINT_GENOTYPE } from './modules/joint_genotype'
+    include { STATS } from './modules/stats'
+    include { MULTIQC } from './modules/multiqc'
+
+    // Define the workflow
+    workflow {
+
+        // Define the fastqc input channel
+        reads = Channel.fromPath(params.samplesheet)
+            .splitCsv(header: true)
+            .map { row -> {
+                // def strandedness = row.strandedness ? row.strandedness : 'auto'
+                [ row.sample, file(row.fastq_1), file(row.fastq_2) ] 
+            }}
+
+        bwa_index = Channel.fromPath(params.bwa_index)
+            .map { idx -> [ params.bwa_index_name, idx ] }
+            .first()
+        ref = Channel.of( [ file(params.ref_fasta), file(params.ref_fai), file(params.ref_dict) ] ).first()
+
+        // Run the fastqc step with the reads_in channel
+        FASTQC(reads)
+
+        // Split FASTQs for each sample
+        split_fqs = reads
+            .splitFastq(limit: 3, pe: true, file: true)
+            .map { sample, r1, r2 ->
+                def chunk_id = r1.toString().tokenize('.')[2]
+                return [ sample, r1, r2, chunk_id ]
+            }
+            .view()
+
+        // Run the align step with the reads_in channel and the genome reference
+        ALIGN(split_fqs, bwa_index)
+        ALIGN.out.view()
+
+        gathered_bams = ALIGN.out.aligned_bam
+            .groupTuple()
+
+        MERGE_BAMS(gathered_bams)
+
+        // Run genotyping with aligned bam and genome reference
+        GENOTYPE(MERGE_BAMS.out.aligned_bam, ref)
+
+        // Gather gvcfs and run joint genotyping
+        all_gvcfs = GENOTYPE.out.gvcf
+            .map { _sample_id, gvcf, gvcf_idx -> [ params.cohort_name, gvcf, gvcf_idx ] }
+            .groupTuple()
+        JOINT_GENOTYPE(all_gvcfs, ref)
+
+        // Get VCF stats
+        STATS(JOINT_GENOTYPE.out.vcf)
+
+        // Collect summary data for MultiQC
+        multiqc_in = FASTQC.out.qc_out
+            .mix(STATS.out.stats_out)
+            .collect()
+
+        /*
+        * Generate the analysis report with the 
+        * outputs from fastqc and bcftools stats
+        */ 
+        MULTIQC(multiqc_in)
+
+    }
+    ```
 
 ## A note on dynamic resourcing
 
@@ -781,5 +862,3 @@ These are some strategies to consider for your own pipelines. Run benchmarks,
 identify long-running or inefficent processes and consider which one of these
 approaches are supported by the tools (multi-threading), or can be split and
 processed in parallel.
-
-TODO add final code changes
