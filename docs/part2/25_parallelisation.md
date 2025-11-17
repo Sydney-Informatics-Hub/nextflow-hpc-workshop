@@ -429,18 +429,16 @@ However, you should have received an error before `JOINT_GENOTYPE` was run:
 
 Let's troubleshoot by inspecting the output of the `GENOTYPE` process
 
-!!! example "Exercises"
-
-    TODO remove this exercise, just show/demo
+!!! example "Advanced exercise"
     
-    - Inspect the process outputs using `.view()`. Copy and paste the following line after `GENOTYPE(ALIGN.out.aligned_bam, ref)`.
+    1. Inspect the process outputs using `.view()`. Copy and paste the following line after `GENOTYPE(ALIGN.out.aligned_bam, ref)`.
 
     ```groovy title="main.nf" hl_lines="3"
     GENOTYPE.out.view()
     ```
 
-    - Save the file.
-    - Update your run script so it runs with `-resume`, and re-run:
+    2. Save the file.
+    3. Update your run script so it runs with `-resume`, and re-run:
 
     ```
     ./run.sh 
