@@ -494,7 +494,7 @@ Whilst the way the data is processed stays the same, it is important to review h
                 memory = 2.GB
                 time = 2.minutes
             }
-    
+        }
             // Name the reports according to when they were run
             params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
     
@@ -511,7 +511,6 @@ Whilst the way the data is processed stays the same, it is important to review h
                 overwrite = false
                 file = "./runInfo/report-${params.timestamp}.html"
             }
-
 
             trace {
                 enabled = true 
