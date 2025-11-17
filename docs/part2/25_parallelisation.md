@@ -2,22 +2,17 @@
 
 !!! info "Learning objectives"
 
-    - Consider the limitations of parallelisation and scenarios where it should
-    not be applied
-    - Differentiate between multithreading and scatter-gather approaches to
-    parallelisation
-    - Implement parallelisation approaches (multithreading, multiprocessing)
-    while preserving biological correctness
-    - Recall that faster jobs that use more resources are more efficient than
-    long-running jobs with less resources
+    - Explain the limitations of parallelisation and cases where splitting data is not biologically correct 
+    - Differentiate between multi-threading and scatter-gather paralleisation methods
+    - Implement parallelisation approaches in Nextflow and evaluate their impact on resource usage. 
 
-Part 1.4 introduced parallelisation approaches with the goal of speeding up your jobs by utilising more resources. As your data gets larger, or more samples are required to be processed, it needs to run efficiently. In this lesson we will explore how Nextflow supports different forms of parallelisation to help you scale your workflows.
+[Lesson 1.4](../part1/01_4_smarter.md) introduced parallelisation approaches with the goal of speeding up your jobs by utilising more resources. As your data gets larger, or more samples are required to be processed, it needs to run efficiently. In this lesson we will explore how Nextflow supports different forms of parallelisation to help you scale your workflows.
 
 ![](figs/00_benchmark_at_scale_theme.png)
 
 Recall that splitting your data up across too many cores can lead to diminishing returns, such as increased SU usage and walltime. Parallelisation requires benchmarking to find the right balance between the walltime, CPU efficiency, and service unit consumption. We want to avoid over-parallelising our workflows.
 
-## Multithreading `bwa mem`
+## 2.5.1 Multithreading `bwa mem`
 
 In this section we will look at implementing another multithreading example with `bwa mem`, used in the `ALIGN` process. These are the example benchmarking results from Part 1, with the CPU efficiency calculated for you. 
 
@@ -256,23 +251,6 @@ As configuration generally does not trigger the re-run of processes, we need to 
             file = "./runInfo/report-${params.timestamp}.html"
         }
 
-        // Name the reports according to when they were run
-        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
-
-        // Generate timeline-timestamp.html timeline report 
-        timeline {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/timeline-${params.timestamp}.html"
-        }
-
-        // Generate report-timestamp.html execution report 
-        report {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/report-${params.timestamp}.html"
-        }
-
         trace {
             enabled = true 
             overwrite = false 
@@ -338,7 +316,7 @@ As configuration generally does not trigger the re-run of processes, we need to 
         }
         ```
 
-## Scatter-gathering alignment
+## 2.5.2 Scatter-gathering alignment
 
 ![](figs/00_Scatter_gather_fig.png)
 
@@ -451,18 +429,16 @@ However, you should have received an error before `JOINT_GENOTYPE` was run:
 
 Let's troubleshoot by inspecting the output of the `GENOTYPE` process
 
-!!! example "Exercises"
-
-    TODO remove this exercise, just show/demo
+!!! example "Advanced exercise"
     
-    - Inspect the process outputs using `.view()`. Copy and paste the following line after `GENOTYPE(ALIGN.out.aligned_bam, ref)`.
+    1. Inspect the process outputs using `.view()`. Copy and paste the following line after `GENOTYPE(ALIGN.out.aligned_bam, ref)`.
 
     ```groovy title="main.nf" hl_lines="3"
     GENOTYPE.out.view()
     ```
 
-    - Save the file.
-    - Update your run script so it runs with `-resume`, and re-run:
+    2. Save the file.
+    3. Update your run script so it runs with `-resume`, and re-run:
 
     ```
     ./run.sh 
@@ -815,7 +791,7 @@ This change optimises performance for large datasets by leveraging parallel proc
     }
     ```
 
-## A note on dynamic resourcing
+## 2.5.3 A note on dynamic resourcing
 
 Since our data is small and similar-sized, we can apply the same resource configurations within the same process and it will still run successfully. However, it is common that we need to **run the same process with input data of widely variying sizes**. For example, if we were to run variant calling with reads from the whole genome, human chromosome 1 is nearly 4x larger than chromosome 20.
 

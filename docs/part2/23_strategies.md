@@ -19,7 +19,7 @@ From here, we will explore ways of optimising our workflow for more efficient ex
 
 Workflow optimisation involves fine-tuning your pipeline to make it more efficient. It can be used to reduce runtime, idling hardware, and cost (e.g. when on a system that charges use based on service units). 
 
-## Why optimise?
+## 2.3.1 Why optimise?
 
 A small workflow run a handful of times might not benefit dramatically from optimisation. Many Nextflow workflows that employ good practices (e.g. nf-core) will run with default configuration, but defaults might not always fit your data and therefore the behaviour of your processes, or the constraints of your cluster. Think back to Part 1 and the configuration customisations we implemented for our nf-core workflow. 
 
@@ -32,7 +32,7 @@ Optimising workflows on HPC becomes especially important when:
 
 By optimising, you are making your workflow resilient and scalable. 
 
-## What affects performance?
+## 2.3.2 What affects performance?
 
 Efficiency of any workflow on HPC dependens on the interaction of three factors: 
 
@@ -74,7 +74,7 @@ Even with the same tools and data, two workflows can behave differently dependin
 * Whether steps are CPU-bound, memory-bound, or I/O boind 
 * Incorporated tool's ability to multithread 
 
-## What will we optimise?
+## 2.3.3 What will we optimise?
 
 For the remainder of Part 2 we will apply the strategies introduced from Part 1 to optimise our custom workflow. In particular, we will:
 
