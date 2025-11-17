@@ -742,10 +742,6 @@ We now have a configuration file with both our executor defined and singularity 
 !!! question "How are you going?"
 
     If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
-<<<<<<< HEAD:docs/part1/02_3_nfcore_config.md
-    
-    If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.
-=======
 
     If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.
 
@@ -908,4 +904,3 @@ In fact, the configs we have built in this lesson are slightly simplified versio
     You can see that there are many similarities between our configuration and the nf-core version. The nf-core configs contain a few additional parameters and some more detailed queue selection logic, but ultimately they accomplish the same task. So, why didn't we introduce these earlier? Because by building one from scratch, you have now learned about how Nextflow is configured to use executors to communicate with HPC schedulers and request resources for your jobs.
 
     Also know that these community-built configurations are a good starting point, but may need to be slightly altered for your particular use case. In particular, depending on what you are running, you may desire a more complex queue selection logic that takes CPU usage into account as well as memory, and if you have a pipeline that uses GPUs, you will need to include logic to request a GPU queue.
->>>>>>> origin/main:docs/part1/01_8_nfcore_config.md
