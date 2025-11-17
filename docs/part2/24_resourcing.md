@@ -6,7 +6,7 @@
     - Apply resource-aware configuration strategies 
     - Configure processes to correctly utilise allocated resources by passing values into process script blocks.
 
-## Requesting resources efficiently
+## 2.4.1 Requesting resources efficiently
 
 When running workflows on an HPC, the way you configure your resources (number of CPUs, the amount of memory, and the expected walltime) can make a big difference to how efficiently your jobs run, how long they sit in the queue, and even how much service units (SUs) the job costs.
 
@@ -26,7 +26,7 @@ In this section, we’ll explore how to make smart decisions about resource conf
 
 These adjustments don’t just benefit your own workflow, they make better use of shared infrastructure.
 
-## Configuring processes
+## 2.4.2 Configuring processes
 
 To begin tuning our workflow, we first need to understand how many resources each process actually used. We will use these example trace summaries, generated in the previous lesson, as a baseline for how long each process ran, and how many CPUs and memory it used.
 
@@ -56,7 +56,7 @@ While we could configure each process to match these values, we’re instead goi
 
 This approach lets us make the most of the available resources - sometimes even getting "extra" memory at no additional cost and still remain scheduled quickly.
 
-## Effective memory per CPU
+## 2.4.3 Effective memory per CPU
 
 Recall that this is the configuration we used in Part 2.1 to get the pipeline running on the respective HPC systems:
 
@@ -89,7 +89,7 @@ Most HPC systems allocate jobs to nodes based on both CPU and memory requests, w
 
 This means there is an **average amount of memory per CPU** - this becomes an important consideration for optimising resource requests for your Nextflow processes.
 
-## Exploring resource options for FASTQC
+## 2.4.5 Exploring resource options for FASTQC
 
 Based on the Part 1 discussion on the optimal number of `FASTQC` threads, we will give `FASTQC` two CPUs to process each of the paired-end reads (R1, R2). According to the trace file, it does not require much memory, so the limiting resource here is CPU.
 
@@ -277,7 +277,7 @@ Review the new trace file. What has changed? What happened to our FASTQC process
         | STATS (1)                  | COMPLETED | 0    | 14.5s    | 0ms      | 1     | 132.7%     | 2 GB   | 0.0% | 2 MB     |
         | MULTIQC                    | COMPLETED | 0    | 19.9s    | 4.6s     | 1     | 76.1%      | 2 GB   | 0.0% | 98.3 MB  |
 
-## Passing allocated resources into process scripts
+## 2.4.6 Passing allocated resources into process scripts
 
 Nextflow allows you to request specific resources for each process (like CPU and memory), but this doesn’t automatically tell the tool inside the process to use those resources. Some bioinformatics tools require you to explicitly specify how much memory or how many threads to use inside the script block. If this is not provided, it often uses a (suboptimal) default.
 
