@@ -86,7 +86,6 @@ We start with an unoptimised and minimally configured pipeline (like something t
 The diagram below shows a high level overview of the workflow we will be creating, starting with the raw data for each patient, mapping it against a human reference genome file, and then identifying and summarising the genetic variants found in the input data.  
 
 ![](../part1/figs/00_workflow_illustration.png)
-TODO revise this diagram to describe steps, 
 
 ## 2.0.4 The pipeline file anatomy
 
@@ -99,8 +98,6 @@ Recall the demo Nextflow workflow we explored in [lesson 1.5.2](../part1/01_5_nf
 
 - `conf/` to house our custom configuration files
 - `modules/`to house our process files as `.nf` files
-
-TODO diagram including `conf/` and `modules/` showing how they connect to nextflow.config and main.nf, extending on docs/part1/figs/00_config_demo_nf_v2.excalidraw
 
 At a glance:
 
@@ -129,8 +126,6 @@ tree -L 2
 ```
 
 Consider a basic Nextflow run command with this structure, where a user needs to specify some parameters and (optionally) a configuration file: 
-
-TODO make one of these: https://sydney-informatics-hub.github.io/template-nf-guide/figs/template_command.png 
 
 - `main.nf` is the executable file that identifies the workflow structure, inputs, and processes that are pulled from `modules/`
 - `--parameter` flag matches a parameter initialised in the `nextflow.config` and applies to the workflow execution 
