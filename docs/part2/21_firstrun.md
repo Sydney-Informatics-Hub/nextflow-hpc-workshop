@@ -2,12 +2,9 @@
 
 !!! info "Learning objectives"
 
-    - Identify best practices for benchmarking and configuring pipelines,
-    step-by-step
-    - Troubleshoot common HPC and scheduling errors by inspecting task logs
-    and interpretting exit codes and error messages
-    - Know how to find and specify system-dependent HPC values such as queues/partitions
-    - Recall how Nextflow interacts with HPC components
+    - Execute a custom Nextflow pipeline on HPC, applying system-specific configurations
+    - Diagnose and troubleshoot workflow failures by inspecting logs and files in work directories 
+    - Construct a reproducible configuration file for an HPC environment.
 
 TODO these learning objectives arent accurate, update them
 
