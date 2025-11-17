@@ -1,4 +1,4 @@
-# 1.2 Software on HPC
+# 1.2 Software is different on HPC
 
 !!! info "Learning objectives"
 
@@ -7,7 +7,7 @@
     - Describe how containerisation works and understand how containers encapsulate software dependencies 
     - Justify why constainerisation is essential for building portable and reproducible workflows 
     
-As soon as we start using HPC, we’re working in a shared environment where we can’t control everything and that includes software installation.  
+As soon as we start using HPC, we’re working in a shared environment that we have limited control over. That affects our ability to install and manage software.   
 
 !!! warning "No sudo for you!"
 
@@ -25,15 +25,14 @@ There are a few ways in which we can install and use software on HPCs. Some of t
 | **Environment modules** | Pre-installed software provided by HPC admins, loaded with `module load` | Fast; easy to use; no setup required | Limited versions; may conflict with workflow needs; not every tool is available on every system |
 | **Containers** (Apptainer/Singularity) | Portable, isolated software environments | Reproducible; portable; avoids dependency issues; huge repositories of pre-built containers available | Requires container knowledge; introduces slightly more complexity into scripts and workflows |
 
-!!! note "Why we love containers" 
 
-    Of the several options described above, we highly recommend using containers for workflow development, especially when using workflow languages like Nextflow. Containers bundle up everything a tool needs, including, dependencies, libraries, OS layers, into a single portable image. This image is self-contained (hence the name!) and doesn't interact or conflict with any of the software installed on your computer. On HPC, that means:
+Of the several options described above, we highly recommend using containers for workflow development, especially when using workflow languages like Nextflow. Containers bundle up everything a tool needs, including, dependencies, libraries, OS layers, into a single portable image. This image is self-contained (hence the name!) and doesn't interact or conflict with any of the software installed on your computer. On HPC, that means:
 
-    - No dependency conflicts: every container runs in its own isolated environment, unaffected by other users or system modules
-    - Reproducibility: the same container image can be used across clusters, clouds, or laptops, ensuring identical software behaviour everywhere
-    - Reduced maintenace: you don't need to worry about installing, updating, and debugging complex software stacks.
+- No dependency conflicts: every container runs in its own isolated environment, unaffected by other users or system modules
+- Reproducibility: the same container image can be used across clusters, clouds, or laptops, ensuring identical software behaviour everywhere
+- Reduced maintenace: you don't need to worry about installing, updating, and debugging complex software stacks.
 
-    We source prebuilt containers from the [BioContainers](https://biocontainers.pro/) on the [quay.io registry](https://quay.io/) and [Seqera containers](https://seqera.io/containers/). 
+We source prebuilt containers from the [BioContainers](https://biocontainers.pro/) on the [quay.io registry](https://quay.io/) and [Seqera containers](https://seqera.io/containers/). 
 
 !!! note "One container per tool"
 
