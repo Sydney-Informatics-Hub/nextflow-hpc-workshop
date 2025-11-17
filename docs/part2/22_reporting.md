@@ -208,7 +208,7 @@ Currently, the trace file reports on the resources used per task. Trace offers a
     ./run.sh
     ```
 
-    5. View the newly generate trace file under the `runInfo/` folder
+    5. View the newly generated trace file inside the `runInfo/` folder
 
 These added fields help you track down the scheduler job and work directories
 for debugging. It is up to you how you want to configure your traces for your own pipelines and how much added information you require.
@@ -229,23 +229,6 @@ benchmarking such as using `time`.
         process {
             cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6 OR 9.1
             memory = 4.GB
-        }
-
-        // Name the reports according to when they were run
-        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
-
-        // Generate timeline-timestamp.html timeline report 
-        timeline {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/timeline-${params.timestamp}.html"
-        }
-
-        // Generate report-timestamp.html execution report 
-        report {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/report-${params.timestamp}.html"
         }
 
         // Name the reports according to when they were run
