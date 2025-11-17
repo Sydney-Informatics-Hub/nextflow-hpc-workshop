@@ -705,12 +705,13 @@ You’ve now built the scaffolding needed to begin fine-tuning your resource req
         }
 
         process {
-            // Load the globally installed singularity/4.1.0-slurm module before running any process
-            module = 'singularity/4.1.0-slurm'
+            // Load the globally installed singularity module before running any process
+            module = 'singularity'
             // Run using the pbspro scheduler on the 'normalbw' queue
-            executor = 'slurm'
-            queue = 'work'
-            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            executor = 'pbspro'
+            queue = 'normalbw'
+            clusterOptions = "-P ${System.getenv('PROJECT')}"
+            storage = "scratch/${System.getenv('PROJECT')}"
             cache = 'lenient'
             stageInMode = 'symlink'
         }
@@ -721,7 +722,7 @@ You’ve now built the scaffolding needed to begin fine-tuning your resource req
             // Automatically bind-mount working directory on scratch and common system paths
             autoMounts = true
             // Define location of stored container images 
-            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
         ```
 
