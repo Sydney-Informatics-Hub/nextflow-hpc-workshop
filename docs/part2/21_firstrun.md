@@ -509,14 +509,20 @@ We will use the respective job scheduler introspection tools to observe the reso
         Use `sacct` with formatting to view key stats related to resource usage:
 
         ```bash
-        sacct -j <job_id> --format=JobID,JobName,User,CPUTime,TotalCPU,NCPUS,Elapsed,State,MaxRSS,MaxVMSize,Partition
+        seff <job_id>
         ```
         ```console
-        JobID           JobName      User    CPUTime   TotalCPU      NCPUS    Elapsed      State     MaxRSS  MaxVMSize  Partition
-        ------------ ---------- --------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-        34325657     nf-GENOTY+     fjaya   00:01:50  01:07.026          2   00:00:55  COMPLETED                             work
-        34325657.ba+      batch             00:01:50  01:07.023          2   00:00:55  COMPLETED   1566932K          0
-        34325657.ex+     extern             00:01:50  00:00.003          2   00:00:55  COMPLETED          0          0
+        Job ID: 34903205
+        Cluster: setonix
+        User/Group: cou057/cou057
+        State: COMPLETED (exit code 0)
+        Nodes: 1
+        Cores per node: 2
+        CPU Utilized: 00:00:19
+        CPU Efficiency: 36.54% of 00:00:52 core-walltime
+        Job Wall-clock time: 00:00:26
+        Memory Utilized: 682.74 MB
+        Memory Efficiency: 37.11% of 1.80 GB (920.00 MB/core)
         ```
 
 In both cases, we can observe that the jobs were assigned the following resources:
@@ -524,7 +530,7 @@ In both cases, we can observe that the jobs were assigned the following resource
 |         | CPU   | Memory   |
 | ------- | ----- | -------- |
 | Gadi    | 1     | 512 MB   |
-| Setonix | 2     | 1.6 GB   |
+| Setonix | 2     | 1.8 GB   |
 
 This is why **explicit resource configuration** is important. Even though the pipeline technically ran (or failed), these defaults are unsuitable for real data.
 
