@@ -6,7 +6,7 @@
     - Differentiate between multi-threading and scatter-gather paralleisation methods
     - Implement parallelisation approaches in Nextflow and evaluate their impact on resource usage. 
 
-Part 1.4 introduced parallelisation approaches with the goal of speeding up your jobs by utilising more resources. As your data gets larger, or more samples are required to be processed, it needs to run efficiently. In this lesson we will explore how Nextflow supports different forms of parallelisation to help you scale your workflows.
+[Lesson 1.4](../part1/01_4_smarter.md) introduced parallelisation approaches with the goal of speeding up your jobs by utilising more resources. As your data gets larger, or more samples are required to be processed, it needs to run efficiently. In this lesson we will explore how Nextflow supports different forms of parallelisation to help you scale your workflows.
 
 ![](figs/00_benchmark_at_scale_theme.png)
 
