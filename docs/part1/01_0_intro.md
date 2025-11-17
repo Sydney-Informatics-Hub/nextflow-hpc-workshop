@@ -1,14 +1,8 @@
-<<<<<<< HEAD
-# 1.0 Part 1 Introduction
-
-In the first part of this workshop, we will familarise ourselves with some foundational concepts required to effectively run bioinformatics workflows on HPC clusters. We will then apply these concepts to the configuration of a popular nf-core pipeline, Sarek. In part 2, we will further apply these concepts to a custom Nextflow workflow.
-=======
 # 1.0 Introduction
 
 In the first part of this workshop, we will familarise ourselves with some foundational concepts required to effectively run bioinformatics workflows on HPC clusters. We will then apply these concepts to the configuration of a popular nf-core pipeline, Sarek. In part 2, we will further apply these concepts to a custom Nextflow workflow.
 
 ![](./figs/00_workshop_overview.png){width=50%}
->>>>>>> origin/main
 
 !!! warning "Note the code blocks!"
 
@@ -91,8 +85,6 @@ If you haven't already done so, follow the [setup instructions](../setup.md) to 
 
     If you see duplicate entires like this, delete the old entry and try logging in again.
 
-<<<<<<< HEAD
-=======
 ## 1.0.2 Setup the workspace
 
 !!! warning "Skip this if the workspace has already been set up"
@@ -108,7 +100,6 @@ If you haven't already done so, follow the [setup instructions](../setup.md) to 
 
     We will let you know on the day whether these steps have already been performed for you.
 
->>>>>>> origin/main
 For this workshop, we will be working within the scratch storage system of the HPCs. Navigate to the scratch space for the workshop project.
 
 1.  In the left-hand side bar, click on the "Explorer" tab (an icon that looks like two sheets of paper).
@@ -135,13 +126,7 @@ For this workshop, we will be working within the scratch storage system of the H
         /scratch/courses01/usr123
         ```
 
-<<<<<<< HEAD
-## 1.0.2 Setup the project space
-
-When you first log in, your directory in the scratch space will be an empty folder. The first job for the day will be to clone the workshop materials into this space. To do this, open the VSCode terminal (`Ctrl + J`) and run the following commands:
-=======
 When you first log in, your directory in the scratch space will be an empty folder. The first job for the day will be to clone the workshop materials into this space. To do this, open the VSCode terminal (`Ctrl + J` (Windows/Linux) / `Cmd + J` (Mac)) and run the following commands:
->>>>>>> origin/main
 
 ```bash
 git clone https://github.com/Sydney-Informatics-Hub/nextflow-on-hpc-materials.git
@@ -173,17 +158,6 @@ There are two scripts in the main directory: `setup.gadi.sh` and `setup.setonix.
 Once completed, the script will print out "Setup complete" to confirm everything has successfully been set up.
 
 !!! warning "Attention Gadi users: If you get this message..."
-<<<<<<< HEAD
-
-    On Gadi, you may get the following message at the end of the setup script:
-
-    ```console
-    IMPORTANT: YOUR DEFAULT PROJECT HAS BEEN CHANGED TO 'vp91'. PLEASE LOG OUT AND BACK IN AGAIN TO REFRESH YOUR SESSION.
-    ```
-
-    If you see this message, you will need to close your window and re-connect to the HPC [as per the setup instructions](../setup.md#connecting-to-the-hpcs).
-=======
->>>>>>> origin/main
 
     On Gadi, you may get the following message at the end of the setup script:
 
