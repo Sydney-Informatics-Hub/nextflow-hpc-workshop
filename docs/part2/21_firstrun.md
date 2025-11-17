@@ -609,7 +609,7 @@ While we could manually run the Nextflow command each time, using a run script c
         module load nextflow/24.04.5
         module load singularity
 
-        nextflow run main.nf -profile pbspro --pbspro_account vp91 -c config/custom.config
+        nextflow run main.nf -profile pbspro -c config/custom.config
         ```
 
     === "Setonix (Slurm)"
@@ -620,7 +620,7 @@ While we could manually run the Nextflow command each time, using a run script c
         module load nextflow/24.10.0
         module load singularity/4.1.0-slurm
 
-        nextflow run main.nf -profile slurm --slurm_account courses01 -c config/custom.config
+        nextflow run main.nf -profile slurm -c config/custom.config
         ```
 
     3. Save the run.sh file (Windows: Ctrl+S, macOS: Cmd+S).
@@ -637,7 +637,6 @@ While we could manually run the Nextflow command each time, using a run script c
 
         On both Gadi and Setonix, both runs should now be successful and
         executed on the respective scheduler.
-
 
         === "Gadi (PBSpro)"
 
@@ -686,3 +685,87 @@ While we could manually run the Nextflow command each time, using a run script c
 ## Summary
 
 You’ve now built the scaffolding needed to begin fine-tuning your resource requests and exploring monitoring and optimisation techniques. In the next section, we'll start measuring actual resource usage and configuring processes more precisely for efficient use for the specific HPC system.
+
+## Checkpoint
+
+??? info "Show code"
+
+    === "Gadi (PBSpro)"
+
+        ```groovy title="config/pbspro.config"
+        executor {
+            // For high-throughput jobs, these values should be higher
+            queueSize = 30
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
+        }
+
+        process {
+            // Load the globally installed singularity/4.1.0-slurm module before running any process
+            module = 'singularity/4.1.0-slurm'
+            // Run using the pbspro scheduler on the 'normalbw' queue
+            executor = 'slurm'
+            queue = 'work'
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            cache = 'lenient'
+            stageInMode = 'symlink'
+        }
+
+        singularity {
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+        ```groovy title="run.sh"
+        #!/bin/bash
+
+        module load nextflow/24.04.5
+        module load singularity
+
+        nextflow run main.nf -profile pbspro -c config/custom.config
+        ```
+
+    === "Setonix (Slurm)"  
+
+        ```groovy title="slurm.config"
+        executor {
+            // For high-throughput jobs, these values should be higher
+            queueSize = 30
+            pollInterval = '5 sec'
+            queueStatInterval = '5 sec'
+        }
+
+        process {
+            // Load the globally installed singularity/4.1.0-slurm module before running any process
+            module = 'singularity/4.1.0-slurm'
+            // Run using the pbspro scheduler on the 'normalbw' queue
+            executor = 'slurm'
+            queue = 'work'
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            cache = 'lenient'
+            stageInMode = 'symlink'
+        }
+
+        singularity {
+            // Explicitly turns on container execution
+            enabled = true
+            // Automatically bind-mount working directory on scratch and common system paths
+            autoMounts = true
+            // Define location of stored container images 
+            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+        }
+        ```
+
+        ```groovy title="run.sh"
+        #!/bin/bash
+
+        module load nextflow/24.10.0
+        module load singularity/4.1.0-slurm
+
+        nextflow run main.nf -profile slurm -c config/custom.config
+        ```
