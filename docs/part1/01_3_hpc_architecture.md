@@ -292,10 +292,10 @@ The above command is quite long, and would be a pain to write out every time you
 
     === "Gadi (PBSpro)"
 
-        Update your `scripts/fastqc.pbs.sh` script with the following header comments:
+        Update the `scripts/fastqc.pbs.sh` script with the following header comments:
 
 
-        ```bash title="fastqc.sh" hl_lines="2-9"
+        ```bash title="scripts/fastqc.pbs.sh" hl_lines="2-9"
         #!/bin/bash
         #PBS -P vp91
         #PBS -N fastqc
@@ -323,9 +323,9 @@ The above command is quite long, and would be a pain to write out every time you
 
     === "Setonix (Slurm)"
 
-        Update your `scripts/fastqc.slurm.sh` script with the following header comments:
+        Update the `scripts/fastqc.slurm.sh` script with the following header comments:
 
-        ```bash title="fastqc.sh" hl_lines="2-9"
+        ```bash title="scripts/fastqc.slurm.sh" hl_lines="2-9"
         #!/bin/bash
         #SBATCH --account=courses01
         #SBATCH --job-name=fastqc
