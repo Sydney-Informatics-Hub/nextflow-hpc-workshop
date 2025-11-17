@@ -209,6 +209,7 @@ This is everything we need to run the job; we just have to submit the script to 
             --account=$PAWSEY_PROJECT \
             --job-name=fastqc \
             --partition=work \
+            --reservation=NextflowHPC \
             --nodes=1 \
             --ntasks=1 \
             --cpus-per-task=1 \
@@ -222,6 +223,7 @@ This is everything we need to run the job; we just have to submit the script to 
         - `--account=$PAWSEY_PROJECT`: This specifies the project using the environment variable `$PAWSEY_PROJECT`, which is pre-defined with your default Pawsey project ID.
         - `--job-name=fastqc`: This specifies the job name as `fastqc`.
         - `--partition=work`: This specifies the queue (also called "partitions" on Setonix) as `work`; this is a general queue on Pawsey for regular jobs that don't need any special resources.
+        - `--reservation=NextflowHPC`: This is specific to this workshop, letting us all work on a reserved compute node without competing for resources with other users.
         - `--nodes=1 --ntasks=1 --cpus-per-task=1`: This specifies that we want 1 CPU on 1 node to run our job.
         - `--mem=1GB`: Here we request 1 GB of memory.
         - `--time=00:01:00`: This requests 1 minute of walltime; walltime is specified in the format `HH:MM:SS`
@@ -325,11 +327,12 @@ The above command is quite long, and would be a pain to write out every time you
 
         Update the `scripts/fastqc.slurm.sh` script with the following header comments:
 
-        ```bash title="scripts/fastqc.slurm.sh" hl_lines="2-9"
+        ```bash title="scripts/fastqc.slurm.sh" hl_lines="2-10"
         #!/bin/bash
         #SBATCH --account=courses01
         #SBATCH --job-name=fastqc
         #SBATCH --partition=work
+        #SBATCH --reservation=NextflowHPC
         #SBATCH --nodes=1
         #SBATCH --ntasks=1
         #SBATCH --cpus-per-task=1
