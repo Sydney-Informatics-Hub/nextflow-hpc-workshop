@@ -153,8 +153,6 @@ If we request:
     - 2 CPUs and 4 GB memory (on the Setonix `work` partition), this takes advantage of all the memory you’re entitled to, but `FASTQC` won't actually use that memory. So you're not getting any extra performance and may lengthen the time in queue.
     - 2 CPUs and 1 GB memory, on the other hand, still gives `FASTQC` enough to run, and because you're requesting less RAM, your job may be scheduled fasterm as it can fit into more available nodes. This is more memory efficient too.
         
-TODO: how can this be made into an exercise? Benchmark both options? Use pawsey/nci calculator to compare costs? 
-
 We will proceed with the 2 CPUs 1 GB memory option for `FASTQC` as the job won't benefit from the extra memory.
 
 ### Configuring with process names (`withName`)
@@ -180,15 +178,16 @@ To summarise and group the resource usage from the trace file:
 | FASTQC                          | 2CPU, 1GB | Fix 2CPU to process R1 and R2, memory sufficient  |
 | ALIGN, GENOTYPE, JOINT_GENOTYPE | 2CPU, 1GB | High CPU utilisation >90%                         |
 | GENOTYPE                        | 2CPU, 2GB | High CPU utilisation > 90%, requires 1.5GB memory |
-| STATS, MULTIQC                  | 1CPU, 2GB |                                                   |
+| STATS, MULTIQC                  | 1CPU, 2GB | Defaults are suitable                             |
 
-Let's record these in our configs, with a bit of buffer so things don't fail.
-
+Let's record these in our configs.
 !!! note
     
     We add them to the config file, and not the modules. This keeps the workflow logic and system-specific configuration separate.
 
 !!! example "Exercise"
+
+    Update the `process{}` scopes of your `custom.configs`:
 
     === "Gadi (PBS)"
 
@@ -242,8 +241,11 @@ Let's record these in our configs, with a bit of buffer so things don't fail.
                 memory = 2.GB
                 time = 2.minutes
             }
+
         }
         ```
+
+    Save the file, and run:
 
     ```bash
     ./run.sh
@@ -350,15 +352,15 @@ We will next make our `FASTQC` take in the number of cores we provide it **dynam
 
     ??? abstract "Show code"
 
-       === "Gadi (PBSpro)"
-
+        === "Gadi (PBSpro)"
+            
             ```groovy title="run.sh"
             #!/bin/bash
 
             module load nextflow/24.04.5
             module load singularity
 
-            nextflow run main.nf -profile pbspro --pbspro_account vp91 -c config/custom.config
+            nextflow run main.nf -profile pbspro -c config/custom.config -resume
             ```
 
         === "Setonix (Slurm)"
@@ -369,7 +371,7 @@ We will next make our `FASTQC` take in the number of cores we provide it **dynam
             module load nextflow/24.10.0
             module load singularity/4.1.0-slurm
 
-            nextflow run main.nf -profile slurm --slurm_account courses01 -c config/custom.config
+            nextflow run main.nf -profile slurm --slurm_account courses01 -c config/custom.config -resume
             ```
 
     5. Save, and run your workflow:
@@ -434,3 +436,149 @@ we can use. Providing the extra resources can provide extra processing
 power for supported tools, in comparison to being stringent.
 
 Whilst the way the data is processed stays the same, it is important to review how your tools work (read their documentation!) and whether they can utilise extra resources.
+
+## Checkpoint
+
+??? abstract "Show code"
+
+    ```groovy title="modules/fastqc.nf" hl_lines="16"
+    process FASTQC {
+
+        tag "fastqc on ${sample_id}"
+        container "quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0"
+        publishDir "${params.outdir}/fastqc", mode: 'copy'
+
+        input:
+        tuple val(sample_id), path(reads_1), path(reads_2)
+
+        output:
+        path "fastqc_${sample_id}", emit: qc_out
+
+        script:
+        """
+        mkdir -p "fastqc_${sample_id}"
+        fastqc -t ${task.cpus} --outdir "fastqc_${sample_id}" --format fastq $reads_1 $reads_2
+        """
+
+    }
+    ```
+
+    === "Gadi (PBSpro)"
+
+        ```bash title="run.sh"
+        #!/bin/bash
+
+        module load nextflow/24.04.5
+        module load singularity
+
+        nextflow run main.nf -profile pbspro -c config/custom.config -resume
+        ```
+
+        ```groovy title="custom.config"
+        process {
+            cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
+            memory = 4.GB
+
+            withName: /FASTQC|ALIGN|JOINT_GENOTYPE/ {
+                cpus = 2
+                memory = 1.GB
+                time = 2.minutes
+            }
+
+            withName: GENOTYPE {
+                cpus = 2
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+            withName: /STATS|MULTIQC/ {
+                cpus = 1
+                memory = 2.GB
+                time = 2.minutes
+            }
+    
+            // Name the reports according to when they were run
+            params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+    
+            // Generate timeline-timestamp.html timeline report 
+            timeline {
+                enabled = true
+                overwrite = false
+                file = "./runInfo/timeline-${params.timestamp}.html"
+            }
+    
+            // Generate report-timestamp.html execution report 
+            report {
+                enabled = true
+                overwrite = false
+                file = "./runInfo/report-${params.timestamp}.html"
+            }
+
+
+            trace {
+                enabled = true 
+                overwrite = false 
+                file = "./runInfo/trace-${params.timestamp}.txt"
+                fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss'
+            }
+        ```
+    
+    === "Setonix (Slurm)"
+
+        ```bash title="run.sh"
+        #!/bin/bash
+
+        module load nextflow/24.10.0
+        module load singularity/4.1.0-slurm
+
+        nextflow run main.nf -profile slurm -c config/custom.config -resume
+        ```
+
+        ```groovy title="cusdtom.config"
+        process {
+            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+            memory = 2.GB
+
+            withName: /FASTQC|ALIGN|JOINT_GENOTYPE/ {
+                cpus = 2
+                memory = 1.GB
+                time = 2.minutes
+            }
+
+            withName: GENOTYPE {
+                cpus = 2
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+            withName: /STATS|MULTIQC/ {
+                cpus = 1
+                memory = 2.GB
+                time = 2.minutes
+            }
+        }
+
+        // Name the reports according to when they were run
+        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+
+        // Generate timeline-timestamp.html timeline report 
+        timeline {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/timeline-${params.timestamp}.html"
+        }
+
+        // Generate report-timestamp.html execution report 
+        report {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/report-${params.timestamp}.html"
+        }
+
+        trace {
+            enabled = true 
+            overwrite = false 
+            file = "./runInfo/trace-${params.timestamp}.txt"
+            fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss'
+        }
+        ```
