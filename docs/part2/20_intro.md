@@ -186,7 +186,8 @@ workflow {
 
     bwa_index = Channel.fromPath(params.bwa_index)
         .map { idx -> [ params.bwa_index_name, idx ] }
-    ref = Channel.of( [ file(params.ref_fasta), file(params.ref_fai), file(params.ref_dict) ] )
+        .first()
+    ref = Channel.of( [ file(params.ref_fasta), file(params.ref_fai), file(params.ref_dict) ] ).first()
 
     // Run the fastqc step with the reads_in channel
     FASTQC(reads)

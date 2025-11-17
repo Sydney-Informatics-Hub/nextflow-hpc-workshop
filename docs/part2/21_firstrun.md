@@ -181,6 +181,8 @@ All our process modules specify a container to run inside. This can only happen 
 
     === "Gadi (PBSpro)"
         ```groovy title="config/pbspro.sh"
+        params.pbspro_account = ""
+
         process {
             // Load the globally installed singularity module before running any process
             module = 'singularity'
@@ -198,6 +200,7 @@ All our process modules specify a container to run inside. This can only happen 
 
     === "Setonix (Slurm)"
         ```groovy title="config/slurm.config"
+        params.slurm_account = ""
 
         process {
             // Load the globally installed singularity/4.1.0-slurm module before running any process
@@ -219,7 +222,7 @@ All our process modules specify a container to run inside. This can only happen 
     === "Gadi (PBSpro)"
 
         ```bash
-        nextflow run main.nf -profile pbspro 
+        nextflow run main.nf -profile pbspro --pbspro_account vp91
         ```
 
         ??? abstract "Output"
@@ -254,7 +257,7 @@ All our process modules specify a container to run inside. This can only happen 
     === "Setonix (Slurm)"
 
         ```bash
-        nextflow run main.nf -profile slurm 
+        nextflow run main.nf -profile slurm --slurm_account courses01
         ```
 
         ??? abstract "Output"
