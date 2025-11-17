@@ -390,13 +390,13 @@ We now have a configuration file with both our executor defined and singularity 
 
     === "Setonix (Slurm)"
 
-        On Setonix, we set the project via the `--account` option. We will again use the groovy function `System.getenv()` to grab the value of the `$PAWSEY_PROJECT` environment variable, which holds our default project ID, and pass that to the `--account` option:
+        On Setonix, we set the project via the `--account` option. We will again use the groovy function `System.getenv()` to grab the value of the `$PAWSEY_PROJECT` environment variable, which holds our default project ID, and pass that to the `--account` option. At the same time, we will also use the `clusterOptions` configuration to specify the `--reservation=NextflowHPC` flag and tell Nextflow to request this reserved node when submitting each process.
 
         ```groovy hl_lines="4"
         process {
             executor = 'slurm'
             module = 'singularity/4.1.0-slurm'
-            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
         }
 
         executor {
@@ -454,7 +454,7 @@ We now have a configuration file with both our executor defined and singularity 
         process {
             executor = 'slurm'
             module = 'singularity/4.1.0-slurm'
-            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
             queue = { task.memory < 230.GB ? 'work' : 'highmem' }
         }
 
@@ -513,7 +513,7 @@ We now have a configuration file with both our executor defined and singularity 
         process {
             executor = 'slurm'
             module = 'singularity/4.1.0-slurm'
-            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
             queue = { task.memory < 230.GB ? 'work' : 'highmem' }
             stageInMode = 'symlink'
             cache = 'lenient'
@@ -575,7 +575,7 @@ We now have a configuration file with both our executor defined and singularity 
         process {
             executor = 'slurm'
             module = 'singularity/4.1.0-slurm'
-            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
             queue = { task.memory < 230.GB ? 'work' : 'highmem' }
             stageInMode = 'symlink'
             cache = 'lenient'
@@ -838,7 +838,7 @@ In fact, the configs we have built in this lesson are slightly simplified versio
     process {
         executor = 'slurm'
         module = 'singularity/4.1.0-slurm'
-        clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+        clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
         queue = { task.memory < 230.GB ? 'work' : 'highmem' }
         stageInMode = 'symlink'
         cache = 'lenient'
@@ -893,7 +893,7 @@ In fact, the configs we have built in this lesson are slightly simplified versio
             cpus: 64
         ]
         executor       = 'slurm'
-        clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+        clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
         module         = 'singularity/4.1.0-slurm'
         cache          = 'lenient'
         stageInMode    = 'symlink'
