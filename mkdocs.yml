@@ -20,11 +20,11 @@ nav:
   - Part 2:
       - 2.0 Introduction: part2/20_intro.md
       - 2.1 Running a custom pipeline on HPC: part2/21_firstrun.md
-      - 2.2 Monitoring workflow runs: part2/22_reporting.md
-      - 2.3 HPC optimisation strategies: part2/23_strategies.md
-      - 2.4 Configuring resource usage: part2/24_resourcing.md
+      - 2.2 Pipline monitoring and reporting: part2/22_reporting.md
+      - 2.3 Optimising Nextflow for HPC: part2/23_strategies.md
+      - 2.4 Assigning process resources: part2/24_resourcing.md
       - 2.5 Parallelisation: part2/25_parallelisation.md
-      - 2.6 Scaling up: part2/27_scale.md
+      - 2.6 Scale to multiple samples: part2/27_scale.md
       - 2.7 Summary: part2/28_outro.md
 
 theme:
