@@ -251,23 +251,6 @@ As configuration generally does not trigger the re-run of processes, we need to 
             file = "./runInfo/report-${params.timestamp}.html"
         }
 
-        // Name the reports according to when they were run
-        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
-
-        // Generate timeline-timestamp.html timeline report 
-        timeline {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/timeline-${params.timestamp}.html"
-        }
-
-        // Generate report-timestamp.html execution report 
-        report {
-            enabled = true
-            overwrite = false
-            file = "./runInfo/report-${params.timestamp}.html"
-        }
-
         trace {
             enabled = true 
             overwrite = false 
