@@ -2,14 +2,9 @@
 
 !!! info "Learning objectives"
 
-    - Identify best practices for benchmarking and configuring pipelines,
-    step-by-step
-    - Troubleshoot common HPC and scheduling errors by inspecting task logs
-    and interpretting exit codes and error messages
-    - Know how to find and specify system-dependent HPC values such as queues/partitions
-    - Recall how Nextflow interacts with HPC components
-
-TODO these learning objectives arent accurate, update them
+    - Execute a custom Nextflow pipeline on HPC, applying system-specific configurations
+    - Diagnose and troubleshoot workflow failures by inspecting logs and files in work directories 
+    - Construct a reproducible configuration file for an HPC environment.
 
 !!! warning "Testing and developing in the right environment"
 
@@ -418,7 +413,7 @@ Before we re-run our pipeline, we want to add a few more settings to ensure we a
             // Run using the pbspro scheduler on the 'normalbw' queue
             executor = 'slurm'
             queue = 'work'
-            clusterOptions = "--account=${System.getenv('PAWSEYPROJECT')} --reservation=NextflowHPC"
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
             cache = 'lenient'
             stageInMode = 'symlink'
         }
@@ -494,7 +489,7 @@ We will use the respective job scheduler introspection tools to observe the reso
         ```console
         Job Id: 154038474.gadi-pbs
         Job_Name = nf-GENOTYPE_1
-        Job_Owner = fj9712@gadi-login-05.gadi.nci.org.au
+        Job_Owner = user@gadi-login-05.gadi.nci.org.au
         resources_used.cpupercent = 94
         resources_used.cput = 00:02:50
         resources_used.jobfs = 0b
@@ -512,14 +507,20 @@ We will use the respective job scheduler introspection tools to observe the reso
         Use `sacct` with formatting to view key stats related to resource usage:
 
         ```bash
-        sacct -j <job_id> --format=JobID,JobName,User,CPUTime,TotalCPU,NCPUS,Elapsed,State,MaxRSS,MaxVMSize,Partition
+        seff <job_id>
         ```
         ```console
-        JobID           JobName      User    CPUTime   TotalCPU      NCPUS    Elapsed      State     MaxRSS  MaxVMSize  Partition
-        ------------ ---------- --------- ---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
-        34325657     nf-GENOTY+     fjaya   00:01:50  01:07.026          2   00:00:55  COMPLETED                             work
-        34325657.ba+      batch             00:01:50  01:07.023          2   00:00:55  COMPLETED   1566932K          0
-        34325657.ex+     extern             00:01:50  00:00.003          2   00:00:55  COMPLETED          0          0
+        Job ID: 34903205
+        Cluster: setonix
+        User/Group: cou057/cou057
+        State: COMPLETED (exit code 0)
+        Nodes: 1
+        Cores per node: 2
+        CPU Utilized: 00:00:19
+        CPU Efficiency: 36.54% of 00:00:52 core-walltime
+        Job Wall-clock time: 00:00:26
+        Memory Utilized: 682.74 MB
+        Memory Efficiency: 37.11% of 1.80 GB (920.00 MB/core)
         ```
 
 In both cases, we can observe that the jobs were assigned the following resources:
@@ -527,7 +528,7 @@ In both cases, we can observe that the jobs were assigned the following resource
 |         | CPU   | Memory   |
 | ------- | ----- | -------- |
 | Gadi    | 1     | 512 MB   |
-| Setonix | 2     | 1.6 GB   |
+| Setonix | 2     | 1.8 GB   |
 
 This is why **explicit resource configuration** is important. Even though the pipeline technically ran (or failed), these defaults are unsuitable for real data.
 
@@ -536,8 +537,6 @@ In this case, it shows that the `GENOTYPE` process needs at least 2 GB of memory
 ## 2.1.4 Why do we have so many configuration files?
 
 ![](figs/00_custom_configs.png)
-
-[TODO] update figure
 
 We use three different configuration files to keep our Nextflow workflows reproducible, modular, and portable across different systems. 
 This setup not only ensures consistency when running the same pipeline in different environments, but also allows reuse of configuration components across multiple pipelines.
@@ -632,7 +631,12 @@ While we could manually run the Nextflow command each time, using a run script c
 
 !!! example "Exercise"
 
-    Run your newly configured pipeline using by executing `./run.sh` in the terminal.
+    Run the workflow: 
+
+    ```bash
+    ./run.sh
+    ```
+
     ??? note "Results"
 
         On both Gadi and Setonix, both runs should now be successful and
@@ -701,12 +705,13 @@ You’ve now built the scaffolding needed to begin fine-tuning your resource req
         }
 
         process {
-            // Load the globally installed singularity/4.1.0-slurm module before running any process
-            module = 'singularity/4.1.0-slurm'
+            // Load the globally installed singularity module before running any process
+            module = 'singularity'
             // Run using the pbspro scheduler on the 'normalbw' queue
-            executor = 'slurm'
-            queue = 'work'
-            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            executor = 'pbspro'
+            queue = 'normalbw'
+            clusterOptions = "-P ${System.getenv('PROJECT')}"
+            storage = "scratch/${System.getenv('PROJECT')}"
             cache = 'lenient'
             stageInMode = 'symlink'
         }
@@ -717,7 +722,7 @@ You’ve now built the scaffolding needed to begin fine-tuning your resource req
             // Automatically bind-mount working directory on scratch and common system paths
             autoMounts = true
             // Define location of stored container images 
-            cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+            cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
         }
         ```
 

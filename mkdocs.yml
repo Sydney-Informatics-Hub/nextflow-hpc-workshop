@@ -4,28 +4,28 @@ repo_name: Sydney-Informatics-Hub/nextlow-hpc-workshop
 
 nav:
   - Home: index.md
-  - Set up:  setup.md
-  - Part 1: #todo add numbers to lessons when it makes sense 
-    - Introduction: part1/01_0_intro.md
-    - HPC for workflows: part1/01_1_hpc_for_workflows.md
-    - Software is different on HPC: part1/01_2_hpc_software.md
-    - HPC architecture: part1/01_3_hpc_architecture.md
-    - Work smarter not harder: part1/01_4_smarter.md
-    - Nextflow on HPC: part1/01_5_nf_hpc.md
-    - Intro to nf-core: part1/02_1_nfcore_intro.md
-    - Running nf-core on HPC: part1/02_2_nfcore_run.md
-    - Configure nf-core: part1/02_3_nfcore_config.md
-    - Layering configs: part1/02_4_nfcore_layer.md
-    - Summary: part1/03_0_outro.md
+  - Set up: setup.md
+  - Part 1: #todo add numbers to lessons when it makes sense
+      - 1.0 Introduction: part1/01_0_intro.md
+      - 1.1 HPC for bioinformatics workflows: part1/01_1_hpc_for_workflows.md
+      - 1.2 Software is different on HPC: part1/01_2_hpc_software.md
+      - 1.3 HPC architecture: part1/01_3_hpc_architecture.md
+      - 1.4 Work smarter, not harder!: part1/01_4_smarter.md
+      - 1.5 Running Nextflow on HPC: part1/01_5_nf_hpc.md
+      - 1.6 Intro to nf-core: part1/01_6_nfcore_intro.md
+      - 1.7 Running nf-core on HPC: part1/01_7_nfcore_run.md
+      - 1.8 Configuring nf-core: part1/01_8_nfcore_config.md
+      - 1.9 Layering Nextflow configurations: part1/01_9_nfcore_layer.md
+      - 1.10 Summary: part1/01_10_outro.md
   - Part 2:
-    - 2.0 Introduction: part2/20_intro.md
-    - 2.1 Running a custom pipeline on HPC: part2/21_firstrun.md
-    - 2.2 Monitoring workflow runs: part2/22_reporting.md
-    - 2.3 HPC optimisation strategies: part2/23_strategies.md
-    - 2.4 Configuring resource usage: part2/24_resourcing.md
-    - 2.5 Parallelisation: part2/25_parallelisation.md
-    - 2.6 Scaling up: part2/27_scale.md
-    - 2.7 Summary: part2/28_outro.md
+      - 2.0 Introduction: part2/20_intro.md
+      - 2.1 Running a custom pipeline on HPC: part2/21_firstrun.md
+      - 2.2 Monitoring workflow runs: part2/22_reporting.md
+      - 2.3 HPC optimisation strategies: part2/23_strategies.md
+      - 2.4 Configuring resource usage: part2/24_resourcing.md
+      - 2.5 Parallelisation: part2/25_parallelisation.md
+      - 2.6 Scaling up: part2/27_scale.md
+      - 2.7 Summary: part2/28_outro.md
 
 theme:
   name: material

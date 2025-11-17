@@ -1,4 +1,4 @@
-# 2.3 Configuring nf-core
+# 1.8 Configuring nf-core
 
 !!! info "Learning objectives"
 
@@ -7,7 +7,7 @@
     - Understand the singularity configuration scope
     - Know how to dynamically define the queue based on required resources
 
-## 2.3.1 Executors
+## 1.8.1 Executors
 
 Executors are the back-end that Nextflow talks to to run the tasks in your workflow. By default, Nextflow will assume that you want to run everything on the same computer that you ran the `nextflow run` command on. But, as we have learned, that is definitely **not** how we want to run things on a shared HPC system: we want each task to be submitted to the scheduler to run on a compute node with all the appropriate resources.
 
@@ -19,7 +19,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     Start by creating a new blank file in the `config` directory called `hpc.config`. You can do this via the VSCode explorer window (right-click the `config` folder and select "New File...") or via the terminal:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash
         touch config/gadi.config
@@ -41,7 +41,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     Within the process scope, define the `executor` option and set it to the relevant executor for your system:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="2"
         process {
@@ -61,7 +61,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     For our purposes, we will keep our queued job limit to 30, and limit the number of jobs we can submit at once to 20 per minute. We will also tell Nextflow to request for status updates on our jobs once every 15 seconds.
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="5-10"
         process {
@@ -95,7 +95,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     In the `run.sh` script, update the following highlighted lines by adding a ` \` to the end of the old command and adding the new configuration file with the `-c` option:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```bash title="run.sh" linenums="1" hl_lines="16-17"
         #!/bin/bash
@@ -119,7 +119,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     === "Setonix (Slurm)"
 
-        ```bash title="run.sh" linenums="1" hl_lines="17"
+        ```bash title="run.sh" linenums="1" hl_lines="16-17"
         #!/bin/bash
 
         module load nextflow/24.10.0
@@ -235,13 +235,15 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
         The above example shows exactly what went wrong: `fastp: command not found`. We haven't yet configured Nextflow to use Singularity, so it is assuming the software is installed on the compute node. In the next section, we will set up Nextflow to use Singularity to run each tool.
 
-## 2.3.2 Containers in nf-core
+## 1.8.2 Containers in nf-core
+
+To start using containers in Nextflow, we need to enable the `singularity` backend and define the cache directory. This is the directory where Singularity should store all downloaded containers so that it doesn't need to download them over and over again whenever the same tool is required. As part of the setup work we did earlier today, we have already created this cache directory within the parent folder, at `../singularity/`.
 
 !!! example "Exercise: Define the singularity configuration"
 
-    At the bottom of our configuration file, we will now add a `singularity` scope and enable the containerisation software. At the same time, we will also define the Singularity cache directory. This is the directory where Singularity should store all downloaded containers so that it doesn't need to download them over and over again whenever the same tool is required. As part of the setup work we did earlier today, we have already created this cache directory within the parent folder, at `../singularity/`. We can define this in the `singularity` configuration scope by setting the `cacheDir` option. We will provide the full path to this file, which is at `/scratch/<PROJECT>/<USER>/nextflow-on-hpc-materials/singularity`. The current project ID and username are both accessible as environment variables on both Gadi and Setonix; we access these with the groovy function `System.getenv()`:
+    At the bottom of our configuration file, we will now add a `singularity` scope and enable the containerisation software. At the same time, we will also define the Singularity cache directory.  We can define this in the `singularity` configuration scope by setting the `cacheDir` option. We will provide the full path to this directory, which is at `/scratch/<PROJECT>/<USER>/nextflow-on-hpc-materials/singularity`. The current project ID and username are both accessible as environment variables on both Gadi and Setonix; we access these with the groovy function `System.getenv()`:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="11-15"
         process {
@@ -283,7 +285,7 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
 
     Enabling the use of Singularity will tell Nextflow to run our tasks using a `singularity exec` command, similar to what we used earlier today. However, you may remember that the `singularity` command isn't available to use by default on the HPC systems: we needed to run `module load` first. If we tried to run the workflow now, we would get an error that `singularity` couldn't be found. Luckily, Nextflow has us covered here once again: the `process.module` configuration option lets us define modules that we want to load when running a process. Go ahead and update the `process` scope to define the `singularity` module:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="3"
         process {
@@ -325,23 +327,21 @@ To set up Nextflow to use an HPC executor, we simply define the `process.executo
         }
         ```
 
-We now have a configuration file with both our executor defined and singularity enabled. There are just a few finishing touches we need to make, primarily around defining the HPC queue that we want to use and some additional options for how to handle files.
+## 1.8.3 Configuring HPC resources
 
-## 2.3.3 Configuring HPC resources
+We now have a configuration file with both our executor defined and singularity enabled. There are just a few finishing touches we need to make, primarily around defining the HPC queue that we want to use and some additional options for how to handle files. These include:
+
+    - Specifically telling the HPC scheduler which HPC project we want to use
+    - Defining the HPC queue that we want our jobs submitted to
+    - Defining how files should be staged in the working directories
+    - Defining how Nextflow should determine when to use the outputs of previous runs when using the `-resume` flag
+    - Enabling the trace file so we can track our resource usage and optimise our jobs
 
 !!! example "Exercise: Finalise the config with resource requirements"
 
-    To finish off our HPC configuration file, we are going to set the following options:
-
-    - Specifically tell the HPC scheduler which project we want to use
-    - Define the HPC queue that we want our jobs submitted to
-    - Define how files should be staged in the working directories
-    - Define how Nextflow should determine when to use the outputs of previous runs when using the `-resume` flag
-    - Enable the trace file so we can track our resource usage and optimise our jobs
-
     Let's start with defining the project we want to use. Most HPCs will assign each user a default project to use when submitting jobs, but it is good practice to be explicit about it, especially if you are part of several HPC projects and switch between the often. We can do this with the `process.clusterOptions` setting, which lets us pass arbitrary parameters to the scheduler:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         On Gadi, we set the project via the `-P` option. We will again use the groovy function `System.getenv()` to grab the value of the `$PROJECT` environment variable, which holds our default project ID, and pass that to the `-P` option:
 
@@ -416,7 +416,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     Nextflow lets us define the queue that we want via the `queue` option in the `process` scope. We can dynamically specify the queue by using curly braces to wrap around a conditional statement that tests how much memory each job needs:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         On Gadi, the `normalbw` queue supports tasks with up to 128GB of memory. If we need more than that, we want to use the `hugemembw` queue. We can achieve this using a short-hand if-else statement in groovy: `<condition> ? <value if true> : <value if false>`. We can ask whether the memory required by the current task (`task.memory`) is less than 128GB; if so, we set `queue` to `normalbw`, otherwise we set it to `hugemembw`. By wrapping the whole statement in curly braces, we ensure that it is evaluated when the task runs:
 
@@ -481,7 +481,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     Let's set these two options now:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="7-8"
         process {
@@ -534,7 +534,7 @@ We now have a configuration file with both our executor defined and singularity 
 
     We now have a fully-functioning HPC configuration file! We will, however, add just one more feature that will help us monitor the resources we are using and optimise our workflow. This is the `trace` file, and the next few lines that we add will enable it, set its file name (including a time stamp), and set the values that we want to keep track of:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBSpro)"
 
         ```groovy hl_lines="22-30"
         process {
@@ -702,7 +702,7 @@ We now have a configuration file with both our executor defined and singularity 
         ```
 
         The amount of memory each job requested is in the `mem` column of this file, while the actual amount used is in the final `peak_rss` column. Note how most jobs are requesting several GB of memory, but are actually only using a few MB:
-        
+
         ```bash
         # Pull out just the task name, memory requested, and memory used columns
         cut -f 1,8,10 runInfo/trace-2025-11-18_13-14-15.txt
@@ -732,15 +732,175 @@ We now have a configuration file with both our executor defined and singularity 
         ```
 
         Also note how many instances of `BWAMEM1_MEM` ran: 12. This is a scatter-gather pattern at work: the `FASTP` job breaks up the input FASTQs into multiple smaller files (12 in this case), each of which gets independently processed by `bwa mem`. The BAMs generated by `bwa mem` then get merged back together by the `MERGE_BAM` process. However, for our dataset, 12 parallel `bwa mem` processes is a bit overkill.
-        
+
         These are signs that we could significantly optimise the pipeline for our dataset, which is what we will do in the next lesson.
 
         !!! note
-        
+
             If your pipeline hasn't finished after a few minutes, you can cancel the run with a `Ctrl + C` keyboard combination. In the final section for today, we will create another configuration file to layer on top of our exisitng configuration and fine-tune our tasks to run more efficiently.
 
 !!! question "How are you going?"
 
     If you're following along so far, let us know by reacting on zoom with a **":material-check:{ .check } Yes"**.
-    
+
     If you're running into any issues, please react with a **":material-close:{ .close } No"** and we can help out before we move on to the next section.
+
+## 1.8.4 nf-core configs
+
+You might be wondering: since these HPCs are so widely used by many researchers, has anyone else created similar institutional configurations that we could use instead of building our own? And the answer is yes! In fact, nf-core host a wide variety of these community-built configurations [on their webstie](https://nf-co.re/configs/).
+
+In fact, the configs we have built in this lesson are slightly simplified versions of the published [NCI Gadi](https://nf-co.re/configs/nci_gadi/) and [Pawsey Setonix](https://nf-co.re/configs/pawsey_setonix/) configs on the nf-core website:
+
+=== "Gadi (PBSpro)"
+
+    ```title="Our gadi.config file"
+    process {
+        executor = 'pbspro'
+        module = 'singularity'
+        clusterOptions = "-P ${System.getenv('PROJECT')}"
+        storage = "scratch/${System.getenv('PROJECT')}"
+        queue = { task.memory < 128.GB ? 'normalbw' : 'hugemembw' }
+        stageInMode = 'symlink'
+        cache = 'lenient'
+    }
+
+    executor {
+        queueSize = 30
+        submitRateLimit = '20 min'
+        pollInterval = '15 sec'
+        queueStatInterval = '15 sec'
+    }
+
+    singularity {
+        enabled = true
+        cacheDir = "/scratch/${System.getenv('PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+    }
+
+    params.trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+
+    trace {
+        enabled = true
+        overwrite = false
+        file = "./runInfo/trace-${params.trace_timestamp}.txt"
+        fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss'
+    }
+    ```
+
+    ```title="nf-core nci_gadi.config file"
+    // NCI Gadi nf-core configuration profile
+    params {
+        config_profile_description = 'NCI Gadi HPC profile provided by nf-core/configs'
+        config_profile_contact = 'Georgie Samaha (@georgiesamaha), Matthew Downton (@mattdton)'
+        config_profile_url = 'https://opus.nci.org.au/display/Help/Gadi+User+Guide'
+        project = System.getenv("PROJECT")
+    }
+
+    // Enable use of Singularity to run containers
+    singularity {
+        enabled = true
+        autoMounts = true
+    }
+
+    // Submit up to 300 concurrent jobs (Gadi exec max)
+    // pollInterval and queueStatInterval of every 5 minutes
+    // submitRateLimit of 20 per minute
+    executor {
+        queueSize = 300
+        pollInterval = '5 min'
+        queueStatInterval = '5 min'
+        submitRateLimit = '20 min'
+    }
+
+    // Define process resource limits
+    process {
+        executor = 'pbspro'
+        storage = "scratch/${params.project}"
+        module = 'singularity'
+        cache = 'lenient'
+        stageInMode = 'symlink'
+        queue = { task.memory < 128.GB ? 'normalbw' : (task.memory >= 128.GB && task.memory <= 190.GB ? 'normal' : (task.memory > 190.GB && task.memory <= 1020.GB ? 'hugemembw' : '')) }
+        beforeScript = 'module load singularity'
+    }
+
+    // Write custom trace file with outputs required for SU calculation
+    def trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+    trace {
+        enabled = true
+        overwrite = false
+        file = "./gadi-nf-core-trace-${trace_timestamp}.txt"
+        fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,rss'
+    }
+    ```
+
+=== "Setonix (Slurm)"
+
+    ```title="Our setonix.config file"
+    process {
+        executor = 'slurm'
+        module = 'singularity/4.1.0-slurm'
+        clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+        queue = { task.memory < 230.GB ? 'work' : 'highmem' }
+        stageInMode = 'symlink'
+        cache = 'lenient'
+    }
+
+    executor {
+        queueSize = 30
+        submitRateLimit = '20 min'
+        pollInterval = '15 sec'
+        queueStatInterval = '15 sec'
+    }
+
+    singularity {
+        enabled = true
+        cacheDir = "/scratch/${System.getenv('PAWSEY_PROJECT')}/${System.getenv('USER')}/nextflow-on-hpc-materials/singularity"
+    }
+
+    params.trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+
+    trace {
+        enabled = true
+        overwrite = false
+        file = "./runInfo/trace-${params.trace_timestamp}.txt"
+        fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss'
+    }
+    ```
+
+    ```title="nf-core pawsey_setonix.config file"
+    // Pawsey Setonix nf-core configuration profile
+    params {
+        config_profile_description = 'Pawsey Setonix HPC profile provided by nf-core/configs'
+        config_profile_contact     = 'Sarah Beecroft (@SarahBeecroft), Georgie Samaha (@georgiesamaha)'
+        config_profile_url         = 'https://support.pawsey.org.au/documentation/display/US/Setonix+User+Guide'
+        max_cpus                   = 64
+        max_memory                 = 230.GB
+    }
+    // Enable use of Singularity to run containers
+    singularity {
+        enabled     = true
+        autoMounts  = true
+        autoCleanUp = true
+    }
+    // Submit up to 1024 concurrent jobs
+    executor {
+        queueSize = 1024
+    }
+    // Define process resource limits
+    // See: https://support.pawsey.org.au/documentation/pages/viewpage.action?pageId=121479736#RunningJobsonSetonix-Overview
+    process {
+        resourceLimits = [
+            memory: 230.GB,
+            cpus: 64
+        ]
+        executor       = 'slurm'
+        clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+        module         = 'singularity/4.1.0-slurm'
+        cache          = 'lenient'
+        stageInMode    = 'symlink'
+        queue = { task.memory <= 230.GB ? 'work' : 'highmem' }
+    }
+    ```
+
+    You can see that there are many similarities between our configuration and the nf-core version. The nf-core configs contain a few additional parameters and some more detailed queue selection logic, but ultimately they accomplish the same task. So, why didn't we introduce these earlier? Because by building one from scratch, you have now learned about how Nextflow is configured to use executors to communicate with HPC schedulers and request resources for your jobs.
+
+    Also know that these community-built configurations are a good starting point, but may need to be slightly altered for your particular use case. In particular, depending on what you are running, you may desire a more complex queue selection logic that takes CPU usage into account as well as memory, and if you have a pipeline that uses GPUs, you will need to include logic to request a GPU queue.
