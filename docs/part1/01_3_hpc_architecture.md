@@ -327,7 +327,7 @@ The above command is quite long, and would be a pain to write out every time you
 
         Update the `scripts/fastqc.slurm.sh` script with the following header comments:
 
-        ```bash title="scripts/fastqc.slurm.sh" hl_lines="2-9"
+        ```bash title="scripts/fastqc.slurm.sh" hl_lines="2-10"
         #!/bin/bash
         #SBATCH --account=courses01
         #SBATCH --job-name=fastqc
