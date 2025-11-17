@@ -7,7 +7,7 @@
 
 ## Overview
 
-Our workflow is now functional, it runs successfully with scheduler-specific settings and outputs useful trace files showing resource usage. Recall the principles covered in Lesson 1.4, we will apply them to our custom workflow.
+Our workflow is now functional, it runs successfully with scheduler-specific settings and outputs useful trace files showing resource usage. Recall the principles covered in [Lesson 1.4](../part1/01_4_smarter.md), we will apply them to our custom workflow.
 
 From here, we will explore ways of optimising our workflow for more efficient execution on the HPC. 
 
