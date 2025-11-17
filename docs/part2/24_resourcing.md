@@ -2,11 +2,9 @@
 
 !!! info "Learning objectives"
 
-    - Recall how to size resource requests appropriately for each process
-    - Apply resource-aware design principles to improve job efficiency
-    - Understand how to efficiently configure jobs to fit system queues
-    - Apply infrastructure requirements of memory/CPU proportions to match the node
-    architecture of the target HPC queue/partition
+    - Analyse process-level resource usage rom Nextflow trace data to determine appropriate resource requests
+    - Apply resource-aware configuration strategies 
+    - Configure processes to correctly utilise allocated resources by passing values into process script blocks.
 
 ## Requesting resources efficiently
 
