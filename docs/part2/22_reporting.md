@@ -4,23 +4,27 @@
 
     - Apply Nextflow's monitoring features to understand process-level resource usage on HPC
     - Analyse key resource metrics to assess workflow efficiency and identify processes that require tuning 
-    - Use nextflow log and custom trace fields to locate, track, debug workflow execution.
+    - Use nextflow log and custom trace fields to locate, track, and debug workflow execution
 
-In bioinformatics workflows, resource requirements are often not fixed. They can vary significantly depending on the size of input files, varying complexity of different genomic regions, the species you're working with, and sequencing format and depth. This means we can't assume CPU, memory, or time values will work the same for every sample. On HPC systems, where resources are shared and allocations may be charged, these differences matter. 
+In bioinformatics workflows, resource requirements are often not fixed for a given analysis type or tool. They can vary greatly for many reasons, for exampleinout data size, genomic complexity, tissue expression profile, and species. This means we can't assume CPU, memory, or time values will work the same for every dataset or even every sample within a dataset. On HPC systems - where resources are shared and allocations may be finite and/or charged - these differences matter. 
 
-You cannot set and forget resource values for an entire workflow, you need to build in flexibility. This requires you to have visiblity over pipeline behaviour at the process level. Nextflow provides several monitoring and reporting tools that help you understand this behaviour including `nextflow log`, trace files, and reports. 
+For these reasons, it is not efficient or reliable to just "set and forget" resource values for an entire workflow: you need to build in flexibility. This requires you to have visiblity over pipeline behaviour at the process level. Nextflow provides several monitoring and reporting tools that help you understand this behaviour including the `nextflow log` command, trace files, and reports. 
 
-Now that our workflow is running without error on the scheduler, we will enable [Nextflow's reports](https://nextflow.io/docs/latest/reports.html). This allows us to view the resource usage of each process for our representative sample.
+Now that our workflow is running without error on the HPC compute nodes, we will enable [Nextflow's reports](https://nextflow.io/docs/latest/reports.html). This allows us to view the resource usage of each process for our representative sample.
 
 ## 2.2.1 Execution reports and timelines
 
-Nextflow can produce an [execution report](https://nextflow.io/docs/latest/reports.html#execution-report) at the end of your workflow run that summarises all process execution metrics. Similarly, it can create a [execution timeline](https://nextflow.io/docs/latest/reports.html#execution-timeline). These reports summarise how your workflow ran, which processes were executed, and how long they took. They are very helpful during development, troubleshooting, and performance optimisation. These reports can be created when running the pipeline using the `-with-report` and `-with-timeline` flags or by adding `timeline{}` and `report{}` directives to our configuration file. 
+Nextflow can produce an [execution report](https://nextflow.io/docs/latest/reports.html#execution-report) at the end of your workflow run that summarises all process execution metrics. Similarly, it can create an [execution timeline](https://nextflow.io/docs/latest/reports.html#execution-timeline). These reports summarise how your workflow ran, which processes were executed, and how long they took. They are very helpful during development, troubleshooting, and performance optimisation. 
 
-Both directives allow us to specify a custom file name and choose whether or not you overwrite the file for each run. Rather than overwriting the same report file every time we run the pipeline, we will add a small timestamp parameter that automatically labels each report with the exact date and time the workflow was launched. This makes it easier to track multiple runs, especially when you are iterating qucikly and comparing resource usage. 
+These reports can be created when running the pipeline using the `-with-report` and `-with-timeline` flags, or by adding `timeline{}` and `report{}` directives to our configuration file. Inclusion within the configuration file has many advantages, providing a means of ensuring the reports are always generated when the pipeline is run, regardless of the execution command used, and allowing for further customisation.
 
-!!! example "Exercise"
+Both `-with-report` and `-with-timeline` allow us to specify a custom file name, and choose whether or not their output files can be overwritten each run. Rather than overwriting the same report file every time we run the pipeline, we will add a timestamp parameter that automatically labels each report with the exact date and time the workflow was launched to easily ensure over-write never occurs. This makes it easier to track multiple runs, especially when you are iterating quickly and comparing resource usage. 
 
-    Enable execution and timeline reports in our `custom.config` file. Copy the following and paste at the end of your `custom.config`:
+!!! example "Exercise: Enable execution and timeline reports"
+
+    We will enable execution and timeline reports in our `custom.config` file. 
+    
+    1. Copy the following code and paste at the end of your `custom.config`:
 
     === "Gadi (PBSpro)"
 
@@ -64,16 +68,18 @@ Both directives allow us to specify a custom file name and choose whether or not
         }
         ```
   
-    Run the workflow: 
+    2. Save the confug, and use your run script to run the workflow: 
     ```bash
     ./run.sh
     ```
 
-    Once the job completes, you should have a new folder called `runInfo`, where your timeline and report files are saved.
+Once the job completes, you should have a new folder called `runInfo`, where your timeline and report files are saved.
+
+
 
 !!! question "Questions"
     
-    1. In VScode, right click on the report.html file and download to your local computer
+    1. In VScode, right click on the `report.html` file and download to your local computer
     2. Open the file in your local browser
 
     Which process had required the highest memory usage?
@@ -81,19 +87,14 @@ Both directives allow us to specify a custom file name and choose whether or not
     ??? abstract "Answer"
         `GENOTYPE` used 0.8-1.6 GB memory
 
-## 2.2.2 Fine-tune reporting with trace 
+## 2.2.2 Resource reporting with `nextflow log` 
 
-!!! note "Recall the trace file from Part 1"
+Recall we generated a trace file in lesson [1.8.3](../part1/01_8_nfcore_config.md). For the runs we have already executed, which lacked the trace config option or command line flag, we can generate a trace report using the `nextflow log` command. This command is not identical to the trace file, but provides similar information about resource usage for each process in a tabular format. Since we don't have a trace file yet, we will first perform resource tracing using the `nextflow log` utility.
 
-    Recall we generated a trace file in lesson [1.8.3](../part1/01_8_nfcore_config.md). In this lesson, we will further explore trace customisation. 
+ 
+!!! example "Exercise: Review resource usage with nextflow log"
 
-[Trace reports](https://nextflow.io/docs/latest/reports.html#trace-file) can be customised to provide detailed records of each process executed within a pipeline. This file is generated by adding the `-with-trace` flag to your execution command or using the `trace{}` directive to your configuration file. While the HTML reports above focus on visual simmaries of the whole run, trace text files give you raw process-level data that you can slice, filter, and analyse as needed. Perfect for working on the HPC. Trace has a lot of functionality, not all fields are visible by default. 
-
-Before we add this to our configuration, lets trace a previous workflow run using the `nextflow log` utility. 
-
-!!! example "Exercise"
-
-    View the previous runs:
+    1. Run the `nextflow log` command with no arguments to view a summary of previous runs:
 
     ```bash
     nextflow log
@@ -106,13 +107,17 @@ Before we add this to our configuration, lets trace a previous workflow run usin
         | 2025-11-17 12:59:51 | 2m 24s   | naughty_bartik    | OK     | e34a5e5f9d  | 0ad50a9d-4e39-401e-ae46-65a1ee4e7933 | ...     |
         | 2025-11-17 13:07:26 | 2m 13s   | jolly_stonebraker | OK     | e34a5e5f9d  | fecd0d8c-0b9d-4cd6-9409-874ab4b2f976 | ...     |                   
 
-    View the fields that you can display:
+    This information is extracted from file saved in the work directory called `.nextflow.log`, `.nextflow.log.1` etc. These files are renamed each run from the same directory, so that latest run is always `.nextflow.log` and the highest-numbered log is the oldest. In order to perform resource tracing using this method, it is vital to not delete these logs!
+    
+    2. Include the `-list-fields` flag to view all of the available fields for this utility:
 
     ```bash
     nextflow log -list-fields
     ```
 
-    Extract some specific fields for a recent run, choose any fields you like. For example, substitute `jolly_stonebraker` with `<run name>`
+    That's quite a few! Just a handful of fields are shown by default, but there are >40 that can be optionally displayed.
+
+    3. Extract some specific fields for a recent run. Choose any fields you like, but we suggest focusing on those that provide relevant run info. Ensure to substitute `<run name>` in the command below with the actual run name from one of your runs. 
 
     ```groovy
     nextflow log <run name> -f name,status,exit,realtime,cpus,pcpu,memory,pmem,rss
@@ -126,15 +131,24 @@ Before we add this to our configuration, lets trace a previous workflow run usin
 
         `GENOTYPE`: ~ 30 seconds. 
 
-The trace provides a great snapshot of the resource usage for all of our processes. These include the raw values for CPU and memory requested (`cpus`, `memory`), how much of it was utilised (`%cpu`, `%mem`), and how long it ran (`duration`, `walltime`).
+We have now used the `nextflow log` utility to easily extract a snapshot of the resource usage for all of our processes, including the CPU and memory requested (`cpus`, `memory`), how much of it was utilised (`%cpu`, `%mem`), and how long it ran (`duration`, `walltime`).
 
-Displaying all the usage information in a single file can avoid needing to benchmark each process manually, as we saw in Part 1. 
+Next we will make this automated and reproducible by adding the `trace{}` directive to our configuration file. This will save all this information to a text file `runInfo/` to keep our launch directory neat.
 
-We can make this reproducible by adding the `trace{}` directive to our configuration file. This will save all this information to a text file `runInfo/` to keep our launch directory neat.
+## 2.2.3 Resource reporting with trace files 
 
-!!! example "Exercise"
+[Trace reports](https://nextflow.io/docs/latest/reports.html#trace-file) can be customised to provide detailed records of each process executed within a pipeline. As we learnt earlier, this file is generated by adding the `-with-trace` flag to your execution command or including the `trace{}` directive in your custom configuration file. While the HTML reports we looked at earlier focus on visual summaries of the whole run, trace text files give you raw process-level data that you can slice, filter, and analyse as needed: perfect for working on the HPC! 
 
-    Add the following to your `custom.config` beneath the `report{}` and `timeline{}` directives: 
+
+The Nextflow `trace` tool has a lot of functionality. Like `nextflow log`, not all fields are displayed by default. For a full list and description of trace fields available, users should refer to the Nextflow [trace documentation](https://nextflow.io/docs/latest/reports.html#trace-file). Note that the `log` and `trace` fields are not identical, but do have many shared fields. 
+
+Next we will extract the same fields with trace as we did with `nextflow log`, but note the small difference in field names for percentage CPU usage (`%cpu` vs `pcpu`) and percentage memory usage (`%mem` vs `pmem`). As always in bioinformatics - read the docs! 
+
+
+!!! example "Exercise: Enable trace reporting"
+
+    1. Add the following to your `custom.config` file: 
+
     ```
     trace {
         enabled = true 
@@ -144,12 +158,14 @@ We can make this reproducible by adding the `trace{}` directive to our configura
     }
     ```
 
-    Run your workflow again: 
+    2. Save the config, then run your workflow again: 
+
     ```bash
     ./run.sh
     ```
 
-    View you trace file:
+    3. View your trace file:
+
     ```bash
     cat runInfo/trace-*.txt
     ```
@@ -178,23 +194,22 @@ We can make this reproducible by adding the `trace{}` directive to our configura
         | STATS (1)                  | COMPLETED | 0    | 14.9s    | 1s       | 1    | 45.2%  | 2 GB   | 0.0% | 2 MB     |
         | MULTIQC                    | COMPLETED | 0    | 19.9s    | 5.3s     | 1    | 62.4%  | 2 GB   | 0.0% | 78.6 MB  |
 
-## 2.2.3 Customise the trace file
+## 2.2.4 Trace file enhancement
 
-Currently, the trace file reports on the resources used per task. Trace offers additional, useful reporting functionality that makes it easier for us to track process execution when working in an HPC environment. When things go wrong with process execution, we often need to trawl through the work directory, or view the job run with `qstat` or `sacct` to gather information. Let's add this information to our trace file:
+When things go wrong with process execution, we often need to trawl through the work directory to view `.command.err` files or view the job with `qstat` or `sacct` to debug the error. With trace, we can add two very useful fields that help us quickly locate the work directory and the scheduler job ID for each process.
 
-!!! example "Exercise"
+!!! example "Exercise: Add work directory and job ID to trace file"
 
-    1. View the documentation on [trace fields](https://www.nextflow.io/docs/latest/reports.html#trace-fields)
-    2. Locate the two field names that provides the:
+    1. View the documentation on [trace fields](https://www.nextflow.io/docs/latest/reports.html#trace-fields), and locate the two fields that provide the:
 
-        - directory path where the task was executed
-        - the job ID when executed by a grid engine (scheduler)
+        - `work/` directory path where the task was executed
+        - job ID executed by a grid engine (i.e. the scheduler)
 
-    3. Append these to `trace.fields` in `nextflow.config`
+    2. Append these two field names to `trace.fields` in `custom.config`
 
     ??? question "Hint"
 
-        ```groovy hl_lines="5"
+        ```
         trace {
             enabled = true
             overwrite = false
@@ -202,24 +217,44 @@ Currently, the trace file reports on the resources used per task. Trace offers a
             fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss,workdir,native_id'
         }
         ```
+    3. Add the Nextflow `-resume` flag to your run script to avoid re-running completed processes:
 
-    4. Save, and run the workflow:
+    ```
+    nextflow run main.nf -profile slurm -c config/custom.config -resume
+
+    4. Save the config and run the workflow:
     ```bash
     ./run.sh
     ```
 
     5. View the newly generated trace file inside the `runInfo/` folder
 
-These added fields help you track down the scheduler job and work directories
-for debugging. It is up to you how you want to configure your traces for your own pipelines and how much added information you require.
+    ```bash
+    cat runInfo/trace-<newest timestamp>.txt
+    ```
 
-## Summary
+    6. Now view the previously generated trace file:
+    ```bash
+    cat runInfo/trace-<newest timestamp>.txt
+    ```
 
-Nextflow's profiling features are powerful automations that scale nicely when
-you have many processes in a pipeline. This saves the need for manual
-benchmarking such as using `time`.
+Note that despite running with `-resume`, the trace file is still generated afresh for the entire run, including full resource usage details as if the process was executed again. This is very handy for benchmarking and tracking resource usage over multiple runs, as the full workflow details are always included in the latets trace regardless of whether a task was cached or re-executed.
 
-## Checkpoint
+It is up to you how you want to configure your traces for your own pipelines and how much added information you require. The suggestions we have demonstrated in this lesson are a good starting point for most bioinformatics workflows.
+
+## 2.2.5 Summary
+
+In this section, we have:
+
+    - Enabled Nextflow's execution report and timeline features to generate HTML reports summarising our workflow run
+    - Used the `nextflow log` command to extract resource usage information from previous runs  
+    - Enabled trace reporting in our custom configuration file to generate detailed process-level resource usage reports and additional fields assisting with debugging
+
+These powerful profiling features can help you benchmark and debug your runs, monitor resource usage, and plan for upcoming compute needs. Applying these tools when you set up your own pipelines will help you build efficient and reliable workflows that make the best use of your HPC resources.
+
+## 2.2.6 Code checkpoint
+
+Complete code at the end of Section 2.2:
 
 ??? abstract "Show code"
 
@@ -252,8 +287,18 @@ benchmarking such as using `time`.
             enabled = true 
             overwrite = false 
             file = "./runInfo/trace-${params.timestamp}.txt"
-            fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss'
+            fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss,workdir,native_id'
         }
+        ```
+
+        
+        ```groovy title="run.sh"
+        #!/bin/bash
+
+        module load nextflow/24.04.5
+        module load singularity
+
+        nextflow run main.nf -profile pbspro -c config/custom.config -resume
         ```
 
     === "Setonix (Slurm)"
@@ -287,4 +332,14 @@ benchmarking such as using `time`.
             file = "./runInfo/trace-${params.timestamp}.txt"
             fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss,workdir,native_id'
         }
+        ```
+
+    
+        ```groovy title="run.sh"
+        #!/bin/bash
+
+        module load nextflow/24.10.0
+        module load singularity/4.1.0-slurm
+
+        nextflow run main.nf -profile slurm -c config/custom.config -resume
         ```
