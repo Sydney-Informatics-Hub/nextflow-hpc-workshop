@@ -71,35 +71,71 @@ As responsible users of shared systems, we will select the option that maintains
 
 !!! example "Exercise"
 
-    TODO untruncate
-
-    In `conf/custom.config`, add the following inside the `process` scope:
+    In `conf/custom.config`, update the `process` scope:
 
     === "Gadi (PBS)"
 
-        ```groovy title="conf/custom.config" hl_lines="3-8"
+        ```groovy title="conf/custom.config" hl_lines="5-15"
         process {
-        // truncated
+            cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
+            memory = 4.GB
 
-        	withName: 'ALIGN' {
-        		cpus = 4 // Efficient number of cores
-        		memory = 18.GB // 4 CPUs * 4.6 GB
-        		time = 2.min
-        	}
+            withName: /FASTQC|JOINT_GENOTYPE/ {
+                cpus = 2
+                memory = 1.GB
+                time = 2.minutes
+            }
+
+            withName: ALIGN {
+                cpus = 4
+                memory = 16.GB
+                time = 2.minutes
+            }
+
+            withName: GENOTYPE {
+                cpus = 2
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+            withName: /STATS|MULTIQC/ {
+                cpus = 1
+                memory = 2.GB
+                time = 2.minutes
+            }
+
         }
         ```
 
     === "Setonix (Slurm)"
 
-        ```groovy title="conf/custom.config" hl_lines="3-8"
+        ```groovy title="conf/custom.config" hl_lines="5-15"
         process {
-        // truncated
+            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+            memory = 2.GB
 
-        	withName: 'ALIGN' {
-        		cpus = 4 // Efficient number of cores
-        		memory = 7.GB // 4 CPUs * 1.8 GB
-        		time = 2.min
-        	}
+            withName: /FASTQC|JOINT_GENOTYPE/ {
+                cpus = 2
+                memory = 1.GB
+                time = 2.minutes
+            }
+
+            withName: ALIGN {
+                cpus = 4
+                memory = 8.GB
+                time = 2.minutes
+            }
+            withName: GENOTYPE {
+                cpus = 2
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+            withName: /STATS|MULTIQC/ {
+                cpus = 1
+                memory = 2.GB
+                time = 2.minutes
+            }
         }
         ```
 
@@ -111,9 +147,196 @@ As responsible users of shared systems, we will select the option that maintains
     ./run.sh
     ```
 
+This should not have re-run the `ALIGN`, or any other processes. This is because we still have our `-resume` flag in our run scripts. Nextflow did not detect any changes to our workflow so used the cached files from the previous run:
+
+```console title="Output"
+ N E X T F L O W   ~  version 24.10.0
+
+Launching `main.nf` [mighty_carson] DSL2 - revision: e34a5e5f9d
+
+[26/95a75a] FASTQC (fastqc on NA12877) | 1 of 1, cached: 1 ✔
+[7d/99698f] ALIGN (1)                  | 1 of 1, cached: 1 ✔
+[96/cdfe17] GENOTYPE (1)               | 1 of 1, cached: 1 ✔
+[8a/2b3191] JOINT_GENOTYPE (1)         | 1 of 1, cached: 1 ✔
+[88/dab55c] STATS (1)                  | 1 of 1, cached: 1 ✔
+[34/65d4e2] MULTIQC                    | 1 of 1, cached: 1 ✔
+```
+
+As configuration generally does not trigger the re-run of processes, we need to run the workflow from the beginning.
+
+!!! example "Exercise"
+
+    Remove the `-resume` flag from your `run.sh` and run
+
+    ```bash
+    ./run.sh
+    ```
+
+    Inspect your trace file and confirm that `ALIGN` has been allocated the core and memory that you added in `custom.config`.
+
+    ??? abstract "Output"
+
+        === "Gadi (PBSpro)"
+
+            | name                       | status    | exit | realtime | cpus     | %cpu   | memory     | %mem | rss      |
+            | -------------------------- | --------- | ---- | -------- | -------- | ------ | ---------- | ---- | -------- |
+            | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 4s       | 2        | 100.2% | 1 GB       | 0.2% | 241.5 MB |
+            | ALIGN (1)                  | COMPLETED | 0    | 1s       | **4**    | 197.8% | **16 GB**  | 0.0% | 6.3 MB   |
+            | GENOTYPE (1)               | COMPLETED | 0    | 41s      | 2        | 137.3% | 2 GB       | 1.1% | 1.3 GB   |
+            | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 8s       | 2        | 160.9% | 1 GB       | 0.3% | 438.5 MB |
+            | STATS (1)                  | COMPLETED | 0    | 0ms      | 1        | 61.9%  | 2 GB       | 0.0% | 3.1 MB   |
+            | MULTIQC                    | COMPLETED | 0    | 3.7s     | 1        | 88.9%  | 2 GB       | 0.1% | 92.6 MB  |
+
+        === "Setonix (Slurm)"
+
+            | name                       | status    | exit | realtime | cpus  | %cpu   | memory   | %mem | rss      |
+            | -------------------------- | --------- | ---- | -------- | ----- | ------ | -------- | ---- | -------- |
+            | ALIGN (1)                  | COMPLETED | 0    | 0ms      | **4** | 257.0% | **8 GB** | 0.0% | 2 MB     |
+            | FASTQC (fastqc on NA12877) | COMPLETED | 0    | 9s       | 2     | 61.4%  | 1 GB     | 0.1% | 247.6 MB |
+            | GENOTYPE (1)               | COMPLETED | 0    | 39s      | 2     | 127.2% | 2 GB     | 0.6% | 1.6 GB   |
+            | JOINT_GENOTYPE (1)         | COMPLETED | 0    | 9s       | 2     | 176.0% | 1 GB     | 0.2% | 447.7 MB |
+            | STATS (1)                  | COMPLETED | 0    | 1s       | 1     | 70.1%  | 2 GB     | 0.0% | 2 MB     |
+            | MULTIQC                    | COMPLETED | 0    | 9.3s     | 1     | 38.7%  | 2 GB     | 0.0% | 85.7 MB  |
+
 !!! info "Remember to read the tool documentation!"
 
     All software and bioinformatics tools are all built differently. Some support multi-threading, some can only run things with a single thread. Overlooking these details may not be crucial when running on systems where you have autonomy and access to all resources (personal compute, cloud instances), however, these are important parts of configuring your workflow on HPC shared systems to set reasonable limits and requests.
+
+### Checkpoint
+
+??? abstract "Show code"
+
+    === "Gadi (PBS)"
+
+        ```groovy title="conf/custom.config" hl_lines="5-15"
+        process {
+            cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
+            memory = 4.GB
+
+            withName: /FASTQC|JOINT_GENOTYPE/ {
+                cpus = 2
+                memory = 1.GB
+                time = 2.minutes
+            }
+
+            withName: ALIGN {
+                cpus = 4
+                memory = 16.GB
+                time = 2.minutes
+            }
+
+            withName: GENOTYPE {
+                cpus = 2
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+            withName: /STATS|MULTIQC/ {
+                cpus = 1
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+        }
+
+        // Name the reports according to when they were run
+        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+
+        // Generate timeline-timestamp.html timeline report 
+        timeline {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/timeline-${params.timestamp}.html"
+        }
+
+        // Generate report-timestamp.html execution report 
+        report {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/report-${params.timestamp}.html"
+        }
+
+        // Name the reports according to when they were run
+        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+
+        // Generate timeline-timestamp.html timeline report 
+        timeline {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/timeline-${params.timestamp}.html"
+        }
+
+        // Generate report-timestamp.html execution report 
+        report {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/report-${params.timestamp}.html"
+        }
+
+        trace {
+            enabled = true 
+            overwrite = false 
+            file = "./runInfo/trace-${params.timestamp}.txt"
+            fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss'
+        }
+        ```
+
+    === "Setonix (Slurm)"
+
+        ```groovy title="conf/custom.config" hl_lines="5-15"
+        process {
+            cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
+            memory = 2.GB
+
+            withName: /FASTQC|JOINT_GENOTYPE/ {
+                cpus = 2
+                memory = 1.GB
+                time = 2.minutes
+            }
+
+            withName: ALIGN {
+                cpus = 4
+                memory = 8.GB
+                time = 2.minutes
+            }
+
+            withName: GENOTYPE {
+                cpus = 2
+                memory = 2.GB
+                time = 2.minutes
+            }
+
+            withName: /STATS|MULTIQC/ {
+                cpus = 1
+                memory = 2.GB
+                time = 2.minutes
+            }
+        }
+
+        // Name the reports according to when they were run
+        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+
+        // Generate timeline-timestamp.html timeline report 
+        timeline {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/timeline-${params.timestamp}.html"
+        }
+
+        // Generate report-timestamp.html execution report 
+        report {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/report-${params.timestamp}.html"
+        }
+
+        trace {
+            enabled = true 
+            overwrite = false 
+            file = "./runInfo/trace-${params.timestamp}.txt"
+            fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss'
+        }
+        ```
 
 ## Scatter-gathering alignment
 
@@ -135,13 +358,13 @@ We will scatter-gather the alignment step. This is a widely approach for mapping
 
 !!! example "Exercise"
 
-    Add the following chunk to your `main.nf` file:
+    Copy the following lines, and paste in `main.nf` after `FASTQC(reads)` and before `ALIGN(reads, bwa_index)`:
 
     ```groovy title="main.nf"
-    // Split FASTQs for each sample
-    split_fqs = reads
-        .splitFastq(limit: 3, pe: true, file: true)
-        .view()
+        // Split FASTQs for each sample
+        split_fqs = reads
+            .splitFastq(limit: 3, pe: true, file: true)
+            .view()
     ```
 
 - The `reads` channel is taken as input. It contains the `[ sample_name, fastq_r1, fastq_r2 ]`
@@ -156,12 +379,7 @@ Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` fi
     In `main.nf`, in the `workflow` scope, replace the input argument to `ALIGN` from `ALIGN(reads, bwa_index)` to `ALIGN(split_fqs, bwa_index)`.
 
     ```groovy title="main.nf"
-    // Split FASTQs for each sample
-    split_fqs = reads
-        .splitFastq(limit: 3, pe: true, file: true)
-        .view()
-
-    ALIGN(split_fqs, bwa_index)
+        ALIGN(split_fqs, bwa_index)
     ```
 
     Save the file, and run:
@@ -192,8 +410,6 @@ Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` fi
 
         Caused by:
           Process `JOINT_GENOTYPE` input file name collision -- There are multiple input files for each of the following file names: NA12877.g.vcf.gz, NA12877.g.vcf.gz.tbi
-
-
 
         Container:
           /scratch/pawsey1227/fjaya/nextflow-on-hpc-materials/singularity/quay.io-biocontainers-gatk4-4.6.2.0--py310hdfd78af_1.img
@@ -235,23 +451,24 @@ However, you should have received an error before `JOINT_GENOTYPE` was run:
 
 Let's troubleshoot by inspecting the output of the `GENOTYPE` process
 
-!!! example "Exercise"
+!!! example "Exercises"
+
+    TODO remove this exercise, just show/demo
     
-    First, inspect the outputs of the `ALIGN` process by adding `.view()`.
+    - Inspect the process outputs using `.view()`. Copy and paste the following line after `GENOTYPE(ALIGN.out.aligned_bam, ref)`.
 
     ```groovy title="main.nf" hl_lines="3"
-    // Run genotyping with aligned bam and genome reference
-    GENOTYPE(ALIGN.out.aligned_bam, ref)
     GENOTYPE.out.view()
     ```
 
-    Save the file, and run with `-resume`
+    - Save the file.
+    - Update your run script so it runs with `-resume`, and re-run:
 
     ```
     ./run.sh 
     ```
 
-    ??? abstract Output
+    ??? abstract "Output"
 
         ```console title="Output"
         # workdirs have been truncated with '...' for readability
@@ -279,11 +496,151 @@ Let's troubleshoot by inspecting the output of the `GENOTYPE` process
         - The first three lines are the outputs of our `.splitFastq()` operation, this has not changed since the last time the workflow was run
         - The last three lines are the outputs emitted from the `GENOTYPE` process. One output reflects the run for one of the chunks processed. However, all the **output names are the same**. This is the cause of the error.
 
-There are several ways to resolve this, such as adding the chunk name to the outputs, similar to how `.splitFastq()` manages this. In the next section, we will implement the "gather" pattern in our pipeline to fix this.
+We will resolve this by conducting updating our channels to include the chunk id, and rename how the bam files are output, ensuring they are uniquely identified.
+
+!!! example "Exercise"
+
+    - Update the workflow script to include the `chunk_id`. This will be used to identify the reads to avoid the file name collision error previously. Add `.view()` to see how the `split_fqs` channel and the output for `ALIGN` has changed.
+
+    ```groovy title="main.nf" hl_lines="4-8 12"
+        // Split FASTQs for each sample
+        split_fqs = reads
+            .splitFastq(limit: 3, pe: true, file: true)
+            .map { sample, r1, r2 ->
+                def chunk_id = r1.toString().tokenize('.')[2]
+                return [ sample, r1, r2, chunk_id ]
+            }
+            .view()
+
+        // Run the align step with the reads_in channel and the genome reference
+        ALIGN(split_fqs, bwa_index)
+        ALIGN.out.view()
+    ```
+
+    Since our input channel has changed, we need to update the input block of our `ALIGN` module to recognise the `chunk_id`. We also want to rename our output bam files to include the chunk id.
+
+    - Copy and paste the following, replacing your entire `module/align.nf`
+
+    ```groovy title="module/align.nf" hl_lines="7 11 15 16"
+    process ALIGN {
+
+        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
+        publishDir "${params.outdir}/alignment"
+
+        input:
+        tuple val(sample_id), path(reads_1), path(reads_2), val(chunk_id)
+        tuple val(ref_name), path(bwa_index)
+
+        output:
+        tuple val(sample_id), path("${sample_id}.${chunk_id}.bam"), path("${sample_id}.${chunk_id}.bam.bai"), emit: aligned_bam
+
+        script:
+        """
+        bwa mem -t $task.cpus -R "@RG\\tID:${sample_id}\\tPL:ILLUMINA\\tPU:${sample_id}\\tSM:${sample_id}\\tLB:${sample_id}\\tCN:SEQ_CENTRE" ${bwa_index}/${ref_name} $reads_1 $reads_2 | samtools sort -O bam -o ${sample_id}.${chunk_id}.bam
+        samtools index ${sample_id}.${chunk_id}.bam
+        """
+
+    }
+    ```
+
+    Save your `main.nf` and `module/align.nf` and re-run:
+
+    ```bash
+    ./run.sh
+    ```
+
+    ??? abstract "Output"
+
+        ```console title="Output"
+        [3c/2aa92e] FASTQC (fastqc on NA12877) [100%] 1 of 1, cached: 1 ✔
+        [25/85c48b] ALIGN (1)                  [100%] 3 of 3, cached: 3 ✔
+        [3d/f1dc44] GENOTYPE (1)               [100%] 1 of 1, failed: 1
+        [-        ] JOINT_GENOTYPE             -
+        [-        ] STATS                      -
+        [-        ] MULTIQC                    -
+        [NA12877, .../NA12877_chr20-22.R1.1.fq, .../NA12877_chr20-22.R2.1.fq, 1]
+        [NA12877, .../NA12877_chr20-22.R1.2.fq, .../NA12877_chr20-22.R2.2.fq, 2]
+        [NA12877, .../NA12877_chr20-22.R1.3.fq, .../NA12877_chr20-22.R2.3.fq, 3]
+        [NA12877, .../NA12877.3.bam, .../NA12877.3.bam.bai]
+        [NA12877, .../NA12877.1.bam, .../NA12877.1.bam.bai]
+        [NA12877, .../NA12877.2.bam, .../NA12877.2.bam.bai]
+        ```
+
+        The pipeline will fail, however `ALIGN` now includes the chunk id in the bam and bam index names.
+
+#### Checkpoint
+
+??? abstract "Show code"
+
+    ```groovy title="main.nf" hl_lines="28-37"
+    include { FASTQC } from './modules/fastqc'
+    include { ALIGN } from './modules/align'
+    include { GENOTYPE } from './modules/genotype'
+    include { JOINT_GENOTYPE } from './modules/joint_genotype'
+    include { STATS } from './modules/stats'
+    include { MULTIQC } from './modules/multiqc'
+    
+    // Define the workflow
+    workflow {
+    
+        // Define the fastqc input channel
+        reads = Channel.fromPath(params.samplesheet)
+            .splitCsv(header: true)
+            .map { row -> {
+                // def strandedness = row.strandedness ? row.strandedness : 'auto'
+                [ row.sample, file(row.fastq_1), file(row.fastq_2) ] 
+            }}
+    
+        bwa_index = Channel.fromPath(params.bwa_index)
+            .map { idx -> [ params.bwa_index_name, idx ] }
+            .first()
+        ref = Channel.of( [ file(params.ref_fasta), file(params.ref_fai), file(params.ref_dict) ] ).first()
+    
+        // Run the fastqc step with the reads_in channel
+        FASTQC(reads)
+    
+        // Split FASTQs for each sample
+        split_fqs = reads
+            .splitFastq(limit: 3, pe: true, file: true)
+            .map { sample, r1, r2 ->
+                def chunk_id = r1.toString().tokenize('.')[2]
+                return [ sample, r1, r2, chunk_id ]
+            }
+            .view()
+    
+        // Run the align step with the reads_in channel and the genome reference
+        ALIGN(split_fqs, bwa_index)
+        ALIGN.out.view()
+    
+        // Run genotyping with aligned bam and genome reference
+        GENOTYPE(ALIGN.out.aligned_bam, ref)
+    
+        // Gather gvcfs and run joint genotyping
+        all_gvcfs = GENOTYPE.out.gvcf
+            .map { _sample_id, gvcf, gvcf_idx -> [ params.cohort_name, gvcf, gvcf_idx ] }
+            .groupTuple()
+        JOINT_GENOTYPE(all_gvcfs, ref)
+    
+        // Get VCF stats
+        STATS(JOINT_GENOTYPE.out.vcf)
+    
+        // Collect summary data for MultiQC
+        multiqc_in = FASTQC.out.qc_out
+            .mix(STATS.out.stats_out)
+            .collect()
+    
+        /*
+        * Generate the analysis report with the 
+        * outputs from fastqc and bcftools stats
+        */ 
+        MULTIQC(multiqc_in)
+    
+    }
+    ```
 
 ### Gather: combining our alignments
 
-Now that we have sucessfully split our reads, we will implement a gather pattern to bring our alignments into a single file again.
+Now that we have sucessfully split our reads, we will implement a gather pattern to bring our alignments into a single file again. 
 
 !!! tip "Different patterns for different needs"
 
@@ -308,19 +665,14 @@ Now that we have sucessfully split our reads, we will implement a gather pattern
     include { MULTIQC } from './modules/multiqc'
     ```
 
-    Update the workflow script:
 
-    ```groovy title ="main.nf"
-        // Split FASTQs for each sample
-    split_fqs = reads
-        .splitFastq(limit: 3, pe: true, file: true)
-        .map { sample, r1, r2 ->
-            def chunk_id = r1.toString().tokenize('.')[2]
-            return [ sample, r1, r2, chunk_id ]
-        }
-    
-    ALIGN(split_fqs, bwa_index)
+    Re-run the pipeline
+    ```
+    ./run.sh
+    ```
 
+
+    ```
     gathered_bams = ALIGN.out.aligned_bam
         .groupTuple()
 
@@ -329,36 +681,6 @@ Now that we have sucessfully split our reads, we will implement a gather pattern
     // Run genotyping with aligned bam and genome reference
     GENOTYPE(MERGE_BAMS.out.aligned_bam, ref)
     ```
-
-    And update the `ALIGN` module to take the `chunk_id`:
-
-    ```
-    process ALIGN {
-
-        container "quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:1bd8542a8a0b42e0981337910954371d0230828e-0"
-        publishDir "${params.outdir}/alignment"
-
-        input:
-        tuple val(sample_id), path(reads_1), path(reads_2), val(chunk_id)
-        tuple val(ref_name), path(bwa_index)
-
-        output:
-        tuple val(sample_id), path("${sample_id}.${chunk_id}.bam"), path("${sample_id}.${chunk_id}.bam.bai"), emit: aligned_bam
-
-        script:
-        """
-        bwa mem -t $task.cpus -R "@RG\\tID:${sample_id}\\tPL:ILLUMINA\\tPU:${sample_id}\\tSM:${sample_id}\\tLB:${sample_id}\\tCN:SEQ_CENTRE" ${bwa_index}/${ref_name} $reads_1 $reads_2 | samtools sort -O bam -o ${sample_id}.${chunk_id}.bam
-        samtools index ${sample_id}.${chunk_id}.bam
-        """
-
-    }
-    ```
-
-    Re-run the pipeline
-    ```
-    ./run.sh
-    ```
-
 Now, let's re-inspect that the merge worked as intended.
 
 !!! example "Exercise"
