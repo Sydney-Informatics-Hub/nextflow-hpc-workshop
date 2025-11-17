@@ -109,29 +109,6 @@ Getting the shape right matters. Underestimating the resources you job requires 
 
     ![](figs/00_HPC_scheduler_tetris.png)
 
-<<<<<<< HEAD
-    Each job’s shape is determined by three key factors:
-
-    - **CPU** – how many processor cores it needs
-    - **Memory** – how much RAM it requires
-    - **Walltime** – how long it is allowed to run
-
-    Once submitted, your job enters a **queue**, much like a waiting line for compute resources. But unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together, like sliding Tetris blocks, to maximise system usage.
-
-    The order in which jobs run depends on several factors:
-
-    - **Job priority** - determined by project, queue, and fair-share usage
-    - **Requested resources** - smaller jobs can often “slot in” sooner
-    - **Queue limits** - different queues prioritise short, long, or interactive jobs
-
-    Getting the shape right matters. Understandably, underestimating the resources you job requires can cause it to fail. What is less immediately obvious is that overestimating your needs is also detrimental, as it makes your job harder to fit. Common outcomes from overestimating your job's requirements include:
-
-    - **Longer queue times** – large, awkwardly-shaped jobs wait for space
-    - **Wasted capacity** – unused cores or memory that could have run other jobs
-    - **Wasted money** - HPC providers will charge you for the CPUs and memory you request - **wasted capacity = wasted energy!**
-
-=======
->>>>>>> origin/main
     Just like in Tetris, the scheduler aims to fill every gap and keep the system running smoothly.
     Small, well-shaped jobs often fall neatly into open spaces, while larger ones wait for the perfect fit.
 
@@ -175,9 +152,6 @@ To familiarise ourselves with submitting jobs to the scheduler, we will once aga
         --format fastq ${READS_1} ${READS_2}
     ```
 
-<<<<<<< HEAD
-The script does a few things. First, it loads the `singularity` module; we'll need this to run the `fastqc` command when the job gets submitted to the compute node. Next, it defines a few bash variables that point to the input FASTQ data. It then creates an output directory called `results/fastqc_${SAMPLE_ID}_logs/`, where `${SAMPLE_ID}` will get evaluated to `NA12878_chr20-22`. And finally, it runs the `fastqc` command within a singularity container by prefixing the command with `singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`. Note that we have already pre-loaded the `fastqc` singularity container image at `../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`.
-=======
 The script does a few things:
 
 1. It loads the `singularity` module. We'll need this to run the `fastqc` command when the job gets submitted to the compute node
@@ -187,7 +161,6 @@ The script does a few things:
 
 !!! note "Your container is ready to go!"
 For the sake of expediency, we have pre-downloaded the `fastqc` singularity container image for you at `../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img`.
->>>>>>> origin/main
 
 This is everything we need to run the job; we just have to submit the script to the HPC scheduler. In doing so, we will provide the following details to the scheduler:
 
