@@ -893,7 +893,7 @@ In fact, the configs we have built in this lesson are slightly simplified versio
             cpus: 64
         ]
         executor       = 'slurm'
-        clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
+        clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
         module         = 'singularity/4.1.0-slurm'
         cache          = 'lenient'
         stageInMode    = 'symlink'
