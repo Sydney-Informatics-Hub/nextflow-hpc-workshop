@@ -415,7 +415,7 @@ Before we re-run our pipeline, we want to add a few more settings to ensure we a
             // Run using the pbspro scheduler on the 'normalbw' queue
             executor = 'slurm'
             queue = 'work'
-            clusterOptions = "--account=${System.getenv('PAWSEYPROJECT')} --reservation=NextflowHPC"
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservation=NextflowHPC"
             cache = 'lenient'
             stageInMode = 'symlink'
         }
