@@ -26,7 +26,7 @@ Both directives allow us to specify a custom file name and choose whether or not
 
 !!! example "Exercise"
 
-    Enable execution and timeline reports in our `custom.config` file. Copy the following into your `custom.config`:
+    Enable execution and timeline reports in our `custom.config` file. Copy the following and paste at the end of your `custom.config`:
 
     === "Gadi (PBSpro)"
 
@@ -77,11 +77,15 @@ Both directives allow us to specify a custom file name and choose whether or not
 
     Once the job completes, you should have a new folder called `runInfo`, where your timeline and report files are saved.
 
-!!! question "Question"
-    TODO a question about resource usage, timeline. 
+!!! question "Questions"
+    
+    1. In VScode, right click on the report.html file and download to your local computer
+    2. Open the file in your local browser
+
+    Which process had required the highest memory usage?
 
     ??? abstract "Answer"
-        TODO answer. 
+        `GENOTYPE` used 0.8-1.6 GB memory
 
 ## 2.2.2 Fine-tune reporting with trace 
 
@@ -91,38 +95,38 @@ Before we add this to our configuration, lets trace a previous workflow run usin
 
 !!! example "Exercise"
 
-    View the available fields using the Nextflow log command:
+    View the previous runs:
 
-    === "Gadi (PBSpro)"
+    ```bash
+    nextflow log
+    ```
 
-        ```groovy
-        nextflow log -list-fields
-        ```
+    ??? abstract "Output"
 
-    === "Setonix (Slurm)"
+        | TIMESTAMP           | DURATION | RUN NAME          | STATUS | REVISION ID | SESSION ID                           | COMMAND |
+        | ------------------- | -------- | ----------------- | ------ | ----------- | ------------------------------------ | ------- |
+        | 2025-11-17 12:59:51 | 2m 24s   | naughty_bartik    | OK     | e34a5e5f9d  | 0ad50a9d-4e39-401e-ae46-65a1ee4e7933 | ...     |
+        | 2025-11-17 13:07:26 | 2m 13s   | jolly_stonebraker | OK     | e34a5e5f9d  | fecd0d8c-0b9d-4cd6-9409-874ab4b2f976 | ...     |                   
 
-        ```groovy
-        nextflow log -list-fields
-        ```
-    Extract some specific fields for a recent run, choose any fields you like:
+    View the fields that you can display:
 
-    === "Gadi (PBSpro)"
+    ```bash
+    nextflow log -list-fields
+    ```
 
-        ```groovy
-        nextflow log <run name> -f name,status,exit,realtime,cpus,pcpu,memory,pmem,rss
-        ```
+    Extract some specific fields for a recent run, choose any fields you like. For example, substitute `jolly_stonebraker` with `<run name>`
 
-    === "Setonix (Slurm)"
-
-        ```groovy
-        nextflow log <run name> -f name,status,exit,realtime,cpus,pcpu,memory,pmem,rss
-        ```
+    ```groovy
+    nextflow log <run name> -f name,status,exit,realtime,cpus,pcpu,memory,pmem,rss
+    ```
 
 !!! question "Question"
-    TODO a question about trace. 
+    
+    Which process had the highest `realtime`?
 
     ??? abstract "Answer"
-        TODO answer. 
+
+        `GENOTYPE`: ~ 30 seconds. 
 
 The trace provides a great snapshot of the resource usage for all of our processes. These include the raw values for CPU and memory requested (`cpus`, `memory`), how much of it was utilised (`%cpu`, `%mem`), and how long it ran (`duration`, `walltime`).
 
@@ -208,8 +212,6 @@ Currently, the trace file reports on the resources used per task. Trace offers a
 
     5. View the newly generate trace file under the `runInfo/` folder
 
-    _Bonus: feel free to include several different fields and re-run your pipeline. However, ensure the fields between `name` through to `peak_rss` are included before proceeding to the next lessons._
-
 These added fields help you track down the scheduler job and work directories
 for debugging. It is up to you how you want to configure your traces for your own pipelines and how much added information you require.
 
@@ -219,64 +221,89 @@ Nextflow's profiling features are powerful automations that scale nicely when
 you have many processes in a pipeline. This saves the need for manual
 benchmarking such as using `time`.
 
-??? Code
+## Checkpoint
+
+??? abstract "Show code"
 
     === "Gadi (PBS)"
 
-        ```groovy title='config/custom.config' hl_lines="6-31"
+        ```groovy title='config/custom.config'
         process {
             cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6 OR 9.1
             memory = 4.GB
         }
 
+        // Name the reports according to when they were run
         params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
 
-        trace {
-             enabled = true
-             overwrite = false
-             file = "./runInfo/trace-${params.timestamp}.txt"
-             fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss,workdir,native_id'
-         }
-
+        // Generate timeline-timestamp.html timeline report 
         timeline {
             enabled = true
             overwrite = false
             file = "./runInfo/timeline-${params.timestamp}.html"
         }
 
+        // Generate report-timestamp.html execution report 
         report {
             enabled = true
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
+        }
+
+        // Name the reports according to when they were run
+        params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+
+        // Generate timeline-timestamp.html timeline report 
+        timeline {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/timeline-${params.timestamp}.html"
+        }
+
+        // Generate report-timestamp.html execution report 
+        report {
+            enabled = true
+            overwrite = false
+            file = "./runInfo/report-${params.timestamp}.html"
+        }
+
+        trace {
+            enabled = true 
+            overwrite = false 
+            file = "./runInfo/trace-${params.timestamp}.txt"
+            fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss'
         }
         ```
 
     === "Setonix (Slurm)"
 
-        ```groovy title='config/custom.config' hl_lines="6-31"
+        ```groovy title='config/custom.config'
         process {
             cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
             memory = 2.GB
         }
 
+        // Name the reports according to when they were run
         params.timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
 
-        trace {
-             enabled = true
-             overwrite = false
-             file = "./runInfo/trace-${params.timestamp}.txt"
-             fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss,workdir,native_id'
-         }
-
+        // Generate timeline-timestamp.html timeline report 
         timeline {
             enabled = true
             overwrite = false
             file = "./runInfo/timeline-${params.timestamp}.html"
         }
 
+        // Generate report-timestamp.html execution report 
         report {
             enabled = true
             overwrite = false
             file = "./runInfo/report-${params.timestamp}.html"
+        }
+
+        trace {
+            enabled = true 
+            overwrite = false 
+            file = "./runInfo/trace-${params.timestamp}.txt"
+            fields = 'name,status,exit,realtime,cpus,%cpu,memory,%mem,rss,workdir,native_id'
         }
         ```
