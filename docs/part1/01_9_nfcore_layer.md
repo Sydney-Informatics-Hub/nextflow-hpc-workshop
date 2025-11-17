@@ -298,60 +298,6 @@ We saw that `sarek` wasn't well-optimised for such a small test dataset. In this
 
     We can also see that we are now running only two instances of the `BWAMEM1_MEM` process. Since we gave `FASTP` just two threads to work with, it ended up splitting our FASTQ file into two chunks, each of which was run through an independent `BWAMEM1_MEM` process. This is much more sensible given our small dataset!
 
-<<<<<<< HEAD:docs/part1/02_4_nfcore_layer.md
-Now that we have a fully-functioning run script and custom configuration, we can try scaling up to multiple samples.
-
-!!! example "Exercise: Run mapping on multiple samples"
-
-    Update the `run.sh` script to use the full samplesheet with all three test samples. At the same time, add the `-resume` flag so that we don't have to re-run the previously run jobs for the first sample. When doing so, be sure to add a space and a backslash (` \`) to the preceding line to indicate that the command continues on the next line:
-
-    === "Gadi (PBS)"
-
-        ```bash title="run.sh" hl_lines="7 17-18"
-        #!/bin/bash
-
-        module load nextflow/24.04.5
-        module load singularity
-
-        nextflow run sarek/main.nf \
-            --input ../data/fqs/samplesheet.fq.csv \
-            --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
-            --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
-            --dict ../data/ref/Hg38.subsetchr20-22.dict \
-            --bwa ../data/ref \
-            --step mapping \
-            --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
-            --outdir results \
-            --no_intervals true \
-            --igenomes_ignore true \
-            -c config/gadi.config,config/custom.config \
-            -resume
-        ```
-
-    === "Setonix (Slurm)"
-
-        ```bash title="run.sh" hl_lines="7 17-18"
-        #!/bin/bash
-
-        module load nextflow/24.10.0
-        module load singularity/4.1.0-slurm
-
-        nextflow run sarek/main.nf \
-            --input ../data/fqs/samplesheet.fq.csv \
-            --fasta ../data/ref/Hg38.subsetchr20-22.fasta \
-            --fasta_fai ../data/ref/Hg38.subsetchr20-22.fasta.fai \
-            --dict ../data/ref/Hg38.subsetchr20-22.dict \
-            --bwa ../data/ref \
-            --step mapping \
-            --skip_tools markduplicates,baserecalibrator,mosdepth,samtools \
-            --outdir results \
-            --no_intervals true \
-            --igenomes_ignore true \
-            -c config/setonix.config,config/custom.config \
-            -resume
-        ```
-
-=======
 !!! note "The right config for the right situation"
 
     We have now built two separate configuration files - an HPC-specific file (`gadi.config` / `setonix.config`) and our optimisation file (`custom.config`).
@@ -420,5 +366,4 @@ Now that we have a fully-functioning run script and custom configuration, we can
             -resume
         ```
 
->>>>>>> origin/main:docs/part1/01_9_nfcore_layer.md
     Go ahead and re-run the script. The `-resume` flag will mean that the previously-run tasks for the first sample (`FASTQC`, `FASTP`, `BWAMEM1_MEM`, etc.) will not be re-run, but instead their outputs will be reused. Only the new samples will be run through these processes. `MULTIQC` will re-run at the end of the pipeline as it needs to summarise the results from all three samples.
