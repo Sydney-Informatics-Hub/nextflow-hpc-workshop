@@ -162,13 +162,13 @@ If we request:
         
 We will proceed by requesting 2 cores and 1 GB memory for `FASTQC` as the job won't benefit from the extra memory.
 
-### Configuring with process names (`withName`)
+## 2.4.5 Configuring with process names (`withName`)
 
 We have learnt that adding custom workflow configurations into config files rather than into module code aids portability and ease of maintenance by keeping  workflow logic and system-specific configuration separate.
 
 We have also learnt that multiple configuration files can be applied at once in order to tailor a run, with workflow-specific configurations required for minimal execution of the workflow, system-specific configurations to get it running on a specific HPC, and further custom configurations tailored to our requirements.   
 
-Into which of our 3 configuration files do you think we should add the cores and memory requests for the `FASTQC` process? 
+❓ **Question:** Into which of our 3 configuration files do you think we should add the cores and memory requests for the `FASTQC` process? 
 
 If you answered "any", you are correct in your understanding that adding the resource requests to any of our 3 configs would lead to a successful run. But since we have chosen our memory value specifically for Gadi|Setonix, this is a **system-specific configuration**. While specific to the HPC, it is also specific to our unique run of the data - these resource values would not be suitable to a colleague who wanted to run the workflow over samples with more than one pair of fastq files each of much larger size. Since the resources are ***both system specific and use-case specific*** they should ideally be specified within the `config/custom.config` file. 
 
@@ -188,7 +188,7 @@ The next part of the puzzle is understanding how we can assign these resources f
 
     For more information, see [custom resource configuration using process labels](https://sydney-informatics-hub.github.io/customising-nfcore-workshop/notebooks/2.3_configEnv.html#custom-resource-configuration-using-process-labels).
 
-Looking at a summary of observations from our trace file, we can see that some of our processes have very similar resource usage metrics and could be groupd together:  
+Looking at a summary of observations from our trace file, we can see that some of our processes have very similar resource usage metrics and could be grouped together:  
 
 | Process                         | Resources | Rationale                                         |
 | ------------------------------- | --------- | ------------------------------------------------- |
@@ -293,14 +293,14 @@ Review the new trace file. Did the resource usage of the `FASTQC` process change
         | MULTIQC                    | COMPLETED | 0    | 19.9s    | 4.6s     | 1     | 76.1%      | 2 GB   | 0.0% | 98.3 MB  |
 
 
-The `cpus` field indicates that 2 cores were provided for our `FASTQC` task to use, however the `%cpu` field shows only ~90% utilisation. Note that in this context, we expect to see **100% per requested core** for perfect utilisation, i.e. 100% = 1 core fully utilised, 200% = 2 cores ullty utilised, and so on.
+The `cpus` field indicates that 2 cores were provided for our `FASTQC` task to use, however the `%cpu` field shows only ~90% utilisation. Note that in this context, we expect to see **100% per requested core** for perfect utilisation, i.e. 100% = 1 core fully utilised, 200% = 2 cores fully utilised, and so on.
 
 If you observe a lower `%cpu` value than you expect, there could be two main culprits: either the tool cannot make use of all the cores that were allocated to it, or your workflow code is missing some required additional configuration. 
 
 Which do you think is the likely cause in this example? We will explore this in the next section. 
 
 
-## 2.4.5 Passing allocated resources into process scripts
+## 2.4.6 Passing allocated resources into process scripts
 
 We know how to instruct Nextflow to request specific resources for each process, but how does the tool inside the process know how to use those allocated resources? This *does not happen automatically* - our module code must obtain these values, and do so in a *portable and flexible* way. 
 
@@ -333,9 +333,8 @@ Let's inspect our `FASTQC` module code:
             mkdir -p "fastqc_${sample_id}"
             fastqc -t 1 --outdir "fastqc_${sample_id}" --format fastq $reads_1 $reads_2
             """
-
         }
-    ```
+        ```
 
 Note in the highlighted line the syntax `fastqc -t 1`. Here we are asking `fastqc` to use only a single thread, which means the 2 input files are processed in series (i.e. one at a time, each using a single core) instead of our intention of both files being processed at once to speed up run time. No matter how many cores we allocate to this process in our custom config, without adjusting this module code, the `FASTQC` process will always use a single core and process one file at once. 
 
@@ -423,7 +422,7 @@ We can now directly observe that the 2 cores we allocated to the `FASTQC` proces
 
     While these are outside the scope of this workshop, they’re good to consider if you want to scale up workflows on HPC.
 
-## 2.4.5 Summary
+## 2.4.7 Summary
 
 In this lesson, we:
 
@@ -433,7 +432,7 @@ In this lesson, we:
 
 The skills covered in this lesson equip you to build efficient workflows and to work responsibly on HPC. In the next lesson, we will apply strategies to increase the speed of our workflows, without harming the efficiency. 
 
-## 2.4.6 Code checkpoint
+## 2.4.8 Code checkpoint
 
 ??? abstract "Show complete code"
 

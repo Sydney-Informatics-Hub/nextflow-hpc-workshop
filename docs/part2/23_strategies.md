@@ -52,7 +52,7 @@ When embarassingly parallel processing with scatter-gather through data chunking
 
 Efficiency of any workflow on HPC depends on the interaction of three factors: 
 
-### 1. Your HPC system 
+### 2.3.3.1 Your HPC system 
 
 We have already witnessed many differences between Gadi and Setonix in previous lessons. A workflow that performs well on one cluster may perform poorly on another simply because the underlying architecture and scheduler rules differ. 
 
@@ -65,7 +65,7 @@ Good optimisation respects the boundaries of the system you're working on. When 
 | **Node architecture**                   | Hardware layout: cores per node, memory per node, CPU type (Intel/AMD), GPUs, local scratch | Ensures you request resources that “fit” the node, avoid resource fragmentation, and maximise throughput             |
 | **Charging model** | How HPC usage is accounted (CPU proportion, memory proportion, or the maximum of both)      | Guides you to request only what you need: over requesting directly increases SU consumption without improving runtime |
 
-### 2. The characteristics of your data 
+### 2.3.3.2 The characteristics of your data 
 
 Data shapes the computational behaviour of bioinformatics workflows. Even two workflows with identical code can perform very differently depending on the file sizes, sample numbers, and data complexity. Understanding these factors can help you anticipate bottlenecks and assign resources more accurately. When planning an optimisation approach, consider: 
 
@@ -80,7 +80,7 @@ Data shapes the computational behaviour of bioinformatics workflows. Even two wo
 | **Compression and indexing formats** | gzip vs bgzip, BAM vs CRAM, presence of .bai/.crai/.fai, CCS vs raw reads                                            | Impacts CPU time, memory, and I/O behaviour; inefficient formats slow down the entire workflow                                                                            |
 
 
-### 3. The structure of your workflow 
+### 2.3.3.3 The structure of your workflow 
 
 Even with the same tools and data, two workflows can behave differently depending on their structure: 
 

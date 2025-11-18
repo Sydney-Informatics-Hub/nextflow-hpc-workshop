@@ -42,7 +42,7 @@ Note that the above benchmarking results are for demonstration purposes only, an
 From the example benchmarking results above, we need to consider the trade-offs between each run and what we would like to optimise for:
 
 - Providing 2 cores has the slowest walltime but utilises the 2 CPUs most efficiently (93%)
-- On the other hand, providing 8 cores provides ~40% speed-up in walltime, but at the cost of reduced CPU efficiency
+- On the other hand, providing 8 cores provides ~40% speedup in walltime, but at the cost of reduced CPU efficiency
 
 The most suitable choice for your workflow depends on your research priorities at the time: turnaround time or minimise compute cost? In general however, aiming for >80% CPU efficiency ensures we are not reserving resources in excess.
 
@@ -202,7 +202,7 @@ As configuration generally does not trigger the re-run of processes, we need to 
 
     All software and bioinformatics tools are built differently. Some support multi-threading, some can only run things with a single thread. Overlooking these details may not be crucial when running on systems where you have autonomy and access to all resources (personal compute, cloud instances), however, these are important parts of configuring your workflow on HPC shared systems to set reasonable limits and requests.
 
-### Code checkpoint
+### 2.5.1.1 Code checkpoint
 
 ??? abstract "Show complete code"
 
@@ -340,7 +340,7 @@ One of the core benefits of running bioinformatics workflows on HPC is access to
 With scatter-gather parallelism, we can take "tall" jobs (long walltime) amenable to valid chunking - like sequence alignment - and mould it into many "small and short" jobs to take advantage of the "gap filling" tendency of the job scheduler. 
 
 
-### Scatter: splitting our reads
+### 2.5.2.1 Scatter: splitting our reads
 
 In whole genome sequence analysis, alignment is typically the largest bottleneck. Given the independent nature of the sequence fragments, scatter-gather of this step is a widely used approach for speeding up processing time. 
 
@@ -620,9 +620,9 @@ We will resolve this by updating our channels to include the chunk id, and renam
 
         The pipeline will fail, however `ALIGN` now includes the chunk id in the bam and bam index names.
 
-❓ Question: can you think of why the code will fail? 
+❓ **Question:** can you think of why the code will fail? 
 
-#### Code checkpoint
+### 2.5.2.2 Code checkpoint
 
 ??? abstract "Show complete code"
 
@@ -714,7 +714,7 @@ We will resolve this by updating our channels to include the chunk id, and renam
     }
     ```
 
-### Gather: combining our scattered alignments
+### 2.5.2.3 Gather: combining our scattered alignments
 
 Now that we have sucessfully split our reads and uniquely identified the output bam files, we will implement a gather pattern to bring our alignments into a single file again. This is the source of the above expected error: the workflow logic expected one mapping file output per sample, but we have 3. Like we added a process for the splitting task, we also need to add a process for the gathering task. 
 
@@ -848,7 +848,7 @@ This change optimises performance for large datasets by leveraging parallel proc
     
     We will revisit this in the next section.
 
-#### Code checkpoint
+### 2.5.2.4 Code checkpoint
 
 ??? abstract "Show code"
 
@@ -926,7 +926,7 @@ This change optimises performance for large datasets by leveraging parallel proc
 
 ## 2.5.3 A note on dynamic resourcing
 
-Since our data is small and similar-sized, we can apply the same resource configurations within the same process and it will still run successfully. However, it is common that we need to **run the same process with input data of widely variying sizes**. For example, if we were analysing tumour-normal matched genome sequences and the tumour samples were sequenced to double the depth of the normal samples, we may need to apply double the walltime and increased memory for some tasks. 
+Since our data is small and similar-sized, we can apply the same resource configurations within the same process and it will still run successfully. However, it is common that we need to **run the same process with input data of widely varying sizes**. For example, if we were analysing tumour-normal matched genome sequences and the tumour samples were sequenced to double the depth of the normal samples, we may need to apply double the walltime and increased memory for some tasks. 
 
 One option may be to configure the resource usage to suit the largest workflow input (e.g. highest coverage sample). This will ensure all processes run sucessfully at the cost of **underutilising the resources you have requested** for the smaller inputs:
 
@@ -962,6 +962,6 @@ The same resource optimisation and configuration concepts that we have covered i
 
 ## 2.5.4 Summary
 
-Recall that it is not always biologically valid to parallelise everything, and embarassingly parallel workflows need to be benchmarked to find the sweet spot where speedup has not introduced a large increase in sevice unit cost due to declining CPU efficiency. 
+Recall that it is not always biologically valid to parallelise everything, and embarassingly parallel tasks need to be benchmarked to find the sweet spot where speedup has not introduced a large increase in sevice unit cost due to declining CPU efficiency. 
 
 Once you have your workflow running on HPC, reviewing the custom trace and resource monitoring files can help identify long-running or inefficent processes that can benefit from optimisation. Explore whether these tasks can benefit from multi-threading or scatter-gather parallelism. Always use parallel by sample in your Nextflow workflows (never loops!) and only analyse all samples in one job when the nature of the task is to combine/co-analyse all data at once. 
