@@ -339,7 +339,7 @@ Note in the highlighted line the syntax `fastqc -t 1`. Here we are asking `fastq
 
 We will next instruct our `FASTQC` process to take in the number of cores we provide it **dynamically**. This means whatever `cpus` we provide will be parsed to the process and applied as a value to the threads parameter (`-t`|`threads`). 
 
-!!! example "Exercise: parameterise thread use in module code"
+!!! example "Exercises: Dynamically assigning cores to modules/fastqc.nf"
 
     1. Open your `modules/fastqc.nf` file. Replace `-t 1` with `-t ${task.cpus}`.
 

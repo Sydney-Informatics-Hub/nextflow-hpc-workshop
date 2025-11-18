@@ -12,7 +12,7 @@ Nextflow's "dataflow" model and channels makes this easy to execute. Every addit
 
 We will now replace the samplesheet we used by modifying our run script with resume, so it runs only on the two new samples.
 
-!!! example "Exercise"
+!!! example "Exercise: Running on all samples"
 
     Update your `run.sh` and change the `--samplesheet` param to use `samplesheets_full.csv`:
 
@@ -90,7 +90,7 @@ We will now replace the samplesheet we used by modifying our run script with res
         Succeeded   : 22
         ```
 
-!!! example "Exercise" 
+!!! example "Exercise: Inspecting the timeline" 
 
     Download the timeline file to your local computer and view it in your local browser.
 
