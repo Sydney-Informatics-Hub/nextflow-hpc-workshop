@@ -34,25 +34,23 @@ In this section we will look at implementing another multi-threading example wit
     Recall that CPU efficiency is a measure of how many cpus were actually used, in comparison to how many cpus were requested. A high CPU efficiency (100%) means that all of the CPUs were utilised, while a low efficiency suggests that too many were requested.
 
 
-It is typical to see speed gains when additional resources are allocated to a tool that can make use of them, with some tools achieving a near-perfect efficiency of near 100% for many increase to core count. However, in reality very few multi-threading tools can sustain 1:1 gains at high core counts, so efficiency decreases, walltime plateaus, and service units creep up. As tempting as it may be to run BWA with 128 threads on Setonix, we promise you this is not a good idea! 
+It is typical to see speed gains when additional resources are allocated to a tool that can make use of them, with some tools achieving a near-perfect efficiency of near 100% for many increases to core count. However, in reality very few multi-threading tools can sustain 1:1 gains at high core counts, so efficiency decreases, walltime plateaus, and service units creep up. As tempting as it may be to run BWA with 128 threads on Setonix, we promise you this is not a good idea! 
 
 Note that the above benchmarking results are for demonstration purposes only, and for real-world benchmarking, larger test data should be used, aiming for a walltime of at least 5 minutes to observe reliable performance changes at different threads. 
 
 
-From the example benchmarking results above, we need to consider the trade-offs between each run and what we would like to optimise for. 
+From the example benchmarking results above, we need to consider the trade-offs between each run and what we would like to optimise for:
 
-Providing 2 cores has the slowest walltime but utilises the 2 CPUs most efficiently (93%).
+- Providing 2 cores has the slowest walltime but utilises the 2 CPUs most efficiently (93%)
+- On the other hand, providing 8 cores provides ~40% speed-up in walltime, but at the cost of reduced CPU efficiency
 
-On the other hand, providing 8 cores provides ~40% speed-up in walltime, but at the cost of reduced CPU efficiency.
-
-As responsible users of shared systems, we will select the option that maintains high CPU efficiency. While this is not prescriptive, aiming for >80% CPU efficiency ensures we are not reserving resources in excess.
+The most suitable choice for your workflow depends on your research priorities at the time: turnaround time or minimise compute cost? In general however, aiming for >80% CPU efficiency ensures we are not reserving resources in excess.
 
 !!! question "Poll"
 
-    1. How many cores would you choose to provide `ALIGN` to ensure that it still uses the CPUs efficiently, but with a speed up in walltime? 
+    1. How many cores would you choose to provide `ALIGN` to ensure that it still uses the CPUs efficiently, but with a speedup in walltime? 
     2. Which `.config` file would you want to use? (`nextflow.config` - workflow-specific, system-agnostic; `custom.config` - workflow-specific, system-specific)
-    3. How much extra memory can you utilise if required? (Consider the effective RAM/CPUs
-    proportion of the queue or partition)
+    3. How much extra memory can you utilise if required? (Consider the effective RAM/CPUs proportion of the queue or partition)
 
     === "Gadi (PBS Pro)"
 
@@ -72,9 +70,9 @@ As responsible users of shared systems, we will select the option that maintains
 
 !!! example "Exercise: Reassigning resources for `ALIGN`"
 
-    In `conf/custom.config`, update the `process` scope:
+    - In `config/custom.config`, update the `process` scope:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBS Pro)"
 
         ```groovy title="conf/custom.config" hl_lines="5-15"
         process {
@@ -142,7 +140,7 @@ As responsible users of shared systems, we will select the option that maintains
 
     Note: our `ALIGN` process (`modules/align.nf`) has `-t $task.cpus` already defined, so you do not need to amend it.
 
-    Save your file and run with:
+    - Save your file and run with:
     
     ```
     ./run.sh
@@ -163,17 +161,18 @@ Launching `main.nf` [mighty_carson] DSL2 - revision: e34a5e5f9d
 [34/65d4e2] MULTIQC                    | 1 of 1, cached: 1 ✔
 ```
 
-As configuration generally does not trigger the re-run of processes, we need to run the workflow from the beginning.
+
+As configuration generally does not trigger the re-run of processes, we need to run the workflow from the beginning in order to apply the updated resource configuration. 
 
 !!! example "Exercise: Run from scratch!"
 
-    Remove the `-resume` flag from your `run.sh` and run
+    - Remove the `-resume` flag from your `run.sh` script, save, and re-submit:
 
     ```bash
     ./run.sh
     ```
 
-    Inspect your trace file and confirm that `ALIGN` has been allocated the core and memory that you added in `custom.config`.
+    - Inspect your trace file and confirm that `ALIGN` has been allocated the cores and memory that you added in `custom.config`:
 
     ??? abstract "Output"
 
@@ -201,15 +200,15 @@ As configuration generally does not trigger the re-run of processes, we need to 
 
 !!! info "Remember to read the tool documentation!"
 
-    All software and bioinformatics tools are all built differently. Some support multi-threading, some can only run things with a single thread. Overlooking these details may not be crucial when running on systems where you have autonomy and access to all resources (personal compute, cloud instances), however, these are important parts of configuring your workflow on HPC shared systems to set reasonable limits and requests.
+    All software and bioinformatics tools are built differently. Some support multi-threading, some can only run things with a single thread. Overlooking these details may not be crucial when running on systems where you have autonomy and access to all resources (personal compute, cloud instances), however, these are important parts of configuring your workflow on HPC shared systems to set reasonable limits and requests.
 
 ### Code checkpoint
 
-??? abstract "Show code"
+??? abstract "Show complete code at the end of Section 2.5.1"
 
-    === "Gadi (PBS)"
+    === "Gadi (PBS Pro)"
 
-        ```groovy title="conf/custom.config" hl_lines="5-15"
+        ```groovy title="config/custom.config" hl_lines="5-15"
         process {
             cpu = 1 // 'normalbw' queue = 128 GB / 28 CPU ~ 4.6
             memory = 4.GB
@@ -267,7 +266,7 @@ As configuration generally does not trigger the re-run of processes, we need to 
 
     === "Setonix (Slurm)"
 
-        ```groovy title="conf/custom.config" hl_lines="5-15"
+        ```groovy title="config/custom.config" hl_lines="5-15"
         process {
             cpu = 1 // 'work' partition = 230 GB / 128 CPU ~ 1.8
             memory = 2.GB
@@ -322,31 +321,34 @@ As configuration generally does not trigger the re-run of processes, we need to 
         }
         ```
 
-## 2.5.2 Scatter-gathering alignment
+## 2.5.2 Faster alignment with scatter-gather
 
 ![](figs/00_Scatter_gather_fig.png)
 
 
 
- Taking a "wide and tall" job like sequence alignment and applying scatter-gather parallelism to mould it into many "small and short" jobs can take advantage of this "gap filling" tendency of the scheduler. 
+One of the core benefits of running bioinformatics workflows on HPC is access to increased processing power and hardware. For jobs that can be conducted independently of each other, if configured correctly, we can run many jobs simultaneously and reduce the overall walltime required to run the workflow. One strategy to implement this is by:
 
-One of the core benefits of running bioinformatics workflows on HPC is access to increased processing power and hardware. For jobs that can be conducted indepdenently of each other, if configured correctly, we can run many jobs simultaneously and reduce the overall walltime required to run the workflow. One strategy to implement this is by:
-
-1. Splitting/scattering the data
-2. Processing each of the data chunks separately
-3. Combining/gathering the processed outputs back into a single file
+1. Splitting the data into smaller sub-parts 
+2. "Scattering" analysis of the parts across the compute cluster to be analysed separately 
+3. "Gathering" the processed outputs back into a single combined file
 
 !!! note "Not everything can or should be split"
 
-    Recall from Part 1 that we can't split everything - it should only be done if the particular processing step can be conducted independently of each other. Scattering taks does not make sense when results depend on comparing all data together, such as detecting structural variants across multiple chromosomes.
+    Recall from Part 1 that we can't split everything - it should only be done if the particular processing step can be run on subsections of the data independently of each other. Scattering tasks does not make sense when results depend on comparing all data together, such as detecting structural variants across multiple chromosomes.
+
+With scatter-gather parallelism, we can take "tall" jobs (long walltime) amenable to valid chunking - like sequence alignment - and mould it into many "small and short" jobs to take advantage of the "gap filling" tendency of the job scheduler. 
+
 
 ### Scatter: splitting our reads
 
-We will scatter-gather the alignment step. This is a widely approach for mapping reads, as whole genome data is large, can be time-consuming, and mapping can be conducted independently of each other. To do so, we will leverage Nextflow's built-in [`splitFastq`](https://www.nextflow.io/docs/latest/reference/operator.html#splitfastq) operator.
+In whole genome sequence analysis, alignment is typically the largest bottleneck. Given the independent nature of the sequence fragments, scatter-gather of this step is a widely used approach for speeding up processing time. 
+
+To do so, we will leverage Nextflow's built-in [`splitFastq`](https://www.nextflow.io/docs/latest/reference/operator.html#splitfastq) operator.
 
 !!! example "Exercise: Adding `.splitFastq` to the workflow"
 
-    Copy the following lines, and paste in `main.nf` after `FASTQC(reads)` and before `ALIGN(reads, bwa_index)`:
+    - Copy the following lines, and paste in `main.nf` after `FASTQC(reads)` and before `ALIGN(reads, bwa_index)`:
 
     ```groovy title="main.nf"
         // Split FASTQs for each sample
@@ -390,7 +392,7 @@ Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` fi
 
 !!! example "Exercise: Updating the `ALIGN` input"
 
-    In `main.nf`, in the `workflow` scope, replace the input argument to `ALIGN` from `ALIGN(reads, bwa_index)` to `ALIGN(split_fqs, bwa_index)`.
+    - In `main.nf`, in the `workflow` scope, replace the input argument to `ALIGN` from `ALIGN(reads, bwa_index)` to `ALIGN(split_fqs, bwa_index)`.
 
     ```groovy title="main.nf"
         ALIGN(split_fqs, bwa_index)
@@ -433,7 +435,8 @@ Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` fi
             GENOTYPE(ALIGN.out.aligned_bam, ref)
         ```
 
-    Save the file, and run:
+    - Save the file, and run:
+
     ```bash
     ./run.sh
     ```
@@ -504,14 +507,14 @@ Let's troubleshoot by inspecting the output of the `GENOTYPE` process
 
 !!! example "Advanced exercise"
     
-    1. Inspect the process outputs using `.view()`. Copy and paste the following line after `GENOTYPE(ALIGN.out.aligned_bam, ref)`.
+    - Inspect the process outputs using `.view()`. Copy and paste the following line after `GENOTYPE(ALIGN.out.aligned_bam, ref)`.
 
     ```groovy title="main.nf" hl_lines="3"
     GENOTYPE.out.view()
     ```
 
-    2. Save the file.
-    3. Update your run script so it runs with `-resume`, and re-run:
+    - Save the `main.nf` file
+    - Update your run script so it runs with `-resume`, and re-run:
 
     ```
     ./run.sh 
@@ -545,7 +548,7 @@ Let's troubleshoot by inspecting the output of the `GENOTYPE` process
         - The first three lines are the outputs of our `.splitFastq()` operation, this has not changed since the last time the workflow was run
         - The last three lines are the outputs emitted from the `GENOTYPE` process. One output reflects the run for one of the chunks processed. However, all the **output names are the same**. This is the cause of the error.
 
-We will resolve this by conducting updating our channels to include the chunk id, and rename how the bam files are output, ensuring they are uniquely identified.
+We will resolve this by updating our channels to include the chunk id, and rename how the bam files are output, ensuring they are uniquely identified.
 
 !!! example "Exercise: Adding the `chunk_id` to the tuple"
 
@@ -617,9 +620,11 @@ We will resolve this by conducting updating our channels to include the chunk id
 
         The pipeline will fail, however `ALIGN` now includes the chunk id in the bam and bam index names.
 
+❓ Question: why do you think the code will fail? 
+
 #### Code checkpoint
 
-??? abstract "Show code"
+??? abstract "Show complete code"
 
     ```groovy title="main.nf" hl_lines="28-37"
     include { FASTQC } from './modules/fastqc'
@@ -709,9 +714,9 @@ We will resolve this by conducting updating our channels to include the chunk id
     }
     ```
 
-### Gather: combining our alignments
+### Gather: combining our scattered alignments
 
-Now that we have sucessfully split our reads and uniquely identified the output bam files, we will implement a gather pattern to bring our alignments into a single file again. 
+Now that we have sucessfully split our reads and uniquely identified the output bam files, we will implement a gather pattern to bring our alignments into a single file again. This is the source of the above expected error: the workflow logic expected one mapping file output per sample, but we have 3. Like we added a process for the splitting task, we also need to add a process for the gathering task. 
 
 !!! tip "Different patterns for different needs"
 
@@ -723,7 +728,7 @@ Now that we have sucessfully split our reads and uniquely identified the output 
 
 !!! example "Exercise: Adding `MERGE_BAMS`"
 
-    Import the `MERGE_BAMS` module in your `main.nf` file.
+    - Import the `MERGE_BAMS` module in your `main.nf` file.
 
     ```groovy title="main.nf" hl_lines="4"
     include { FASTQC } from './modules/fastqc'
@@ -736,7 +741,7 @@ Now that we have sucessfully split our reads and uniquely identified the output 
     include { MULTIQC } from './modules/multiqc'
     ```
 
-    Insert the following lines in `main.nf`, after `ALIGN.out.view()`. Update the `GENOTYPE` process so it takes in our merged bams. 
+    - Insert the following lines in `main.nf`, after `ALIGN.out.view()`. Update the `GENOTYPE` process so it takes in our merged bams. 
 
     ```groovy title="main.nf" hl_lines="1-7"
         gathered_bams = ALIGN.out.aligned_bam
@@ -779,7 +784,8 @@ Now that we have sucessfully split our reads and uniquely identified the output 
         ```
 
 
-    Re-run the pipeline
+    - Re-run the pipeline:
+
     ```
     ./run.sh
     ```
@@ -788,7 +794,7 @@ Now, let's re-inspect that the merge worked as intended.
 
 !!! example "Exercise: Inspecting the `MERGE_BAM` task directory"
 
-    Locate the work directory for the `MERGE_BAM` process using the trace file, if you have the `workdir` field, or use the nextflow log.
+    - Locate the work directory for the `MERGE_BAM` process using the trace file, if you have the `workdir` field, or use the nextflow log.
 
     ```bash
     tree -a <workdir>
@@ -813,22 +819,23 @@ Now, let's re-inspect that the merge worked as intended.
     └── NA12877.bam.bai
     ```
 
-    View the `.command.sh` - have the expected files been merged?
+    - View the `.command.sh` file. Have the expected files been merged?
 
     ```bash
     cat .command.sh
     ```
+
     ```console title="Output"
     #!/bin/bash -ue
     samtools cat NA12877.3.bam NA12877.2.bam NA12877.1.bam | samtools sort -O bam -o NA12877.bam
     samtools index NA12877.bam
     ```
 
-    We can now see that each bam was merged into a single bam file for the sample, and the rest of the workflow progressed as normal.
+    We can now see that each of the 3 BAMs resulting from the scattered alignment was merged into a single BAM file for the sample, and the rest of the workflow progressed as normal.
 
 To sum up this step, you successfully:
 
-1. Split the paried FASTQ reads into 3 chunks using `.splitFastq`
+1. Split the paired FASTQ reads into 3 chunks using `.splitFastq`
 2. Aligned each chunk in parallel
 3. Merged the aligned chunks into a single BAM (`MERGE_BAMS()`)
 4. Ran the remainder of the workflow as usual
@@ -837,7 +844,7 @@ This change optimises performance for large datasets by leveraging parallel proc
 
 !!! question "What about multiple samples?"
 
-    You have now applied a multi-processing approach on a single-sample. As processes are run independently of each other this does not always need to apply to single sample that is split. Running multiple samples is also a form of multi-processing and comes shipped with Nextflow's dataflow model. Once your pipeline is configured to run well with a single sample, [queue channels](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part1/05_inputs/#queue-channels) make adding additional samples relatively easy.
+    You have now used scatter-gather physical data chunking to align a single sample "embarassingly parallel". As processes are run independently of each other this does not always need to apply to single sample that is split. Running multiple samples is also a form of multi-processing and comes shipped with Nextflow's dataflow model. Once your pipeline is configured to run well with a single sample, [queue channels](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part1/05_inputs/#queue-channels) make adding additional samples relatively easy.
     
     We will revisit this in the next section.
 
@@ -919,15 +926,15 @@ This change optimises performance for large datasets by leveraging parallel proc
 
 ## 2.5.3 A note on dynamic resourcing
 
-Since our data is small and similar-sized, we can apply the same resource configurations within the same process and it will still run successfully. However, it is common that we need to **run the same process with input data of widely variying sizes**. For example, if we were to run variant calling with reads from the whole genome, human chromosome 1 is nearly 4x larger than chromosome 20.
+Since our data is small and similar-sized, we can apply the same resource configurations within the same process and it will still run successfully. However, it is common that we need to **run the same process with input data of widely variying sizes**. For example, if we were analysing tumour-normal matched genome sequences and the tumour samples were sequenced to double the depth of the normal samples, we may need to apply double the walltime and increased memory for some tasks. 
 
-One option may be to configure the resource usage so it runs on the largest data (chr. 1). This will ensure all processes run sucessfully at the cost of **vastly underutilising the resources you have requested** on the smaller data:
+One option may be to configure the resource usage to suit the largest workflow input (e.g. highest coverage sample). This will ensure all processes run sucessfully at the cost of **underutilising the resources you have requested** for the smaller inputs:
 
-- Excess resources will be reserved other users could access
-- Your jobs stay in queue for longer
-- You can be charged more SUs than required
+- If extra walltime than needed is requested, this may cause jobs to queue for longer, particularly if they also request larger quantities of cores and memory. 
+- If additional cores or memory are involved, the smaller inputs that do not need this resource boost will waste resources that could be allocated to other jobs, and cause the workflow to be charged more service units than necessary. 
 
-The alternative would be to take a dynamic approach when you need to process data that require unequal CPUs, memory, or walltime.
+
+The alternative would be to take a dynamic approach when you need to process a number of inputs that require different resources. 
 
 If a job fails, you can tell Nextflow to automatically re-run it with additional resources. For example:
 
@@ -936,7 +943,7 @@ If a job fails, you can tell Nextflow to automatically re-run it with additional
 | `memory`  | `{ 2.GB * task.attempt }`   | 2 GB                    | 4 GB                    |
 | `time`    | `{ 1.hour * task.attempt }` | 1 hour                  | 2 hours                 |
 
-Another approach is to ynamically assign a resource based on properties of the input data. For example, by the size of the file:
+Another approach is to dynamically assign a resource based on properties of the input data. For example, by the size of the file:
 
 ```groovy
 process {
@@ -951,16 +958,10 @@ For more information, see Nextflow's training on:
 - [Retry strategies](https://training.nextflow.io/2.1.1/advanced/configuration/#retry-strategies)
 - [Dynamic directives](https://training.nextflow.io/2.1.1/advanced/configuration/#dynamic-directives)
 
-The same concepts of configuring resources will apply here, aim to fit the
-appropriate queues/partitions, but will require addtional benchmarking. This is worthwhile if developing and running high-throughput workflows.
+The same resource optimisation and configuration concepts that we have covered in this workshop continue to apply here: perform benchmarking with your data on the target HPC, monitor resource usage, and configure optimal resources to best suit the underlying hardware of the most suited queue/partition. As always, note that the development time for this optimsiation will be increased, however the time spent is particularly worthwhile if developing and running high-throughput workflows, for example cancer population studies where very high sequencing depth, 2 or more samples per patient, and large patient cohorts, are often involved. 
 
 ## 2.5.4 Summary
 
-Recall that we do not always want to parallelise everything. There are reasons
-to avoid this due to the data set or analysis requiring data be analysed as a
-whole, or computational reasons where processes become less efficient.
+Recall that it is not always biologically valid to parallelise everything, and embarassingly parallel workflows need to be benchmarked to find the sweet spot where speedup has not introduced a large increase in sevice unit cost due to declining CPU efficiency. 
 
-These are some strategies to consider for your own pipelines. Run benchmarks,
-identify long-running or inefficent processes and consider which one of these
-approaches are supported by the tools (multi-threading), or can be split and
-processed in parallel.
+Once you have your workflow running on HPC, reviewing the custom trace and resource monitoring files can help identify long-running or inefficent processes that can benefit from optimisation. Explore whether these tasks can benefit from multi-threading or scatter-gather parallelism. Always use parallel by sample in your Nextflow workflows (never loops!) and only analyse all samples in one job when the nature of the task is to combine/co-analyse all data at once. 
