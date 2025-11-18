@@ -8,6 +8,8 @@
 
 ## 2.0.1 Log back in to your assigned HPC
 
+Reconnect to your HPC through VSCode, the same way we did in [Part 1](https://sydney-informatics-hub.github.io/nextflow-hpc-workshop/setup/#connecting-to-the-hpcs).
+
 Log in to your assigned HPC with the user account and password provided to you on day 1:
 
 === "Gadi"
