@@ -3,8 +3,8 @@
 !!! info "Learning objectives"
 
     - Explain the limitations of parallelisation and cases where splitting data is not biologically correct 
-    - Differentiate between multi-threading and scatter-gather paralleisation methods
-    - Implement parallelisation approaches in Nextflow and evaluate their impact on resource usage. 
+    - Differentiate between multi-threading and scatter-gather parallelisation methods
+    - Implement parallelisation approaches in Nextflow and evaluate their impact on resource usage 
 
 [Lesson 1.4](../part1/01_4_smarter.md) introduced parallelisation approaches with the goal of speeding up your jobs by utilising more resources. As your data gets larger, or more samples are required to be processed, it needs to run efficiently. In this lesson we will explore how Nextflow supports different forms of parallelisation to help you scale your workflows.
 
