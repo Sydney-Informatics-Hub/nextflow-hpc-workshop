@@ -687,7 +687,7 @@ Since we have been repeatedly running the same Nextflow run command, it makes se
             Succeeded   : 6
             ```
 
-        === "Pawsey (Slurm)"
+        === "Setonix (Slurm)"
 
 
             ```bash

@@ -69,7 +69,7 @@ Recall that this is the configuration we used in Part 2.1 to get the pipeline ru
     }
     ```
 
-=== "Pawsey (Slurm)"
+=== "Setonix (Slurm)"
 
     ```groovy title='custom.config'
     process {
@@ -158,10 +158,11 @@ We will proceed with the 2 CPUs 1 GB memory option for `FASTQC` as the job won't
 Recall that configuration can be workflow-specific to run across different systems, but needs to be system-specific to use the infrastructure effectively. Here, we will apply resource configuration settings in the `config/custom.config` as we are tuning according to the HPC we are running it on.
 
 `withName` is a powerful tool to:
-    - Specifically targets individual modules
-    - Specify multiple module names using wildcards (`*` or `|`)
-    - Avoid editing the module.nf file to add a process label (remember: separation of workflow logic and system-specific tuning)
-    - Has a higher priority than withLabel
+
+- Specifically targets individual modules
+- Specify multiple module names using wildcards (`*` or `|`)
+- Avoid editing the module.nf file to add a process label (remember: separation of workflow logic and system-specific tuning)
+- Has a higher priority than withLabel
 
 !!! question "Configuring `withLabel` and configuration priorities"
 
