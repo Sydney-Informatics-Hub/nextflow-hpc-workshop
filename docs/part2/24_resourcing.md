@@ -168,9 +168,13 @@ We have learnt that adding custom workflow configurations into config files rath
 
 We have also learnt that multiple configuration files can be applied at once in order to tailor a run, with workflow-specific configurations required for minimal execution of the workflow, system-specific configurations to get it running on a specific HPC, and further custom configurations tailored to our requirements.   
 
-❓ **Question:** Into which of our 3 configuration files do you think we should add the cores and memory requests for the `FASTQC` process? 
+!!! question
 
-If you answered "any", you are correct in your understanding that adding the resource requests to any of our 3 configs would lead to a successful run. But since we have chosen our memory value specifically for Gadi|Setonix, this is a **system-specific configuration**. While specific to the HPC, it is also specific to our unique run of the data - these resource values would not be suitable to a colleague who wanted to run the workflow over samples with more than one pair of fastq files each of much larger size. Since the resources are ***both system specific and use-case specific*** they should ideally be specified within the `config/custom.config` file. 
+    Into which of our 3 configuration files do you think we should add the cores and memory requests for the `FASTQC` process? 
+
+??? abstract "Show answer"
+
+    If you answered "any", you are correct in your understanding that adding the resource requests to any of our 3 configs would lead to a successful run. But since we have chosen our memory value specifically for Gadi|Setonix, this is a **system-specific configuration**. While specific to the HPC, it is also specific to our unique run of the data - these resource values would not be suitable to a colleague who wanted to run the workflow over samples with more than one pair of fastq files each of much larger size. Since the resources are ***both system specific and use-case specific*** they should ideally be specified within the `config/custom.config` file. 
 
 The next part of the puzzle is understanding how we can assign these resources for the `FASTQC` process. Our custom config currently assigns the same resources to *all* processes in the workflow, under the `process` scope. To specify which process or processes to apply a set of resources to, we can use the Nextflow `withName` directive. 
 
@@ -409,7 +413,7 @@ We can now directly observe that the 2 cores we allocated to the `FASTQC` proces
 
     In the previous few runs we have used `-resume` to run only the processes that were modified. Using `-resume` can considerably shorten development and testing time, and is also very handy when a real-world workflow fails part way through. 
 
-    However, the `-resume` function relies on cached data, and may not always resume when you expect it to! This aged but handy blog helps to [demistify Nextflow resume](https://seqera.io/blog/demystifying-nextflow-resume/) and may be a good read - in addition to the [Nextflow `-resume` guide](https://www.nextflow.io/docs/latest/cache-and-resume.html) - if you find yourself wondering why a task that you expected to be cached has re-run (or vice versa!) 
+    However, the `-resume` function relies on cached data, and may not always resume when you expect it to! This aged but handy blog helps to [demystify Nextflow resume](https://seqera.io/blog/demystifying-nextflow-resume/) and may be a good read - in addition to the [Nextflow `-resume` guide](https://www.nextflow.io/docs/latest/cache-and-resume.html) - if you find yourself wondering why a task that you expected to be cached has re-run (or vice versa!) 
 
 !!! info "Writing efficient module scripts"
 

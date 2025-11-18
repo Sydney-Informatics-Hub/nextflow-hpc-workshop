@@ -620,7 +620,9 @@ We will resolve this by updating our channels to include the chunk id, and renam
 
         The pipeline will fail, however `ALIGN` now includes the chunk id in the bam and bam index names.
 
-❓ **Question:** can you think of why the code will fail? 
+!!! question
+
+    Can you think of why the code will fail? 
 
 ### 2.5.2.2 Code checkpoint
 
