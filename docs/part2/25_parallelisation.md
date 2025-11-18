@@ -348,6 +348,32 @@ We will scatter-gather the alignment step. This is a widely approach for mapping
             .splitFastq(limit: 3, pe: true, file: true)
             .view()
     ```
+    
+    ??? abstract "Show change"
+        Before:
+
+        ```groovy title="main.nf"
+            // Run the fastqc step with the reads_in channel
+            FASTQC(reads)
+
+            // Run the align step with the reads_in channel and the genome reference
+            ALIGN(reads, bwa_index)
+        ```
+
+        After:
+
+        ```groovy title="main.nf" hl_lines="4-7"
+            // Run the fastqc step with the reads_in channel
+            FASTQC(reads)
+
+            // Split FASTQs for each sample
+            split_fqs = reads
+                .splitFastq(limit: 3, pe: true, file: true)
+                .view()
+
+            // Run the align step with the reads_in channel and the genome reference
+            ALIGN(reads, bwa_index)
+        ```
 
 - The `reads` channel is taken as input. It contains the `[ sample_name, fastq_r1, fastq_r2 ]`
 - `.splitFastq` splits each paired `.fastq` file (`pe: true`) into three files (`limit: 3`)
@@ -363,6 +389,43 @@ Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` fi
     ```groovy title="main.nf"
         ALIGN(split_fqs, bwa_index)
     ```
+
+    ??? abstract "Show change"
+        Before:
+
+        ```groovy title="main.nf"
+            // Run the fastqc step with the reads_in channel
+            FASTQC(reads)
+
+            // Split FASTQs for each sample
+            split_fqs = reads
+                .splitFastq(limit: 3, pe: true, file: true)
+                .view()
+
+            // Run the align step with the reads_in channel and the genome reference
+            ALIGN(reads, bwa_index)
+
+            // Run genotyping with aligned bam and genome reference
+            GENOTYPE(ALIGN.out.aligned_bam, ref)
+        ```
+
+        After:
+
+        ```groovy title="main.nf" hl_lines="9-10"
+            // Run the fastqc step with the reads_in channel
+            FASTQC(reads)
+
+            // Split FASTQs for each sample
+            split_fqs = reads
+                .splitFastq(limit: 3, pe: true, file: true)
+                .view()
+
+            // Run the align step with the reads_in channel and the genome reference
+            ALIGN(split_fqs, bwa_index)
+
+            // Run genotyping with aligned bam and genome reference
+            GENOTYPE(ALIGN.out.aligned_bam, ref)
+        ```
 
     Save the file, and run:
     ```bash
@@ -669,7 +732,7 @@ Now that we have sucessfully split our reads and uniquely identified the output 
 
     Insert the following lines in `main.nf`, after `ALIGN.out.view()`. Update the `GENOTYPE` process so it takes in our merged bams. 
 
-    ```groovy title="main.nf" 
+    ```groovy title="main.nf" hl_lines="1-7"
         gathered_bams = ALIGN.out.aligned_bam
             .groupTuple()
 
@@ -678,6 +741,37 @@ Now that we have sucessfully split our reads and uniquely identified the output 
         // Run genotyping with aligned bam and genome reference
         GENOTYPE(MERGE_BAMS.out.aligned_bam, ref)
     ```
+
+    ??? abstract "Show changes"
+
+        Before:
+
+        ```groovy title="main.nf"
+        // Run the align step with the reads_in channel and the genome reference
+        ALIGN(split_fqs, bwa_index)
+        ALIGN.out.view()
+    
+        // Run genotyping with aligned bam and genome reference
+        GENOTYPE(ALIGN.out.aligned_bam, ref)
+        ```    
+
+        After:
+
+        ```groovy title="main.nf" hl_lines="5-11"
+        // Run the align step with the reads_in channel and the genome reference
+        ALIGN(split_fqs, bwa_index)
+        ALIGN.out.view()
+    
+        gathered_bams = ALIGN.out.aligned_bam
+            .groupTuple()
+
+        MERGE_BAMS(gathered_bams)
+
+        // Run genotyping with aligned bam and genome reference
+        GENOTYPE(MERGE_BAMS.out.aligned_bam, ref)
+        
+        ```
+
 
     Re-run the pipeline
     ```

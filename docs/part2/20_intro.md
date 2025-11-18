@@ -98,7 +98,7 @@ to maintain, and simple to adapt across different environments - like moving fro
 
 Recall the demo Nextflow workflow we explored in [lesson 1.5.2](../part1/01_5_nf_hpc.md). Our custom workflow will extend on this by introducing some new features that help us stay organised. This includes: 
 
-- `conf/` to house our custom configuration files
+- `config/` to house our custom configuration files
 - `modules/`to house our process files as `.nf` files
 
 At a glance:
@@ -133,7 +133,9 @@ Consider a basic Nextflow run command with this structure, where a user needs to
 - `--parameter` flag matches a parameter initialised in the `nextflow.config` and applies to the workflow execution 
 - `-profile` flag is used to specify custom configuration details for our specific environments, but it can also apply to other customisations
 
-In part 2, we **don’t edit the module files directly**. Instead, we focus on configuring _how and where_ these steps run on HPCs, using separate config files. This separation makes it easy to test a pipeline locally and later scale it up on a system like Gadi or Setonix, without rewriting processes.
+![](../part1/figs/00_config_diagram.png)
+
+In part 2, we will only edit the module files only if it involves optimising the workflow performance. The majority of exercises will focus on configuring _how and where_ these steps run on HPCs, using separate config files. This separation makes it easy to test a pipeline locally and later scale it up on a system like Gadi or Setonix, without rewriting processes.
 
 !!! tip "Why modules?"
 
@@ -227,7 +229,7 @@ We have used:
 
 This structure makes it easier to swap in alternative tools and processes, especially later when working with scatter-gather patterns without cluttering `main.nf` or compromising reproducibility.
 
-### 2.0.4.2 `nextflow.config` and `conf/`
+### 2.0.4.2 `nextflow.config` and `config/`
 
 Let's take a look at our custom pipeline's `nextflow.config` to see how we are configuring the workflow execution: 
 
@@ -252,10 +254,10 @@ params {
 // Define HPC profiles to run with job scheduler
 profiles {
     // Use this profile to interact with the scheduler on setonix
-    slurm { includeConfig "conf/slurm.config" }
+    slurm { includeConfig "config/slurm.config" }
 
     // Use this profile to interact with the scheduler on gadi
-    pbspro { includeConfig "conf/pbspro.config" }
+    pbspro { includeConfig "config/pbspro.config" }
 }
 ```
 
