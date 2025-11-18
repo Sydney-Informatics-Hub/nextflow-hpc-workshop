@@ -204,7 +204,7 @@ As configuration generally does not trigger the re-run of processes, we need to 
 
 ### Code checkpoint
 
-??? abstract "Show complete code at the end of Section 2.5.1"
+??? abstract "Show complete code"
 
     === "Gadi (PBS Pro)"
 
@@ -505,7 +505,7 @@ However, you should have received an error before `JOINT_GENOTYPE` was run:
 
 Let's troubleshoot by inspecting the output of the `GENOTYPE` process
 
-!!! example "Advanced exercise"
+!!! example "Advanced exercise: Troubleshoot `GENOTYPE` error"
     
     - Inspect the process outputs using `.view()`. Copy and paste the following line after `GENOTYPE(ALIGN.out.aligned_bam, ref)`.
 
@@ -595,7 +595,7 @@ We will resolve this by updating our channels to include the chunk id, and renam
     }
     ```
 
-    Save your `main.nf` and `module/align.nf` and re-run:
+    - Save your `main.nf` and `module/align.nf` and re-run:
 
     ```bash
     ./run.sh
@@ -620,7 +620,7 @@ We will resolve this by updating our channels to include the chunk id, and renam
 
         The pipeline will fail, however `ALIGN` now includes the chunk id in the bam and bam index names.
 
-❓ Question: why do you think the code will fail? 
+❓ Question: can you think of why the code will fail? 
 
 #### Code checkpoint
 

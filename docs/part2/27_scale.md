@@ -14,9 +14,9 @@ We will now replace the samplesheet we used by modifying our run script with res
 
 !!! example "Exercise: Running on all samples"
 
-    Update your `run.sh` and change the `--samplesheet` param to use `samplesheets_full.csv`:
+    - Update your `run.sh` and change the `--samplesheet` param to use `samplesheets_full.csv`:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBS Pro)"
 
         ```groovy title="run.sh"
         #!/bin/bash
@@ -38,7 +38,7 @@ We will now replace the samplesheet we used by modifying our run script with res
         nextflow run main.nf -profile slurm -c config/custom.config --samplesheet "samplesheet_full.csv" -resume
         ```
 
-    Save your script and re-run!
+    - Save your script and re-run!
 
     ```bash
     ./run.sh
@@ -46,7 +46,7 @@ We will now replace the samplesheet we used by modifying our run script with res
 
     Your output should now look something like this:
 
-    === "Gadi (PBS)"
+    === "Gadi (PBS Pro)"
 
         ```console title="Output"
         N E X T F L O W   ~  version 24.04.5
@@ -92,9 +92,9 @@ We will now replace the samplesheet we used by modifying our run script with res
 
 !!! example "Exercise: Inspecting the timeline" 
 
-    Download the timeline file to your local computer and view it in your local browser.
+    - Download the timeline file to your local computer and view it in your local browser.
 
-    Which processes were run in parallel?
+    - Which processes were run in parallel?
 
     ??? abstract "Show timeline"
 

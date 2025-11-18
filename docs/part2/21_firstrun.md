@@ -37,7 +37,7 @@ Let's start by running the pipeline out of the box to identify what we need to c
 
 !!! example "Exercise: Run out of the box"
 
-    1. Load the Nextflow module, following the same method we learnt yesterday:
+    - Load the Nextflow module, following the same method we learnt yesterday:
 
     === "Gadi (PBS Pro)"
         ```bash
@@ -49,7 +49,7 @@ Let's start by running the pipeline out of the box to identify what we need to c
         module load nextflow/24.10.0
         ```
 
-    2. Run your Nextflow command out of the box:
+    - Run your Nextflow command out of the box:
 
     === "Gadi (PBS Pro)"
 
@@ -161,7 +161,7 @@ All our process modules specify a container to run inside. This can only happen 
 
 !!! example "Exercise: Enable Singularity"
 
-    1. Load the Singularity module, following the same method we learnt yesterday:
+    - Load the Singularity module, following the same method we learnt yesterday:
 
     === "Gadi (PBS Pro)"
         ```bash
@@ -173,7 +173,7 @@ All our process modules specify a container to run inside. This can only happen 
         module load singularity/4.1.0-slurm
         ```
 
-    2. Add the following to your system-specific config file that you can find in `config/`. Remember, we have already enabled profiles in our `nextflow.config`, so no need to edit that file. 
+    - Add the following to your system-specific config file that you can find in `config/`. Remember, we have already enabled profiles in our `nextflow.config`, so no need to edit that file. 
 
     === "Gadi (PBS Pro)"
         ```groovy title="config/pbspro.sh"
@@ -209,7 +209,7 @@ All our process modules specify a container to run inside. This can only happen 
         }
         ```
 
-    3. Run your updated Nextflow command:
+    - Run your updated Nextflow command:
 
     === "Gadi (PBS Pro)"
 
@@ -330,7 +330,7 @@ Note that for Setonix, we have specified a `reservation`. This enables us to use
 
 !!! example "Exercise: Further config options"
 
-        1. Add the additional config options to your system-specific config file: 
+    - Add the additional config options to your system-specific config file: 
 
     === "Gadi (PBS Pro)"
     
@@ -364,7 +364,7 @@ Note that for Setonix, we have specified a `reservation`. This enables us to use
         }
         ```
 
-        2. Save the file and run the pipeline:
+        - Save the file and run the pipeline:
 
         ```bash
         nextflow run main.nf -profile pbspro
@@ -439,7 +439,8 @@ Note that for Setonix, we have specified a `reservation`. This enables us to use
         }
         ```
 
-        Save your file and run the pipeline:
+        - Save the  file and run the pipeline:
+
         ```bash
         nextflow run main.nf -profile slurm
         ```
@@ -474,7 +475,7 @@ We will use the respective job scheduler introspection tools to observe the reso
 
 !!! example "Exercise: Inspect resource usage"
 
-    1. Find the Job ID of the failed or completed `GENOTYPE` process in your `.nextflow.log`: 
+    - Find the Job ID of the failed or completed `GENOTYPE` process in your `.nextflow.log`: 
 
     ```bash
     grep -w GENOTYPE .nextflow.log | grep jobId
@@ -488,7 +489,7 @@ We will use the respective job scheduler introspection tools to observe the reso
 
     The value we need in this example is `154278383` - this corresponds to the job id that was scheduled.
 
-    2. Then, use this job ID and the specific job introspection command for your HPC system to view the resource usage of the `GENOTYPE` process:
+    - Then, use this job ID and the specific job introspection command for your HPC system to view the resource usage of the `GENOTYPE` process:
 
     === "Gadi (PBS Pro)"
 
@@ -586,13 +587,13 @@ Note that the resources assigned differ across sytems - these values are based o
 
 !!! example "Exercise: Create custom resource config"
 
-    1. Create a new file `config/custom.config`
+    - Create a new file `config/custom.config`
 
         ```bash
         touch config/custom.config
         ```
 
-    2. Open the new empty file, and add the following contents based on your HPC
+    - Open the new empty file, and add the following contents based on your HPC
 
     === "Gadi (PBS Pro)"
 
@@ -616,13 +617,13 @@ Since we have been repeatedly running the same Nextflow run command, it makes se
 
 !!! example "Exercise: Create and use a run script"
 
-    1. Create a new file called `run.sh`
+    - Create a new file called `run.sh`
 
         ```bash
         touch run.sh
         ```
 
-    2. Open the new empty file, and copy-paste the following code based on your HPC:
+    - Open the new empty file, and copy-paste the following code based on your HPC:
 
     === "Gadi (PBS Pro)"
 
@@ -646,15 +647,15 @@ Since we have been repeatedly running the same Nextflow run command, it makes se
         nextflow run main.nf -profile slurm -c config/custom.config
         ```
 
-    3. Save the file (Windows: Ctrl+S, macOS: Cmd+S)
+    - Save the file (Windows: Ctrl+S, macOS: Cmd+S)
 
-    4. Provide execute permission by running:
+    - Provide execute permission by running:
 
         ```bash
         chmod +x run.sh
         ```
 
-    5. Run the workflow using the new run script: 
+    - Run the workflow using the new run script: 
 
     ```bash
     ./run.sh
@@ -715,7 +716,7 @@ You’ve now built the scaffolding needed to begin fine-tuning your resource req
 ## 2.1.7 Code checkpoint
 
 
-??? abstract "Show complete code at the end of Section 2.1"
+??? abstract "Show complete code"
 
     === "Gadi (PBS Pro)"
 

@@ -108,7 +108,7 @@ Let's find the effective usable memory per core for the `normalbw` queue on Gadi
 
 Note: Some queues and partitions may have different nodes with different hardware specifications, such as nodes with more or less memory. Gadi's `normalbw` queue is one such case, where the queue has some nodes with 128 GB RAM and some with 256 GB. Using the effective memory per core to fit the smaller node has the benefit of running on either sized node, whereas requesting to fit only the 256 GB node may queue for longer. Typically however, a queue/partition will be made up of a number of identical compute nodes, and the consideration will be which queue matches your resource needs, and not which value to use when calculating the average memory per core. 
 
-!!! example "Exercise: match task memory request with node hardware"
+!!! example "Exercise: Match task memory request with node hardware"
 
     How much memory should you allocate to a process that requests `cpus = 2`?
 
@@ -200,9 +200,9 @@ Looking at a summary of observations from our trace file, we can see that some o
 Let's record these in our config, grouping some of the processes under the same set of resources. 
 
 
-!!! example "Exercise: use `withName` to configure process resources"
+!!! example "Exercise: Use `withName` to configure process resources"
 
-    1. Update the `process{}` scopes of your `./config/custom.config`:
+    - Update the `process{}` scopes of your `./config/custom.config`:
 
     === "Gadi (PBS Pro)"
 
@@ -260,7 +260,7 @@ Let's record these in our config, grouping some of the processes under the same 
         }
         ```
 
-    2. Save the config file, and run:
+    - Save the config file, and run:
 
     ```bash
     ./run.sh
@@ -270,7 +270,7 @@ Review the new trace file. Did the resource usage of the `FASTQC` process change
 
 ??? abstract "Example trace files"
 
-    === "Gadi (PBS)"
+    === "Gadi (PBS Pro)"
 
         | name                       | status    | exit | duration | realtime | cpus  | %cpu      | memory | %mem | peak_rss |
         | -------------------------- | --------- | ---- | -------- | -------- | ----- | --------- | ------ | ---- | -------- |
@@ -308,7 +308,7 @@ If our module code does not specifically instruct the tool to use the allocated 
 
 Let's inspect our `FASTQC` module code:
 
-!!! example "Exercise: review thread use in module code"
+!!! example "Exercise: Review thread use in `./modules/fastqc.nf`"
 
     ```bash
     cat modules/fastqc.nf
@@ -343,9 +343,9 @@ Hardcoding is generally bad practice, and should be actively avoided in Nextflow
 
 We will next instruct our `FASTQC` process to take in the number of cores we provide it **dynamically**. This means whatever `cpus` we provide will be parsed to the process and applied as a value to the threads parameter (`-t`|`threads`). 
 
-!!! example "Exercises: Dynamically assigning cores to modules/fastqc.nf"
+!!! example "Exercise: Dynamically assigning cores to `modules/fastqc.nf`"
 
-    1. Open your `modules/fastqc.nf` file. Replace `-t 1` with `-t ${task.cpus}`.
+    - Open your `modules/fastqc.nf` file. Replace `-t 1` with `-t ${task.cpus}`.
 
     ??? abstract "Show code"
 
@@ -371,13 +371,13 @@ We will next instruct our `FASTQC` process to take in the number of cores we pro
         }
         ```
 
-    2. Save the script and run your workflow:
+    - Save the script and run your workflow:
 
         ```
         ./run.sh
         ```
 
-    3. View the trace and note the `cpus` and `%cpu` values for `FASTQC`: 
+    - View the trace and note the `cpus` and `%cpu` values for `FASTQC`: 
 
     ??? abstract "Show trace"
 
@@ -435,7 +435,7 @@ The skills covered in this lesson equip you to build efficient workflows and to 
 
 ## 2.4.6 Code checkpoint
 
-??? abstract "Show complete code at the end of Section 2.4"
+??? abstract "Show complete code"
 
     ```groovy title="modules/fastqc.nf" hl_lines="16"
     process FASTQC {
