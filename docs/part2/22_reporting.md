@@ -219,10 +219,15 @@ When things go wrong with process execution, we often need to trawl through the 
         ```
     3. Add the Nextflow `-resume` flag to your run script to avoid re-running completed processes:
 
-    ```
-    nextflow run main.nf -profile slurm -c config/custom.config -resume
+    ??? question "Hint"
 
-    4. Save the config and run the workflow:
+        ```
+        nextflow run main.nf -profile slurm -c config/custom.config -resume
+        ```
+    
+
+    4. Save the run script config and run the workflow:
+
     ```bash
     ./run.sh
     ```
@@ -230,33 +235,28 @@ When things go wrong with process execution, we often need to trawl through the 
     5. View the newly generated trace file inside the `runInfo/` folder
 
     ```bash
-    cat runInfo/trace-<newest timestamp>.txt
+    cat runInfo/trace-<newest-timestamp>.txt
     ```
 
     6. Now view the previously generated trace file:
+
     ```bash
-    cat runInfo/trace-<newest timestamp>.txt
+    cat runInfo/trace-<newest-timestamp>.txt
     ```
 
-Note that despite running with `-resume`, the trace file is still generated afresh for the entire run, including full resource usage details as if the process was executed again. This is very handy for benchmarking and tracking resource usage over multiple runs, as the full workflow details are always included in the latets trace regardless of whether a task was cached or re-executed.
+Note that despite running with `-resume`, the trace file is still generated afresh for the entire run, including full resource usage details as if the process was executed again. This is very handy for benchmarking and tracking resource usage over multiple runs, as the full workflow details are always included in the latest trace regardless of whether a task was cached or re-executed.
 
 It is up to you how you want to configure your traces for your own pipelines and how much added information you require. The suggestions we have demonstrated in this lesson are a good starting point for most bioinformatics workflows.
 
 ## 2.2.5 Summary
 
-In this section, we have:
-
-    - Enabled Nextflow's execution report and timeline features to generate HTML reports summarising our workflow run
-    - Used the `nextflow log` command to extract resource usage information from previous runs  
-    - Enabled trace reporting in our custom configuration file to generate detailed process-level resource usage reports and additional fields assisting with debugging
+In this section, we have enabled Nextflow's execution report and timeline features to generate HTML summary reports, explored how to extract custom information from the `nextflow log` command, and configured customised trace file reporting. 
 
 These powerful profiling features can help you benchmark and debug your runs, monitor resource usage, and plan for upcoming compute needs. Applying these tools when you set up your own pipelines will help you build efficient and reliable workflows that make the best use of your HPC resources.
 
 ## 2.2.6 Code checkpoint
 
-Complete code at the end of Section 2.2:
-
-??? abstract "Show code"
+??? abstract "Show complete code at the end of Section 2.2"
 
     === "Gadi (PBS)"
 

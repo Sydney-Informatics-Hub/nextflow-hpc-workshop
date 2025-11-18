@@ -714,9 +714,8 @@ You’ve now built the scaffolding needed to begin fine-tuning your resource req
 
 ## 2.1.7 Code checkpoint
 
-Complete code at the end of Section 2.1:
 
-??? abstract "Show code"
+??? abstract "Show complete code at the end of Section 2.1"
 
     === "Gadi (PBS pro)"
 
