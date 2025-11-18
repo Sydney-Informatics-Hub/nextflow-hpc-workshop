@@ -37,9 +37,9 @@ Let's start by running the pipeline out of the box to identify what we need to c
 
 !!! example "Exercise: Run out of the box"
 
-    1. Load the Nextflow module, following the same method we learnt yesterday:
+    - Load the Nextflow module, following the same method we learnt yesterday:
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
         ```bash
         module load nextflow/24.04.5 
         ```
@@ -49,9 +49,9 @@ Let's start by running the pipeline out of the box to identify what we need to c
         module load nextflow/24.10.0
         ```
 
-    2. Run your Nextflow command out of the box:
+    - Run your Nextflow command out of the box:
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
 
         ```bash
         nextflow run main.nf
@@ -161,9 +161,9 @@ All our process modules specify a container to run inside. This can only happen 
 
 !!! example "Exercise: Enable Singularity"
 
-    1. Load the Singularity module, following the same method we learnt yesterday:
+    - Load the Singularity module, following the same method we learnt yesterday:
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
         ```bash
         module load singularity
         ```
@@ -173,9 +173,9 @@ All our process modules specify a container to run inside. This can only happen 
         module load singularity/4.1.0-slurm
         ```
 
-    2. Add the following to your system-specific config file that you can find in `config/`. Remember, we have already enabled profiles in our `nextflow.config`, so no need to edit that file. 
+    - Add the following to your system-specific config file that you can find in `config/`. Remember, we have already enabled profiles in our `nextflow.config`, so no need to edit that file. 
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
         ```groovy title="config/pbspro.sh"
         process {
             // Load the globally installed singularity module before running any process
@@ -209,9 +209,9 @@ All our process modules specify a container to run inside. This can only happen 
         }
         ```
 
-    3. Run your updated Nextflow command:
+    - Run your updated Nextflow command:
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
 
         ```bash
         nextflow run main.nf -profile pbspro
@@ -280,7 +280,7 @@ Let's add both the `executor` and `queue` configuration options to our system-sp
 
 !!! example "Exercise: Configure executor and queue"
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
 
         ```groovy title="config/pbspro.config" hl_lines="4-6"
         process {
@@ -330,9 +330,9 @@ Note that for Setonix, we have specified a `reservation`. This enables us to use
 
 !!! example "Exercise: Further config options"
 
-        1. Add the additional config options to your system-specific config file: 
+    - Add the additional config options to your system-specific config file: 
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
     
         ```groovy title="config/pbspro.config" hl_lines="1 2 3 4 5 6 14 15 16 17 18"
         executor {
@@ -364,7 +364,7 @@ Note that for Setonix, we have specified a `reservation`. This enables us to use
         }
         ```
 
-        2. Save the file and run the pipeline:
+        - Save the file and run the pipeline:
 
         ```bash
         nextflow run main.nf -profile pbspro
@@ -439,7 +439,8 @@ Note that for Setonix, we have specified a `reservation`. This enables us to use
         }
         ```
 
-        Save your file and run the pipeline:
+        - Save the  file and run the pipeline:
+
         ```bash
         nextflow run main.nf -profile slurm
         ```
@@ -474,7 +475,7 @@ We will use the respective job scheduler introspection tools to observe the reso
 
 !!! example "Exercise: Inspect resource usage"
 
-    1. Find the Job ID of the failed or completed `GENOTYPE` process in your `.nextflow.log`: 
+    - Find the Job ID of the failed or completed `GENOTYPE` process in your `.nextflow.log`: 
 
     ```bash
     grep -w GENOTYPE .nextflow.log | grep jobId
@@ -488,9 +489,9 @@ We will use the respective job scheduler introspection tools to observe the reso
 
     The value we need in this example is `154278383` - this corresponds to the job id that was scheduled.
 
-    2. Then, use this job ID and the specific job introspection command for your HPC system to view the resource usage of the `GENOTYPE` process:
+    - Then, use this job ID and the specific job introspection command for your HPC system to view the resource usage of the `GENOTYPE` process:
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
 
         Use `qstat -xf <job_id>` for a comprehensive summary of job allocation, environment variables, and resource usage:
 
@@ -569,7 +570,7 @@ Each configuration file serves a distinct purpose:
 
 - `nextflow.config` is the main configuration file that defines the core behaviour of the workflow itself (e.g. `main.nf`). It includes parameters (params), and references to profiles. To maintain reproducibility, **this file should not be modified during system-specific tuning**. It should only change if the underlying workflow logic changes - that is, what gets run.
 
-- `config/pbspro.config` and `config/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS Pro or SLURM), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting. Working on a new HPC? You'll need to make a new config file for it! But the good news is you can still ***use the same `nextflow.config` file***.
+- `config/pbspro.config` and `config/slurm.config` define how the pipeline should run on a particular type of HPC system. These files specify details such as which executor to use (e.g. PBS Pro or Slurm), whether to use Singularity or Docker, and other runtime behaviour. They do not control the internal logic of the pipeline. These files should be tailored to match the requirements and setup of the HPC infrastructure you are targeting. Working on a new HPC? You'll need to make a new config file for it! But the good news is you can still ***use the same `nextflow.config` file***.
 
 - `config/custom.config` is an additional system-specific customisation layer that defines process settings such as CPU and memory requests. When developing or adapting a custom pipeline for an HPC environment, this is typically where most tuning happens to fit the specific node architecture, queue constraints, and resource requirements of the data being processed. While these settings *could* be included within the same config that defines the executor and other system-specific settings, separating them into a distinct file allows for easier management and modification of resource allocations without altering the core system configuration. This modularity is especially useful when experimenting with different resource configurations during pipeline development and testing or when adapting the pipeline for different datasets with varying resource needs.
 
@@ -586,15 +587,15 @@ Note that the resources assigned differ across sytems - these values are based o
 
 !!! example "Exercise: Create custom resource config"
 
-    1. Create a new file `config/custom.config`
+    - Create a new file `config/custom.config`
 
         ```bash
         touch config/custom.config
         ```
 
-    2. Open the new empty file, and add the following contents based on your HPC
+    - Open the new empty file, and add the following contents based on your HPC
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
 
         ```groovy title='custom.config'
         process {
@@ -616,15 +617,15 @@ Since we have been repeatedly running the same Nextflow run command, it makes se
 
 !!! example "Exercise: Create and use a run script"
 
-    1. Create a new file called `run.sh`
+    - Create a new file called `run.sh`
 
         ```bash
         touch run.sh
         ```
 
-    2. Open the new empty file, and copy-paste the following code based on your HPC:
+    - Open the new empty file, and copy-paste the following code based on your HPC:
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
 
         ```groovy title="run.sh"
         #!/bin/bash
@@ -646,15 +647,15 @@ Since we have been repeatedly running the same Nextflow run command, it makes se
         nextflow run main.nf -profile slurm -c config/custom.config
         ```
 
-    3. Save the file (Windows: Ctrl+S, macOS: Cmd+S)
+    - Save the file (Windows: Ctrl+S, macOS: Cmd+S)
 
-    4. Provide execute permission by running:
+    - Provide execute permission by running:
 
         ```bash
         chmod +x run.sh
         ```
 
-    5. Run the workflow using the new run script: 
+    - Run the workflow using the new run script: 
 
     ```bash
     ./run.sh
@@ -664,7 +665,7 @@ Since we have been repeatedly running the same Nextflow run command, it makes se
 
         On both Gadi and Setonix, the workflow should now be successful and executed end-to-end on the respective scheduler.
 
-        === "Gadi (PBSpro)"
+        === "Gadi (PBS Pro)"
 
             ```bash
             Loading nextflow/24.04.5
@@ -687,7 +688,7 @@ Since we have been repeatedly running the same Nextflow run command, it makes se
             Succeeded   : 6
             ```
 
-        === "Pawsey (Slurm)"
+        === "Setonix (Slurm)"
 
 
             ```bash
@@ -714,11 +715,10 @@ You’ve now built the scaffolding needed to begin fine-tuning your resource req
 
 ## 2.1.7 Code checkpoint
 
-Complete code at the end of Section 2.1:
 
-??? abstract "Show code"
+??? abstract "Show complete code"
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS Pro)"
 
         ```groovy title="config/pbspro.config"
         executor {
@@ -775,7 +775,7 @@ Complete code at the end of Section 2.1:
             // Run using the pbspro scheduler on the 'normalbw' queue
             executor = 'slurm'
             queue = 'work'
-            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservations=NextflowHPC"
             cache = 'lenient'
             stageInMode = 'symlink'
         }
