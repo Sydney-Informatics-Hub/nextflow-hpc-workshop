@@ -774,7 +774,7 @@ You’ve now built the scaffolding needed to begin fine-tuning your resource req
             // Run using the pbspro scheduler on the 'normalbw' queue
             executor = 'slurm'
             queue = 'work'
-            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')}"
+            clusterOptions = "--account=${System.getenv('PAWSEY_PROJECT')} --reservations=NextflowHPC"
             cache = 'lenient'
             stageInMode = 'symlink'
         }
