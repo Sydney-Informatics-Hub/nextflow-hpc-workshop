@@ -6,15 +6,20 @@
     - Differentiate between multi-threading and scatter-gather parallelisation methods
     - Implement parallelisation approaches in Nextflow and evaluate their impact on resource usage 
 
-[Lesson 1.4](../part1/01_4_smarter.md) introduced parallelisation approaches with the goal of speeding up your jobs by utilising more resources. As your data gets larger, or more samples are required to be processed, it needs to run efficiently. In this lesson we will explore how Nextflow supports different forms of parallelisation to help you scale your workflows.
+In [Lesson 1.4](../part1/01_4_smarter.md), strategies to speed up your workflow by utilising more resources were introduced. As your data size or sample throughput grows, so too does the importance of efficient processing. In this lesson we will explore how Nextflow supports different forms of parallelisation to help you scale your workflows by adding multi-threading and scatter-gather parallelism to our custom workflow.
+
+Recall that assigning more cores than your tool can efficiently utilise or splitting your data up into too many chunks can lead to diminishing returns, where CPU efficiency is decreased and service unit cost is increased for little to no walltime gain. Multi-threading and parallelisation requires benchmarking to find the right balance between walltime, CPU efficiency, and service unit consumption. 
+
+The figure below shows benchmarking results on real world data for alignment of human whole genome data using a scatter-gather method. As the number of nodes per sample increases (x-axis) the walltime decreases, until plateau by 6 nodes. This highlights the importance of benchmarking to avoid over-parallelisation.
+
 
 ![](figs/00_benchmark_at_scale_theme.png)
 
-Recall that splitting your data up across too many cores can lead to diminishing returns, such as increased SU usage and walltime. Parallelisation requires benchmarking to find the right balance between the walltime, CPU efficiency, and service unit consumption. We want to avoid over-parallelising our workflows.
 
-## 2.5.1 Multithreading `bwa mem`
 
-In this section we will look at implementing another multithreading example with `bwa mem`, used in the `ALIGN` process. These are the example benchmarking results from Part 1, with the CPU efficiency calculated for you. 
+## 2.5.1 Multi-threading `bwa mem`
+
+In this section we will look at implementing another multi-threading example with `bwa mem`, used in the `ALIGN` process. These are the example benchmarking results from Part 1, with the CPU efficiency calculated for you with the formula  `cpu time / walltime / cpus`:
 
 | Cores | Walltime (s) | CPU time (s) | CPU efficiency |
 |-------|--------------|--------------|----------------|
@@ -23,23 +28,24 @@ In this section we will look at implementing another multithreading example with
 | 6     | 0.355        | 1.618        | 76%            |
 | 8     | 0.291        | 1.628        | 70%            |
 
-These values were taken from the `time` command output:
-
-- Walltime = `real`
-- CPU time = `user` + `sys`
-- CPU efficiency = `cpu time / (cpu time * cores)`
 
 !!! info "CPU efficiency"
 
     Recall that CPU efficiency is a measure of how many cpus were actually used, in comparison to how many cpus were requested. A high CPU efficiency (100%) means that all of the CPUs were utilised, while a low efficiency suggests that too many were requested.
 
-In this example, we have to consider the trade offs between each run and what we would like to optimise for. 
 
-Providing 2 cores has the slowest walltime but utilises the 2 CPUs efficiently (93%).
+It is typical to see speed gains when additional resources are allocated to a tool that can make use of them, with some tools achieving a near-perfect efficiency of near 100% for many increase to core count. However, in reality very few multi-threading tools can sustain 1:1 gains at high core counts, so efficiency decreases, walltime plateaus, and service units creep up. As tempting as it may be to run BWA with 128 threads on Setonix, we promise you this is not a good idea! 
 
-On the other hand, providing 8 cores provides ~40% speed up in walltime with reduced CPU efficiency.
+Note that the above benchmarking results are for demonstration purposes only, and for real-world benchmarking, larger test data should be used, aiming for a walltime of at least 5 minutes to observe reliable performance changes at different threads. 
 
-As responsible users of shared systems, we will select the option that maintains high CPU efficiency. While this is not prescriptive, aiming for >80% CPU efficiency ensures we are not reserving resources in excess, that others' can use for their own jobs.
+
+From the example benchmarking results above, we need to consider the trade-offs between each run and what we would like to optimise for. 
+
+Providing 2 cores has the slowest walltime but utilises the 2 CPUs most efficiently (93%).
+
+On the other hand, providing 8 cores provides ~40% speed-up in walltime, but at the cost of reduced CPU efficiency.
+
+As responsible users of shared systems, we will select the option that maintains high CPU efficiency. While this is not prescriptive, aiming for >80% CPU efficiency ensures we are not reserving resources in excess.
 
 !!! question "Poll"
 
@@ -48,12 +54,12 @@ As responsible users of shared systems, we will select the option that maintains
     3. How much extra memory can you utilise if required? (Consider the effective RAM/CPUs
     proportion of the queue or partition)
 
-    === "Gadi (PBS)"
+    === "Gadi (PBS Pro)"
 
         ??? note "Answers"
 
             - 4 CPUs has > 80% CPU efficiency  
-            - `custom.config` to ensure it is tuned for the `normalbw` queue.
+            - `custom.config` to ensure it is tuned for the `normalbw` queue
             - 4 CPUs with 16-18 GB memory
 
     === "Setonix (Slurm)"
@@ -61,7 +67,7 @@ As responsible users of shared systems, we will select the option that maintains
         ??? note "Answers"
 
             - 4 CPUs has > 80% CPU efficiency  
-            - `custom.config` to ensure it fits the `work` partition.
+            - `custom.config` to ensure it fits the `work` partition
             - 4 CPUs with 7-8 GB memory
 
 !!! example "Exercise: Reassigning resources for `ALIGN`"

@@ -13,9 +13,9 @@ When running Nextflow workflows on HPC, the way you configure your process resou
 A common assumption is that requesting fewer resources is safer, more considerate, or will result in less compute cost. In practice,
 this is often not the case. Jobs that are under-resourced may run for much longer than they need to, or fail partway through. This can waste time and also lead to wasted service units as the job requires resubmission.
 
-In many cases, using **more cores and memory for a shorter time can be more efficient and cost-effective**. This principle applies broadly across HPC systems, but of course applies only to tools and analysis tasks which can make use of additional cores and memory. Once again, in bioinformatics, there is no substitute for reading the docs! A perfect example is FastQC, which we learnt in Lesson 1.4 has a `threads` parameter but *does not necessarily run faster with more threads*. Only by reading the tool documentation or help menu for FastQC can reveal that the `threads` parameter sets "the number of files which can be processed simultaneously" and NOT the number of worker threads that the tool will run to achieve speed-up on a single input file.
+In many cases, using **more cores and memory for a shorter time can be more efficient and cost-effective**. This principle applies broadly across HPC systems, but of course applies only to tools and analysis tasks which can make use of additional cores and memory. Once again, in bioinformatics, there is no substitute for reading the docs!
 
-The scheduler also plays a role here. HPC schedulers are tuned to fit jobs into available space to maximise throughput and minimise idle cores on a node. If your job is "small and short" (i.e. fewer cores/memory for shorter time), it might slide into a gap on a partially subscribed compute node, but if it is "wide and tall" (i.e. more cores/memory for longer time) it may need to wait longer for available resources to become free. Consider a job that can only make use of a single core, but as a researcher you are unsure of the memory or walltime required, so request 100 GB memory and the maximum permitted walltime. Given that 100 GB may be more than half or even almost all of the memory on the compute node, the scheduler will have a hard time finding a node that is running tasks on all of the other cores but still has 100 GB RAM free. The extensive walltime will likely see single-core jobs submitted after your job being scheduled sooner, as this fits the scheduler goal of throughput. In this scenario, submitting a shorter job with fewer resources (eg 1 hour walltime and <10 GB RAM) could provide answers much sooner. The job may surprise you and complete, having saved you a long wait in the queue, or fail with informative logs that can be used to guide more realistic resource requests. 
+The **scheduler** also plays a role here. HPC schedulers are tuned to fit jobs into available space to maximise throughput and minimise idle cores on a node. If your job is "small and short" (i.e. fewer cores/memory for shorter time), it might slide into a gap on a partially subscribed compute node, but if it is "wide and tall" (i.e. more cores/memory for longer time) it may need to wait longer for available resources to become free. Some "wide and tall" bioinformatics tasks, such as read alignment, can be made "small and short" to take advantage of this feature of HPC, and we will apply this in Lesson 2.5. 
 
 
 !!! tip 
@@ -89,9 +89,12 @@ Thee values were chosen according to the average amount of memory available to e
 
 ![](../part1/figs/00_smarter_proportions.png)
 
-Most HPC systems allocate jobs to nodes based on both core and memory requests. This is critical to ensure that the node is not over-subscribed, and for fair distribution of RAM among the cores on the node. Fair distribution is simply an average, so the total amount of RAM on the node divided by the number of cores, giving the **average memory per core that a user can request without incurring additional job costs**. Avoiding additional job costs motivates HPC users to consider this average when resourcing their jobs, which in turn means the scheduler can place more jobs per node, facilitating higher workload throughout and enhanced overall system utilisation. 
+Most HPC systems allocate jobs to nodes based on both core and memory requests. This is critical to ensure that the node is not over-subscribed, and for fair distribution of RAM among the cores on the node. Fair distribution is simply an average, so the total amount of RAM on the node divided by the number of cores, giving the **average memory per core that a user can request without incurring additional job costs**. 
 
-Both Gadi and Setonix apply the average amount of memory per core to the calculation of job cost. If your job requests more memory per core than the average memory per core, it will be charged based on the memory usage, and not the number of cores requested. This becomes an important consideration for optimising resource requests for your Nextflow processes. If you have a single-threaded task with low memory requirements, requesting 100 GB of memory will see your job cost many more times what it should, with no performance gains. 
+Avoiding additional job costs motivates HPC users to consider this average when resourcing their jobs, which in turn means the scheduler can place more jobs per node, facilitating higher workload throughout and enhanced overall system utilisation. 
+
+Both Gadi and Setonix apply the average amount of memory per core to the calculation of job cost. If your job requests more memory per core than the average memory per core, it will be charged based on the memory usage, and not the number of cores requested. 
+
 
 ## 2.4.4 Exploring resource options for FASTQC
 
@@ -332,10 +335,11 @@ Let's inspect our `FASTQC` module code:
             """
 
         }
+    ```
 
-```
+Note in the highlighted line the syntax `fastqc -t 1`. Here we are asking `fastqc` to use only a single thread, which means the 2 input files are processed in series (i.e. one at a time, each using a single core) instead of our intention of both files being processed at once to speed up run time. No matter how many cores we allocate to this process in our custom config, without adjusting this module code, the `FASTQC` process will always use a single core and process one file at once. 
 
-Note in the highlighted line the syntax `fastqc -t 1`. Here we are asking `fastqc` to use only a single thread, which means the 2 input files are processed in series (i.e. one at a time, each using a single core) instead of our intention of both files being processed at once to speed up run time. No matter how many cores we allocate to this process in our custom config, without adjusting this module code, the `FASTQC` process will always use a single core and process one file at once. Hardcoding is generally bad practice, and should be actively avoided in Nextflow workflows that aim to facilitate portability and adaptability. For tools that mandate a specific amount of memory or cores, these values should still not be hard-coded, as these values may change in the future.
+Hardcoding is generally bad practice, and should be actively avoided in Nextflow workflows. Even for tools that mandate a specific amount of memory or cores, these values should still not be hard-coded, as these values may change in the future.
 
 We will next instruct our `FASTQC` process to take in the number of cores we provide it **dynamically**. This means whatever `cpus` we provide will be parsed to the process and applied as a value to the threads parameter (`-t`|`threads`). 
 
@@ -421,9 +425,13 @@ We can now directly observe that the 2 cores we allocated to the `FASTQC` proces
 
 ## 2.4.5 Summary
 
-In this lesson, we used our custom trace files alongside the details of the compute node hardware to come up with tailored resource requests for efficient execution of our workflow on our test data. We customised process resources within our custom configuration file, using Nextflow `withName` to specify which process received which resources. We observed that the process script must also be coded to use the allocated resources, and applied this with a parameter rather than hard-coding to ensure portability and flexibility of our workflow. 
+In this lesson, we:
 
-Running Nextflow workflows on HPC comes with a responsibility for efficient use of the system. This efficiency benefits your own research project timeline, your project budget, other HPC users, and minimises unecessary impacts on the environment. The skills covered in this lesson equip you to build efficient workflows. In the next lesson, we will learn some methods to increase the speed of our workflows, without harming the efficiency. 
+- Used our custom trace files alongside the details of the compute node hardware to come up with tailored resource requests for efficient execution
+- Customised process resources within our custom configuration file, using Nextflow `withName` to specify which process received which resources
+- Learnt that the process script must also be coded to use the allocated resources, and applied this dynamically using a Nextflow parameter
+
+The skills covered in this lesson equip you to build efficient workflows and to work responsibly on HPC. In the next lesson, we will apply strategies to increase the speed of our workflows, without harming the efficiency. 
 
 ## 2.4.6 Code checkpoint
 
