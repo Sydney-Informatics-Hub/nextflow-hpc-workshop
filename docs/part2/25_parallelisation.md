@@ -171,7 +171,7 @@ As configuration generally does not trigger the re-run of processes, we need to 
 
     ??? abstract "Output"
 
-        === "Gadi (PBSpro)"
+        === "Gadi (PBS pro)"
 
             | name                       | status    | exit | realtime | cpus     | %cpu   | memory     | %mem | rss      |
             | -------------------------- | --------- | ---- | -------- | -------- | ------ | ---------- | ---- | -------- |

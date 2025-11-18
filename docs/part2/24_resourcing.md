@@ -353,7 +353,7 @@ We will next make our `FASTQC` take in the number of cores we provide it **dynam
 
     ??? abstract "Show code"
 
-        === "Gadi (PBSpro)"
+        === "Gadi (PBS pro)"
             
             ```groovy title="run.sh"
             #!/bin/bash
@@ -385,7 +385,7 @@ We will next make our `FASTQC` take in the number of cores we provide it **dynam
 
     ??? abstract "Show trace"
 
-        === "Gadi (PBSpro)"
+        === "Gadi (PBS pro)"
 
             | name                       | status    | exit | duration | realtime | cpus  | %cpu       | memory | %mem | peak_rss |
             | -------------------------- | --------- | ---- | -------- | -------- | ----- | ---------- | ------ | ---- | -------- |
@@ -464,7 +464,7 @@ Whilst the way the data is processed stays the same, it is important to review h
     }
     ```
 
-    === "Gadi (PBSpro)"
+    === "Gadi (PBS pro)"
 
         ```bash title="run.sh"
         #!/bin/bash

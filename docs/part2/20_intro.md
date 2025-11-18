@@ -270,7 +270,7 @@ Nextflow’s configuration files define how and where each process runs, includi
 In the context of HPCs, this means specifying:
 
 - How many CPUs, memory, and time a process should use
-- The appropriate executor (e.g. PBS Pro on Gadi or SLURM on Setonix)
+- The appropriate executor (e.g. PBS Pro on Gadi or Slurm on Setonix)
 - The default queue/partition and optional account/project codes
 - Whether and how to use Singularity containers
 
@@ -284,4 +284,4 @@ These settings are defined in the main `nextflow.config`, and extended using con
 
 ## 2.0.5 Summary
 
-This section introduced the basic structure of the custom variant calling Nextflow pipeline for the remainder of Part 2, emphasising the separation between workflow logic (`main.nf`, `modules/`) and system-specific configuration (`nextflow.config`, `conf/`). We reviewed how this separation supports portability, reproducibility, and ease of adaptation across environments, such as when transitioning from local testing to running on HPC systems like Gadi (PBSpro) and Setonix (Slurm).
+This section introduced the basic structure of the custom variant calling Nextflow pipeline for the remainder of Part 2, emphasising the separation between workflow logic (`main.nf`, `modules/`) and system-specific configuration (`nextflow.config`, `conf/`). We reviewed how this separation supports portability, reproducibility, and ease of adaptation across environments, such as when transitioning from local testing to running on HPC systems like Gadi (PBS pro) and Setonix (Slurm).
