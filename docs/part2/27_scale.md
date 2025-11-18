@@ -13,7 +13,7 @@ Nextflow's "dataflow" model and channels makes this easy to execute. Unlike the 
 Every additional sample can run through all per-sample processing tasks independently and in parallel, using the same code and resources we've configured. For more information, refer to the Nextflow for the Life Science's explainers on [queue channels](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part1/05_inputs/#queue-channels) and [input samplesheets](https://sydney-informatics-hub.github.io/hello-nextflow-2025/part2/02_fastqc/#223-reading-files-with-a-samplesheet).
 
 
-## 2.7.1 Applying the full samplesheet
+## 2.7.1 Applying at scale 
 
 In order to run all samples, we need to supply the workflow with a samplesheet that contains metadata for all samples in the workflow. The samplesheet we have used for our testing and development includes one sample only. 
 
