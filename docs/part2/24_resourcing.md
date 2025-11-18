@@ -89,7 +89,9 @@ Most HPC systems allocate jobs to nodes based on both CPU and memory requests, w
 
 This means there is an **average amount of memory per CPU** - this becomes an important consideration for optimising resource requests for your Nextflow processes.
 
-## 2.4.5 Exploring resource options for FASTQC
+## 2.4.4 Exploring resource options for FASTQC
+
+![](..//part1/figs/00_bwa_vs_fastqc_threads.png)
 
 Based on the Part 1 discussion on the optimal number of `FASTQC` threads, we will give `FASTQC` two CPUs to process each of the paired-end reads (R1, R2). According to the trace file, it does not require much memory, so the limiting resource here is CPU.
 
@@ -278,7 +280,7 @@ Review the new trace file. What has changed? What happened to our FASTQC process
         | STATS (1)                  | COMPLETED | 0    | 14.5s    | 0ms      | 1     | 132.7%     | 2 GB   | 0.0% | 2 MB     |
         | MULTIQC                    | COMPLETED | 0    | 19.9s    | 4.6s     | 1     | 76.1%      | 2 GB   | 0.0% | 98.3 MB  |
 
-## 2.4.6 Passing allocated resources into process scripts
+## 2.4.5 Passing allocated resources into process scripts
 
 Nextflow allows you to request specific resources for each process (like CPU and memory), but this doesn’t automatically tell the tool inside the process to use those resources. Some bioinformatics tools require you to explicitly specify how much memory or how many threads to use inside the script block. If this is not provided, it often uses a (suboptimal) default.
 
@@ -424,7 +426,7 @@ In this example, we observe an increase in CPU utilisation so our configuration 
 
     While these are outside the scope of this workshop, they’re good to consider if you want to scale up workflows on HPC.
 
-## Summary
+## 2.4.5 Summary
 
 Specifying the number of resources is the first step of
 ensuring you don't ask for resources you don't need. On systems with
@@ -436,7 +438,7 @@ power for supported tools, in comparison to being stringent.
 
 Whilst the way the data is processed stays the same, it is important to review how your tools work (read their documentation!) and whether they can utilise extra resources.
 
-## Checkpoint
+## 2.4.6 Code checkpoint
 
 ??? abstract "Show code"
 

@@ -197,7 +197,7 @@ As configuration generally does not trigger the re-run of processes, we need to 
 
     All software and bioinformatics tools are all built differently. Some support multi-threading, some can only run things with a single thread. Overlooking these details may not be crucial when running on systems where you have autonomy and access to all resources (personal compute, cloud instances), however, these are important parts of configuring your workflow on HPC shared systems to set reasonable limits and requests.
 
-### Checkpoint
+### Code checkpoint
 
 ??? abstract "Show code"
 
@@ -365,7 +365,7 @@ Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` fi
     ./run.sh
     ```
 
-    ??? abstract Show output
+    ??? abstract "Show output"
 
         ```console title="Output"
          N E X T F L O W   ~  version 24.10.0
@@ -544,7 +544,7 @@ We will resolve this by conducting updating our channels to include the chunk id
 
         The pipeline will fail, however `ALIGN` now includes the chunk id in the bam and bam index names.
 
-#### Checkpoint
+#### Code checkpoint
 
 ??? abstract "Show code"
 
@@ -737,7 +737,7 @@ This change optimises performance for large datasets by leveraging parallel proc
     
     We will revisit this in the next section.
 
-### Checkpoint
+#### Code checkpoint
 
 ??? abstract "Show code"
 
@@ -850,7 +850,7 @@ For more information, see Nextflow's training on:
 The same concepts of configuring resources will apply here, aim to fit the
 appropriate queues/partitions, but will require addtional benchmarking. This is worthwhile if developing and running high-throughput workflows.
 
-## Summary
+## 2.5.4 Summary
 
 Recall that we do not always want to parallelise everything. There are reasons
 to avoid this due to the data set or analysis requiring data be analysed as a
