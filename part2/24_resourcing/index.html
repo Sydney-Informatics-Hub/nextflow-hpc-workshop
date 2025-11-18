@@ -1,0 +1,2384 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../23_strategies/">
+      
+      
+        <link rel="next" href="../25_parallelisation/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>2.4 Assigning process resources - Nextflow on HPC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-TNWWV3HK57"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-TNWWV3HK57",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-TNWWV3HK57",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#assigning-process-resources" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Nextflow on HPC" class="md-header__button md-logo" aria-label="Nextflow on HPC" data-md-component="logo">
+      
+  <img src="../../assets/usyd-logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Nextflow on HPC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2.4 Assigning process resources
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Sydney-Informatics-Hub/nextlow-hpc-workshop
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Nextflow on HPC" class="md-nav__button md-logo" aria-label="Nextflow on HPC" data-md-component="logo">
+      
+  <img src="../../assets/usyd-logo.png" alt="logo">
+
+    </a>
+    Nextflow on HPC
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Sydney-Informatics-Hub/nextlow-hpc-workshop
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Set up
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 1
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 1
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_0_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.0 Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_1_hpc_for_workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 HPC for bioinformatics workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_2_hpc_software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 Software is different on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_3_hpc_architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 HPC architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_4_smarter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 Work smarter, not harder!
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_5_nf_hpc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 Running Nextflow on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_6_nfcore_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 Intro to nf-core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_7_nfcore_run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 Running nf-core on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_8_nfcore_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 Configuring nf-core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_9_nfcore_layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 Layering Nextflow configurations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/01_10_outro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.10 Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 2
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 2
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.0 Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21_firstrun/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 Running a custom pipeline on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22_reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Pipeline monitoring and reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23_strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Optimising Nextflow for HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 Assigning process resources
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 Assigning process resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#241-resource-efficiency-on-hpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.1 Resource efficiency on HPC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#242-configuring-processes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.2 Configuring processes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#243-effective-memory-per-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.3 Effective memory per core
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#244-exploring-resource-options-for-fastqc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.4 Exploring resource options for FASTQC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#245-configuring-with-process-names-withname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.5 Configuring with process names (withName)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#246-passing-allocated-resources-into-process-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.6 Passing allocated resources into process scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#247-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.7 Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#248-code-checkpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.8 Code checkpoint
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25_parallelisation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Parallelisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27_scale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Scale to multiple samples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../28_outro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#241-resource-efficiency-on-hpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.1 Resource efficiency on HPC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#242-configuring-processes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.2 Configuring processes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#243-effective-memory-per-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.3 Effective memory per core
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#244-exploring-resource-options-for-fastqc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.4 Exploring resource options for FASTQC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#245-configuring-with-process-names-withname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.5 Configuring with process names (withName)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#246-passing-allocated-resources-into-process-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.6 Passing allocated resources into process scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#247-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.7 Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#248-code-checkpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4.8 Code checkpoint
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="assigning-process-resources">Assigning process resources</h1>
+<div class="admonition info">
+<p class="admonition-title">Learning objectives</p>
+<ul>
+<li>Analyse process-level resource usage from Nextflow trace data to determine appropriate resource requests</li>
+<li>Apply resource-aware configuration strategies</li>
+<li>Configure processes to correctly utilise allocated resources by passing values into process script blocks.</li>
+</ul>
+</div>
+<h2 id="241-resource-efficiency-on-hpc">2.4.1 Resource efficiency on HPC</h2>
+<p>When running Nextflow workflows on HPC, the way you configure your process resources (cores, memory, walltime) can make a big difference to how efficiently your jobs run, how long they sit in the queue, and how many service units/resource hours the job costs.</p>
+<p>A common assumption is that requesting fewer resources is safer, more considerate, or will result in less compute cost. In practice,
+this is often not the case. Jobs that are under-resourced may run for much longer than they need to, or fail partway through. This can waste time and also lead to wasted service units as the job requires resubmission.</p>
+<p>In many cases, using <strong>more cores and memory for a shorter time can be more efficient and cost-effective</strong>. This principle applies broadly across HPC systems, but of course applies only to tools and analysis tasks which can make use of additional cores and memory. Once again, in bioinformatics, there is no substitute for reading the docs!</p>
+<p>The <strong>scheduler</strong> also plays a role here. HPC schedulers are tuned to fit jobs into available space to maximise throughput and minimise idle cores on a node. If your job is "small and short" (i.e. fewer cores/memory for shorter time), it might slide into a gap on a partially subscribed compute node, but if it is "wide and tall" (i.e. more cores/memory for longer time) it may need to wait longer for available resources to become free. Some "wide and tall" bioinformatics tasks, such as read alignment, can be made "small and short" to take advantage of this feature of HPC, and we will apply this in Lesson 2.5. </p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can think of job scheduling like finding a table at a busy café. If you’re alone or in a small group, it’s easier to get seated quickly, but if you camp out all day at a large table and only order a coffee, you’re not making good use of the space. The waiter would also preferentially give that table to the party of 8 queued behind you, requiring you to wait until peak time had passed if you insisted on that large table to yourself. The HPC scheduler works in a similar way: it tries to fill in available “seats” with jobs that fit neatly and will clear out efficiently.</p>
+</div>
+<p>In general, jobs that request just enough resources to run efficiently and cleanly tend to move through the system faster and cause fewer problems for other users. In order to deduce what "just enough" looks like for your workflow requires <strong>benchmarking</strong> and resource usage monitoring, and the Nextflow trace files can help us achieve that. </p>
+<p>In this section, we’ll explore how to make smart decisions about resource configuration such as:</p>
+<ul>
+<li>How many resources your process actually needs</li>
+<li>How to estimate the average amount of usable memory per core on a node</li>
+</ul>
+<p>These adjustments don’t just benefit your own workflow, they make better use of shared infrastructure.</p>
+<h2 id="242-configuring-processes">2.4.2 Configuring processes</h2>
+<p>To begin tuning our workflow, we first need to understand how many resources each process actually used. We will use the trace summaries generated in the previous lesson as a baseline for how much time, how many cores, and how much memory each process used. </p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Gadi (PBS Pro)</label><label for="__tabbed_1_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>status</th>
+<th>exit</th>
+<th>duration</th>
+<th>realtime</th>
+<th>cpus</th>
+<th>%cpu</th>
+<th>memory</th>
+<th>%mem</th>
+<th>peak_rss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ALIGN (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>29.6s</td>
+<td>1s</td>
+<td>1</td>
+<td>93.7%</td>
+<td>4 GB</td>
+<td>0.0%</td>
+<td>95.8 MB</td>
+</tr>
+<tr>
+<td>FASTQC (fastqc on NA12877)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>34.5s</td>
+<td>5s</td>
+<td>1</td>
+<td>76.2%</td>
+<td>4 GB</td>
+<td>0.1%</td>
+<td>286.6 MB</td>
+</tr>
+<tr>
+<td>GENOTYPE (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>59.9s</td>
+<td>45s</td>
+<td>1</td>
+<td>97.6%</td>
+<td>4 GB</td>
+<td>0.5%</td>
+<td>950.3 MB</td>
+</tr>
+<tr>
+<td>JOINT_GENOTYPE (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>34.8s</td>
+<td>16s</td>
+<td>1</td>
+<td>93.3%</td>
+<td>4 GB</td>
+<td>0.3%</td>
+<td>508.8 MB</td>
+</tr>
+<tr>
+<td>STATS (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>19.9s</td>
+<td>0ms</td>
+<td>1</td>
+<td>73.4%</td>
+<td>4 GB</td>
+<td>0.0%</td>
+<td>3.1 MB</td>
+</tr>
+<tr>
+<td>MULTIQC</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>29.9s</td>
+<td>4.7s</td>
+<td>1</td>
+<td>79.5%</td>
+<td>4 GB</td>
+<td>0.0%</td>
+<td>97.2 MB</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>status</th>
+<th>exit</th>
+<th>duration</th>
+<th>realtime</th>
+<th>cpus</th>
+<th>%cpu</th>
+<th>memory</th>
+<th>%mem</th>
+<th>peak_rss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FASTQC (fastqc on NA12877)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>13.8s</td>
+<td>4s</td>
+<td>1</td>
+<td>90.6%</td>
+<td>2 GB</td>
+<td>0.1%</td>
+<td>240.6 MB</td>
+</tr>
+<tr>
+<td>ALIGN (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>13.8s</td>
+<td>2s</td>
+<td>1</td>
+<td>100.1%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>98.2 MB</td>
+</tr>
+<tr>
+<td>GENOTYPE (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>39.9s</td>
+<td>28s</td>
+<td>1</td>
+<td>164.8%</td>
+<td>2 GB</td>
+<td>0.5%</td>
+<td>1.4 GB</td>
+</tr>
+<tr>
+<td>JOINT_GENOTYPE (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>19.2s</td>
+<td>8s</td>
+<td>1</td>
+<td>204.2%</td>
+<td>2 GB</td>
+<td>0.2%</td>
+<td>466 MB</td>
+</tr>
+<tr>
+<td>STATS (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>14.9s</td>
+<td>1s</td>
+<td>1</td>
+<td>45.2%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>2 MB</td>
+</tr>
+<tr>
+<td>MULTIQC</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>19.9s</td>
+<td>5.3s</td>
+<td>1</td>
+<td>62.4%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>78.6 MB</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>While we could configure each process to match these values, we’re instead going to take a broader view. We'll explore how HPC systems allocate memory per CPU, and how to align our process requests to match this architecture more effectively.</p>
+<p>This approach lets us make the most of the available resources - sometimes even getting "extra" memory at no additional cost and still remain scheduled quickly.</p>
+<h2 id="243-effective-memory-per-core">2.4.3 Effective memory per core</h2>
+<p>Recall that this is the configuration we used in Part 2.1 to get the pipeline running on the respective HPC systems:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Gadi (PBS Pro)</label><label for="__tabbed_2_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">custom.config</span><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">cpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="c1">// &#39;normalbw&#39; queue = 128 GB / 28 CPU ~ 4.6</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">custom.config</span><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">cpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="c1">// &#39;work&#39; partition = 230 GB / 128 CPU ~ 1.8</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>Thee values were chosen according to the average amount of memory available to each core on the compute node. As illustrated by the simple schematic below, compute nodes are made up of a number of CPUs each with a number of cores and amount of attached RAM. </p>
+<p><img alt="" src="../../part1/figs/00_smarter_proportions.png" /></p>
+<p>Most HPC systems allocate jobs to nodes based on both core and memory requests. This is critical to ensure that the node is not over-subscribed, and for fair distribution of RAM among the cores on the node. Fair distribution is simply an average, so the total amount of RAM on the node divided by the number of cores, giving the <strong>average memory per core that a user can request without incurring additional job costs</strong>. </p>
+<p>Avoiding additional job costs motivates HPC users to consider this average when resourcing their jobs, which in turn means the scheduler can place more jobs per node, facilitating higher workload throughout and enhanced overall system utilisation. </p>
+<p>Both Gadi and Setonix apply the average amount of memory per core to the calculation of job cost. If your job requests more memory per core than the average memory per core, it will be charged based on the memory usage, and not the number of cores requested. </p>
+<h2 id="244-exploring-resource-options-for-fastqc">2.4.4 Exploring resource options for FASTQC</h2>
+<p>Recall this bar chart from Lesson 1.4, where we observed that BWA executes faster when assigned more cores but FastQC walltime remains constant. </p>
+<p><img alt="" src="../../part1/figs/00_bwa_vs_fastqc_threads.png" /></p>
+<p>Given that our samples have two input files each (paired-end reads, R1 and R2), and we know that the FastQC <code>-threads N</code> parameter can process N files at once, we should request 2 cores for the <code>FASTQC</code> process. According to the trace file, it does not require much memory, so the limiting resource here is cores (the initial runs requested 1 core). </p>
+<p>Let's find the effective usable memory per core for the <code>normalbw</code> queue on Gadi, and the <code>work</code> partition on Setonix.</p>
+<p>Note: Some queues and partitions may have different nodes with different hardware specifications, such as nodes with more or less memory. Gadi's <code>normalbw</code> queue is one such case, where the queue has some nodes with 128 GB RAM and some with 256 GB. Using the effective memory per core to fit the smaller node has the benefit of running on either sized node, whereas requesting to fit only the 256 GB node may queue for longer. Typically however, a queue/partition will be made up of a number of identical compute nodes, and the consideration will be which queue matches your resource needs, and not which value to use when calculating the average memory per core. </p>
+<div class="admonition example">
+<p class="admonition-title">Exercise: Match task memory request with node hardware</p>
+<p>How much memory should you allocate to a process that requests <code>cpus = 2</code>?</p>
+<p>Steps:</p>
+<ul>
+<li>Refer to the HPC documentation and find the relevant information on the queue/partition resources  </li>
+<li>Divide the usable RAM on the queue/partition by the number of cores</li>
+<li>Multiply that value with the number of cores requested by the process</li>
+<li>Round up/down if required</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Gadi (PBS Pro)</label><label for="__tabbed_3_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Review <a href="https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits...#QueueLimits...">Queue Limits</a> for <code>normalbw</code> queue.</p>
+<details class="note">
+<summary>Answer</summary>
+<ul>
+<li>128 GB/28 cores ~ 4.6 GB per CPU</li>
+<li>4.6 GB x 2 cores requested = 9.2 GB</li>
+<li>9 GB memory</li>
+</ul>
+<p>OR</p>
+<ul>
+<li>18 GB to fit 256 GB nodes</li>
+</ul>
+</details>
+</div>
+<div class="tabbed-block">
+<p>Review <a href="https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix#Partitions">partition resources</a> for <code>work</code> partition</p>
+<details class="note">
+<summary>Answer</summary>
+<ul>
+<li>230 GB/ 128 cores ~ 1.8 GB per core</li>
+<li>1.8 GB x 2 cores requested = 3.6 GB</li>
+<li>4 GB memory</li>
+</ul>
+</details>
+</div>
+</div>
+</div>
+</div>
+<p>Now that we’ve calculated the effective memory per core on each system and determined what our memory request should be based on maximising resources available to the job without incurring additional job costs, the next consideration is - how much should we actually request for a small, fast process like <code>FASTQC</code> on our small test data?</p>
+<p>Let’s look at the trade-offs.</p>
+<p>If we request:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Gadi (PBS Pro)</label><label for="__tabbed_4_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<ul>
+<li>2 CPUs and 8 GB memory (on the Gadi <code>normalbw</code> queue), this takes advantage of all the memory you’re entitled to, but <code>FASTQC</code> won't actually use that memory for input data of this size. So you're not getting any extra performance and may lengthen the time in queue.</li>
+<li>2 CPUs and 1 GB memory, on the other hand, still gives <code>FASTQC</code> enough to run, and because you're requesting less RAM, your job <em>may</em> be scheduled faster alongside other jobs that request more than the available memory per core on that node. This is more memory efficient too.</li>
+</ul>
+</div>
+<div class="tabbed-block">
+<ul>
+<li>2 CPUs and 4 GB memory (on the Setonix <code>work</code> partition), this takes advantage of all the memory you’re entitled to, but <code>FASTQC</code> won't actually use that memory. So you're not getting any extra performance and may lengthen the time in queue.</li>
+<li>2 CPUs and 1 GB memory, on the other hand, still gives <code>FASTQC</code> enough to run, and because you're requesting less RAM, your job <em>may</em> be scheduled faster alongside other jobs that request more than the available memory per core on that node. This is more memory efficient too.</li>
+</ul>
+</div>
+</div>
+</div>
+<p>We will proceed by requesting 2 cores and 1 GB memory for <code>FASTQC</code> as the job won't benefit from the extra memory.</p>
+<h2 id="245-configuring-with-process-names-withname">2.4.5 Configuring with process names (<code>withName</code>)</h2>
+<p>We have learnt that adding custom workflow configurations into config files rather than into module code aids portability and ease of maintenance by keeping  workflow logic and system-specific configuration separate.</p>
+<p>We have also learnt that multiple configuration files can be applied at once in order to tailor a run, with workflow-specific configurations required for minimal execution of the workflow, system-specific configurations to get it running on a specific HPC, and further custom configurations tailored to our requirements.   </p>
+<div class="admonition question">
+<p class="admonition-title">Question</p>
+<p>Into which of our 3 configuration files do you think we should add the cores and memory requests for the <code>FASTQC</code> process? </p>
+</div>
+<details class="abstract">
+<summary>Show answer</summary>
+<p>If you answered "any", you are correct in your understanding that adding the resource requests to any of our 3 configs would lead to a successful run. But since we have chosen our memory value specifically for Gadi|Setonix, this is a <strong>system-specific configuration</strong>. While specific to the HPC, it is also specific to our unique run of the data - these resource values would not be suitable to a colleague who wanted to run the workflow over samples with more than one pair of fastq files each of much larger size. Since the resources are <strong><em>both system specific and use-case specific</em></strong> they should ideally be specified within the <code>config/custom.config</code> file. </p>
+</details>
+<p>The next part of the puzzle is understanding how we can assign these resources for the <code>FASTQC</code> process. Our custom config currently assigns the same resources to <em>all</em> processes in the workflow, under the <code>process</code> scope. To specify which process or processes to apply a set of resources to, we can use the Nextflow <code>withName</code> directive. </p>
+<p><code>withName</code> is a flexible tool that can be used to:</p>
+<ul>
+<li>Specifically target individual modules by their process name</li>
+<li>Specify multiple module names using wildcards (<code>*</code> or <code>|</code>)</li>
+<li>Avoid editing the module.nf file to add a process label (remember: separation of workflow logic and system-specific tuning)</li>
+<li>Has a higher priority than the counterpart tool <code>withLabel</code></li>
+</ul>
+<div class="admonition question">
+<p class="admonition-title">Configuring <code>withLabel</code> and configuration priorities</p>
+<p>Processes that require similar resources can be configured using the <code>withLabel</code> process selector. Processes can be tagged with multiple labels to flexibly categorise different runtime needs (e.g. high memory). However, <code>withLabel</code> has a lower priority than <code>withName</code>, making <code>withName</code> more specific. </p>
+<p>For more information, see <a href="https://sydney-informatics-hub.github.io/customising-nfcore-workshop/notebooks/2.3_configEnv.html#custom-resource-configuration-using-process-labels">custom resource configuration using process labels</a>.</p>
+</div>
+<p>Looking at a summary of observations from our trace file, we can see that some of our processes have very similar resource usage metrics and could be grouped together:  </p>
+<table>
+<thead>
+<tr>
+<th>Process</th>
+<th>Resources</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FASTQC</td>
+<td>2 cores, 1 GB</td>
+<td>2 cores to process R1 and R2, memory sufficient</td>
+</tr>
+<tr>
+<td>ALIGN, GENOTYPE, JOINT_GENOTYPE</td>
+<td>2 cores, 1 GB</td>
+<td>High CPU utilisation &gt;90%</td>
+</tr>
+<tr>
+<td>GENOTYPE</td>
+<td>2 cores, 2 GB</td>
+<td>High CPU utilisation &gt; 90%, requires 1.5GB memory</td>
+</tr>
+<tr>
+<td>STATS, MULTIQC</td>
+<td>1 core, 2 GB</td>
+<td>Defaults are suitable</td>
+</tr>
+</tbody>
+</table>
+<p>Let's record these in our config, grouping some of the processes under the same set of resources. </p>
+<div class="admonition example">
+<p class="admonition-title">Exercise: Use <code>withName</code> to configure process resources</p>
+<ul>
+<li>Update the <code>process{}</code> scopes of your <code>./config/custom.config</code>:</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Gadi (PBS Pro)</label><label for="__tabbed_5_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">config/custom.config</span><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">cpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="c1">// &#39;normalbw&#39; queue = 128 GB / 28 CPU ~ 4.6</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="s">/FASTQC|ALIGN|JOINT_GENOTYPE/</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="n">GENOTYPE</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="s">/STATS|MULTIQC/</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">config/custom.config</span><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">cpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="c1">// &#39;work&#39; partition = 230 GB / 128 CPU ~ 1.8</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="s">/FASTQC|ALIGN|JOINT_GENOTYPE/</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="n">GENOTYPE</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="s">/STATS|MULTIQC/</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<ul>
+<li>Save the config file, and run:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>./run.sh
+</code></pre></div>
+</div>
+<p>Review the new trace file. Did the resource usage of the <code>FASTQC</code> process change?  </p>
+<details class="abstract">
+<summary>Example trace files</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Gadi (PBS Pro)</label><label for="__tabbed_6_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>status</th>
+<th>exit</th>
+<th>duration</th>
+<th>realtime</th>
+<th>cpus</th>
+<th>%cpu</th>
+<th>memory</th>
+<th>%mem</th>
+<th>peak_rss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ALIGN (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>24.5s</td>
+<td>1s</td>
+<td>2</td>
+<td>108.5%</td>
+<td>1 GB</td>
+<td>0.1%</td>
+<td>102.3 MB</td>
+</tr>
+<tr>
+<td>FASTQC (fastqc on NA12877)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>29.6s</td>
+<td>5s</td>
+<td><strong>2</strong></td>
+<td><strong>93.8%</strong></td>
+<td>1 GB</td>
+<td>0.1%</td>
+<td>194.4 MB</td>
+</tr>
+<tr>
+<td>GENOTYPE (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>1m 15s</td>
+<td>35s</td>
+<td>2</td>
+<td>131.1%</td>
+<td>2 GB</td>
+<td>0.8%</td>
+<td>1.4 GB</td>
+</tr>
+<tr>
+<td>JOINT_GENOTYPE (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>34.9s</td>
+<td>7s</td>
+<td>2</td>
+<td>169.1%</td>
+<td>1 GB</td>
+<td>0.3%</td>
+<td>506 MB</td>
+</tr>
+<tr>
+<td>STATS (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>44.9s</td>
+<td>0ms</td>
+<td>1</td>
+<td>72.2%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>3 MB</td>
+</tr>
+<tr>
+<td>MULTIQC</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>44.9s</td>
+<td>4.5s</td>
+<td>1</td>
+<td>66.7%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>88.6 MB</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>status</th>
+<th>exit</th>
+<th>duration</th>
+<th>realtime</th>
+<th>cpus</th>
+<th>%cpu</th>
+<th>memory</th>
+<th>%mem</th>
+<th>peak_rss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ALIGN (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>14.1s</td>
+<td>1s</td>
+<td>2</td>
+<td>139.3%</td>
+<td>1 GB</td>
+<td>0.0%</td>
+<td>2 MB</td>
+</tr>
+<tr>
+<td>FASTQC (fastqc on NA12877)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>19.6s</td>
+<td>4s</td>
+<td><strong>2</strong></td>
+<td><strong>90.6%</strong></td>
+<td>1 GB</td>
+<td>0.1%</td>
+<td>226.4 MB</td>
+</tr>
+<tr>
+<td>GENOTYPE (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>44.8s</td>
+<td>28s</td>
+<td>2</td>
+<td>164.0%</td>
+<td>2 GB</td>
+<td>0.5%</td>
+<td>1.3 GB</td>
+</tr>
+<tr>
+<td>JOINT_GENOTYPE (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>19.4s</td>
+<td>9s</td>
+<td>2</td>
+<td>211.3%</td>
+<td>1 GB</td>
+<td>0.1%</td>
+<td>343.3 MB</td>
+</tr>
+<tr>
+<td>STATS (1)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>14.5s</td>
+<td>0ms</td>
+<td>1</td>
+<td>132.7%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>2 MB</td>
+</tr>
+<tr>
+<td>MULTIQC</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>19.9s</td>
+<td>4.6s</td>
+<td>1</td>
+<td>76.1%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>98.3 MB</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</details>
+<p>The <code>cpus</code> field indicates that 2 cores were provided for our <code>FASTQC</code> task to use, however the <code>%cpu</code> field shows only ~90% utilisation. Note that in this context, we expect to see <strong>100% per requested core</strong> for perfect utilisation, i.e. 100% = 1 core fully utilised, 200% = 2 cores fully utilised, and so on.</p>
+<p>If you observe a lower <code>%cpu</code> value than you expect, there could be two main culprits: either the tool cannot make use of all the cores that were allocated to it, or your workflow code is missing some required additional configuration. </p>
+<p>Which do you think is the likely cause in this example? We will explore this in the next section. </p>
+<h2 id="246-passing-allocated-resources-into-process-scripts">2.4.6 Passing allocated resources into process scripts</h2>
+<p>We know how to instruct Nextflow to request specific resources for each process, but how does the tool inside the process know how to use those allocated resources? This <em>does not happen automatically</em> - our module code must obtain these values, and do so in a <em>portable and flexible</em> way. </p>
+<p>If our module code does not specifically instruct the tool to use the allocated resources, many tools will use defaults. If the defaults are less than what we have requested from the scheduler, we have wasted resources and run an inefficient workflow. If the defaults are higher than we have requested, our job may be killed by the scheduler due to exceeding available resources, causing the whole workflow execution to prematurely terminate. Some tools intelligently detect and use only the resources visible to the job, but this is not the norm in bioinformatics and should not be relied upon. </p>
+<p>Let's inspect our <code>FASTQC</code> module code:</p>
+<div class="admonition example">
+<p class="admonition-title">Exercise: Review thread use in <code>./modules/fastqc.nf</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>cat<span class="w"> </span>modules/fastqc.nf
+</code></pre></div>
+<details class="abstract">
+<summary>Show code</summary>
+<div class="highlight"><span class="filename">modules/fastqc.nf</span><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">process</span><span class="w"> </span><span class="n">FASTQC</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="n">tag</span><span class="w"> </span><span class="s2">&quot;fastqc on ${sample_id}&quot;</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="n">container</span><span class="w"> </span><span class="s2">&quot;quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0&quot;</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="n">publishDir</span><span class="w"> </span><span class="s2">&quot;${params.outdir}/fastqc&quot;</span><span class="o">,</span><span class="w"> </span><span class="nl">mode:</span><span class="w"> </span><span class="s1">&#39;copy&#39;</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nl">input:</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="n">tuple</span><span class="w"> </span><span class="n">val</span><span class="o">(</span><span class="n">sample_id</span><span class="o">),</span><span class="w"> </span><span class="n">path</span><span class="o">(</span><span class="n">reads_1</span><span class="o">),</span><span class="w"> </span><span class="n">path</span><span class="o">(</span><span class="n">reads_2</span><span class="o">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="nl">output:</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="n">path</span><span class="w"> </span><span class="s2">&quot;fastqc_${sample_id}&quot;</span><span class="o">,</span><span class="w"> </span><span class="nl">emit:</span><span class="w"> </span><span class="n">qc_out</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="nl">script:</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">    </span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="s2">    mkdir -p &quot;fastqc_${sample_id}&quot;</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="hll"><span class="s2">    fastqc -t 1 --outdir &quot;fastqc_${sample_id}&quot; --format fastq $reads_1 $reads_2</span>
+</span><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="s2">    &quot;&quot;&quot;</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="o">}</span>
+</code></pre></div>
+</details>
+</div>
+<p>Note in the highlighted line the syntax <code>fastqc -t 1</code>. Here we are asking <code>fastqc</code> to use only a single thread, which means the 2 input files are processed in series (i.e. one at a time, each using a single core) instead of our intention of both files being processed at once to speed up run time. No matter how many cores we allocate to this process in our custom config, without adjusting this module code, the <code>FASTQC</code> process will always use a single core and process one file at once. </p>
+<p>Hardcoding is generally bad practice, and should be actively avoided in Nextflow workflows. Even for tools that mandate a specific amount of memory or cores, these values should still not be hard-coded, as these values may change in the future.</p>
+<p>We will next instruct our <code>FASTQC</code> process to take in the number of cores we provide it <strong>dynamically</strong>. This means whatever <code>cpus</code> we provide will be parsed to the process and applied as a value to the threads parameter (<code>-t</code>|<code>threads</code>). </p>
+<div class="admonition example">
+<p class="admonition-title">Exercise: Dynamically assigning cores to <code>modules/fastqc.nf</code></p>
+<ul>
+<li>Open your <code>modules/fastqc.nf</code> file. Replace <code>-t 1</code> with <code>-t ${task.cpus}</code>.</li>
+</ul>
+<details class="abstract">
+<summary>Show code</summary>
+<div class="highlight"><span class="filename">modules/fastqc.nf</span><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">process</span><span class="w"> </span><span class="n">FASTQC</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">tag</span><span class="w"> </span><span class="s2">&quot;fastqc on ${sample_id}&quot;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="n">container</span><span class="w"> </span><span class="s2">&quot;quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0&quot;</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="n">publishDir</span><span class="w"> </span><span class="s2">&quot;${params.outdir}/fastqc&quot;</span><span class="o">,</span><span class="w"> </span><span class="nl">mode:</span><span class="w"> </span><span class="s1">&#39;copy&#39;</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nl">input:</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="n">tuple</span><span class="w"> </span><span class="n">val</span><span class="o">(</span><span class="n">sample_id</span><span class="o">),</span><span class="w"> </span><span class="n">path</span><span class="o">(</span><span class="n">reads_1</span><span class="o">),</span><span class="w"> </span><span class="n">path</span><span class="o">(</span><span class="n">reads_2</span><span class="o">)</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="nl">output:</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="n">path</span><span class="w"> </span><span class="s2">&quot;fastqc_${sample_id}&quot;</span><span class="o">,</span><span class="w"> </span><span class="nl">emit:</span><span class="w"> </span><span class="n">qc_out</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">    </span><span class="nl">script:</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">    </span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="s2">    mkdir -p &quot;fastqc_${sample_id}&quot;</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="hll"><span class="s2">    fastqc -t ${task.cpus} --outdir &quot;fastqc_${sample_id}&quot; --format fastq $reads_1 $reads_2</span>
+</span><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="s2">    &quot;&quot;&quot;</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="o">}</span>
+</code></pre></div>
+</details>
+<ul>
+<li>
+<p>Save the script and run your workflow:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>./run.sh
+</code></pre></div>
+</li>
+<li>
+<p>View the trace and note the <code>cpus</code> and <code>%cpu</code> values for <code>FASTQC</code>: </p>
+</li>
+</ul>
+<details class="abstract">
+<summary>Show trace</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Gadi (PBS Pro)</label><label for="__tabbed_7_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>status</th>
+<th>exit</th>
+<th>duration</th>
+<th>realtime</th>
+<th>cpus</th>
+<th>%cpu</th>
+<th>memory</th>
+<th>%mem</th>
+<th>peak_rss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ALIGN (1)</td>
+<td>CACHED</td>
+<td>0</td>
+<td>24.5s</td>
+<td>1s</td>
+<td>2</td>
+<td>108.5%</td>
+<td>1 GB</td>
+<td>0.1%</td>
+<td>102.3 MB</td>
+</tr>
+<tr>
+<td>GENOTYPE (1)</td>
+<td>CACHED</td>
+<td>0</td>
+<td>1m 15s</td>
+<td>35s</td>
+<td>2</td>
+<td>131.1%</td>
+<td>2 GB</td>
+<td>0.8%</td>
+<td>1.4 GB</td>
+</tr>
+<tr>
+<td>JOINT_GENOTYPE (1)</td>
+<td>CACHED</td>
+<td>0</td>
+<td>34.9s</td>
+<td>7s</td>
+<td>2</td>
+<td>169.1%</td>
+<td>1 GB</td>
+<td>0.3%</td>
+<td>506 MB</td>
+</tr>
+<tr>
+<td>STATS (1)</td>
+<td>CACHED</td>
+<td>0</td>
+<td>44.9s</td>
+<td>0ms</td>
+<td>1</td>
+<td>72.2%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>3 MB</td>
+</tr>
+<tr>
+<td>FASTQC (fastqc on NA12877)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>44.5s</td>
+<td>4s</td>
+<td><strong>2</strong></td>
+<td><strong>120.4%</strong></td>
+<td>1 GB</td>
+<td>0.1%</td>
+<td>163.1 MB</td>
+</tr>
+<tr>
+<td>MULTIQC</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>44.9s</td>
+<td>3.7s</td>
+<td>1</td>
+<td>88.9%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>93.6 MB</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>status</th>
+<th>exit</th>
+<th>duration</th>
+<th>realtime</th>
+<th>cpus</th>
+<th>%cpu</th>
+<th>memory</th>
+<th>%mem</th>
+<th>peak_rss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ALIGN (1)</td>
+<td>CACHED</td>
+<td>0</td>
+<td>14.1s</td>
+<td>1s</td>
+<td>2</td>
+<td>139.3%</td>
+<td>1 GB</td>
+<td>0.0%</td>
+<td>2 MB</td>
+</tr>
+<tr>
+<td>GENOTYPE (1)</td>
+<td>CACHED</td>
+<td>0</td>
+<td>44.8s</td>
+<td>28s</td>
+<td>2</td>
+<td>164.0%</td>
+<td>2 GB</td>
+<td>0.5%</td>
+<td>1.3 GB</td>
+</tr>
+<tr>
+<td>JOINT_GENOTYPE (1)</td>
+<td>CACHED</td>
+<td>0</td>
+<td>19.4s</td>
+<td>9s</td>
+<td>2</td>
+<td>211.3%</td>
+<td>1 GB</td>
+<td>0.1%</td>
+<td>343.3 MB</td>
+</tr>
+<tr>
+<td>STATS (1)</td>
+<td>CACHED</td>
+<td>0</td>
+<td>14.5s</td>
+<td>0ms</td>
+<td>1</td>
+<td>132.7%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>2 MB</td>
+</tr>
+<tr>
+<td>FASTQC (fastqc on NA12877)</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>14.9s</td>
+<td>3s</td>
+<td><strong>2</strong></td>
+<td><strong>196.9%</strong></td>
+<td>1 GB</td>
+<td>0.1%</td>
+<td>236.7 MB</td>
+</tr>
+<tr>
+<td>MULTIQC</td>
+<td>COMPLETED</td>
+<td>0</td>
+<td>14s</td>
+<td>4.4s</td>
+<td>1</td>
+<td>80.1%</td>
+<td>2 GB</td>
+<td>0.0%</td>
+<td>95.6 MB</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</details>
+</div>
+<p>We can now directly observe that the 2 cores we allocated to the <code>FASTQC</code> process have resulted in the expected CPU utilisation of close to 200%. Our onfiguration has worked! The walltime has also increased, but not quite the halving of execution time we might expect. The change is minimal due to the very small size of the test data, and would be more meaningful on "real" data.</p>
+<div class="admonition note">
+<p class="admonition-title">Nextflow <code>-resume</code></p>
+<p>In the previous few runs we have used <code>-resume</code> to run only the processes that were modified. Using <code>-resume</code> can considerably shorten development and testing time, and is also very handy when a real-world workflow fails part way through. </p>
+<p>However, the <code>-resume</code> function relies on cached data, and may not always resume when you expect it to! This aged but handy blog helps to <a href="https://seqera.io/blog/demystifying-nextflow-resume/">demystify Nextflow resume</a> and may be a good read - in addition to the <a href="https://www.nextflow.io/docs/latest/cache-and-resume.html">Nextflow <code>-resume</code> guide</a> - if you find yourself wondering why a task that you expected to be cached has re-run (or vice versa!) </p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Writing efficient module scripts</p>
+<p>Beyond resource flags, it's also important to write efficient code inside your processes. If you're writing custom scripts (e.g. in Python or R):</p>
+<ul>
+<li>Prefer vectorised operations over loops</li>
+<li>Use optimised libraries like <code>numpy</code> for Python scripts</li>
+<li>Consider parallelisation strategies (e.g. OpenMP)</li>
+<li>Avoid holding large objects in memory unnecessarily</li>
+</ul>
+<p>While these are outside the scope of this workshop, they’re good to consider if you want to scale up workflows on HPC.</p>
+</div>
+<h2 id="247-summary">2.4.7 Summary</h2>
+<p>In this lesson, we:</p>
+<ul>
+<li>Used our custom trace files alongside the details of the compute node hardware to come up with tailored resource requests for efficient execution</li>
+<li>Customised process resources within our custom configuration file, using Nextflow <code>withName</code> to specify which process received which resources</li>
+<li>Learnt that the process script must also be coded to use the allocated resources, and applied this dynamically using a Nextflow parameter</li>
+</ul>
+<p>The skills covered in this lesson equip you to build efficient workflows and to work responsibly on HPC. In the next lesson, we will apply strategies to increase the speed of our workflows, without harming the efficiency. </p>
+<h2 id="248-code-checkpoint">2.4.8 Code checkpoint</h2>
+<details class="abstract">
+<summary>Show complete code</summary>
+<div class="highlight"><span class="filename">modules/fastqc.nf</span><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">process</span><span class="w"> </span><span class="n">FASTQC</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="n">tag</span><span class="w"> </span><span class="s2">&quot;fastqc on ${sample_id}&quot;</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="n">container</span><span class="w"> </span><span class="s2">&quot;quay.io/biocontainers/fastqc:0.12.1--hdfd78af_0&quot;</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="n">publishDir</span><span class="w"> </span><span class="s2">&quot;${params.outdir}/fastqc&quot;</span><span class="o">,</span><span class="w"> </span><span class="nl">mode:</span><span class="w"> </span><span class="s1">&#39;copy&#39;</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="nl">input:</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="n">tuple</span><span class="w"> </span><span class="n">val</span><span class="o">(</span><span class="n">sample_id</span><span class="o">),</span><span class="w"> </span><span class="n">path</span><span class="o">(</span><span class="n">reads_1</span><span class="o">),</span><span class="w"> </span><span class="n">path</span><span class="o">(</span><span class="n">reads_2</span><span class="o">)</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="nl">output:</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">    </span><span class="n">path</span><span class="w"> </span><span class="s2">&quot;fastqc_${sample_id}&quot;</span><span class="o">,</span><span class="w"> </span><span class="nl">emit:</span><span class="w"> </span><span class="n">qc_out</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">    </span><span class="nl">script:</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">    </span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="s2">    mkdir -p &quot;fastqc_${sample_id}&quot;</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="hll"><span class="s2">    fastqc -t ${task.cpus} --outdir &quot;fastqc_${sample_id}&quot; --format fastq $reads_1 $reads_2</span>
+</span><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="s2">    &quot;&quot;&quot;</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="o">}</span>
+</code></pre></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Gadi (PBS Pro)</label><label for="__tabbed_8_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">run.sh</span><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>module<span class="w"> </span>load<span class="w"> </span>nextflow/24.04.5
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>module<span class="w"> </span>load<span class="w"> </span>singularity
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>nextflow<span class="w"> </span>run<span class="w"> </span>main.nf<span class="w"> </span>-profile<span class="w"> </span>pbspro<span class="w"> </span>-c<span class="w"> </span>config/custom.config<span class="w"> </span>-resume
+</code></pre></div>
+<div class="highlight"><span class="filename">custom.config</span><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="n">cpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="c1">// &#39;normalbw&#39; queue = 128 GB / 28 CPU ~ 4.6</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="s">/FASTQC|ALIGN|JOINT_GENOTYPE/</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="n">GENOTYPE</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="s">/STATS|MULTIQC/</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="o">}</span>
+<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="w">    </span><span class="c1">// Name the reports according to when they were run</span>
+<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="w">    </span><span class="n">params</span><span class="o">.</span><span class="na">timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Date</span><span class="o">().</span><span class="na">format</span><span class="o">(</span><span class="s1">&#39;yyyy-MM-dd_HH-mm-ss&#39;</span><span class="o">)</span>
+<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>
+<a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a><span class="w">    </span><span class="c1">// Generate timeline-timestamp.html timeline report </span>
+<a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="w">    </span><span class="n">timeline</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span class="w">        </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a><span class="w">        </span><span class="n">overwrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a><span class="w">        </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./runInfo/timeline-${params.timestamp}.html&quot;</span>
+<a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a>
+<a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="w">    </span><span class="c1">// Generate report-timestamp.html execution report </span>
+<a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a><span class="w">    </span><span class="n">report</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a><span class="w">        </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span class="w">        </span><span class="n">overwrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-11-37" name="__codelineno-11-37" href="#__codelineno-11-37"></a><span class="w">        </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./runInfo/report-${params.timestamp}.html&quot;</span>
+<a id="__codelineno-11-38" name="__codelineno-11-38" href="#__codelineno-11-38"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-11-39" name="__codelineno-11-39" href="#__codelineno-11-39"></a>
+<a id="__codelineno-11-40" name="__codelineno-11-40" href="#__codelineno-11-40"></a><span class="w">    </span><span class="n">trace</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-11-41" name="__codelineno-11-41" href="#__codelineno-11-41"></a><span class="w">        </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span>
+<a id="__codelineno-11-42" name="__codelineno-11-42" href="#__codelineno-11-42"></a><span class="w">        </span><span class="n">overwrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span>
+<a id="__codelineno-11-43" name="__codelineno-11-43" href="#__codelineno-11-43"></a><span class="w">        </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./runInfo/trace-${params.timestamp}.txt&quot;</span>
+<a id="__codelineno-11-44" name="__codelineno-11-44" href="#__codelineno-11-44"></a><span class="w">        </span><span class="n">fields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;name,status,exit,realtime,cpus,%cpu,memory,%mem,rss&#39;</span>
+<a id="__codelineno-11-45" name="__codelineno-11-45" href="#__codelineno-11-45"></a><span class="w">    </span><span class="o">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">run.sh</span><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>module<span class="w"> </span>load<span class="w"> </span>nextflow/24.10.0
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>module<span class="w"> </span>load<span class="w"> </span>singularity/4.1.0-slurm
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>nextflow<span class="w"> </span>run<span class="w"> </span>main.nf<span class="w"> </span>-profile<span class="w"> </span>slurm<span class="w"> </span>-c<span class="w"> </span>config/custom.config<span class="w"> </span>-resume
+</code></pre></div>
+<div class="highlight"><span class="filename">custom.config</span><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="n">cpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="c1">// &#39;work&#39; partition = 230 GB / 128 CPU ~ 1.8</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="s">/FASTQC|ALIGN|JOINT_GENOTYPE/</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="n">GENOTYPE</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="w">    </span><span class="nl">withName:</span><span class="w"> </span><span class="s">/STATS|MULTIQC/</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="w">        </span><span class="n">cpus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="w">        </span><span class="n">memory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">GB</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="w">        </span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="na">minutes</span>
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a><span class="w">    </span><span class="o">}</span>
+<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a><span class="o">}</span>
+<a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a>
+<a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a><span class="c1">// Name the reports according to when they were run</span>
+<a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a><span class="n">params</span><span class="o">.</span><span class="na">timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Date</span><span class="o">().</span><span class="na">format</span><span class="o">(</span><span class="s1">&#39;yyyy-MM-dd_HH-mm-ss&#39;</span><span class="o">)</span>
+<a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a>
+<a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a><span class="c1">// Generate timeline-timestamp.html timeline report </span>
+<a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a><span class="n">timeline</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a><span class="w">    </span><span class="n">overwrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a><span class="w">    </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./runInfo/timeline-${params.timestamp}.html&quot;</span>
+<a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a><span class="o">}</span>
+<a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a>
+<a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a><span class="c1">// Generate report-timestamp.html execution report </span>
+<a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a><span class="n">report</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-13-36" name="__codelineno-13-36" href="#__codelineno-13-36"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-13-37" name="__codelineno-13-37" href="#__codelineno-13-37"></a><span class="w">    </span><span class="n">overwrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-13-38" name="__codelineno-13-38" href="#__codelineno-13-38"></a><span class="w">    </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./runInfo/report-${params.timestamp}.html&quot;</span>
+<a id="__codelineno-13-39" name="__codelineno-13-39" href="#__codelineno-13-39"></a><span class="o">}</span>
+<a id="__codelineno-13-40" name="__codelineno-13-40" href="#__codelineno-13-40"></a>
+<a id="__codelineno-13-41" name="__codelineno-13-41" href="#__codelineno-13-41"></a><span class="n">trace</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-13-42" name="__codelineno-13-42" href="#__codelineno-13-42"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span>
+<a id="__codelineno-13-43" name="__codelineno-13-43" href="#__codelineno-13-43"></a><span class="w">    </span><span class="n">overwrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span>
+<a id="__codelineno-13-44" name="__codelineno-13-44" href="#__codelineno-13-44"></a><span class="w">    </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./runInfo/trace-${params.timestamp}.txt&quot;</span>
+<a id="__codelineno-13-45" name="__codelineno-13-45" href="#__codelineno-13-45"></a><span class="w">    </span><span class="n">fields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;name,status,exit,realtime,cpus,%cpu,memory,%mem,rss&#39;</span>
+<a id="__codelineno-13-46" name="__codelineno-13-46" href="#__codelineno-13-46"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</details>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../23_strategies/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 2.3 Optimising Nextflow for HPC">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                2.3 Optimising Nextflow for HPC
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../25_parallelisation/" class="md-footer__link md-footer__link--next" aria-label="Next: 2.5 Parallelisation">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                2.5 Parallelisation
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.footer", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>

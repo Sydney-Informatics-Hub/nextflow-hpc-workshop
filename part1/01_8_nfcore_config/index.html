@@ -1,0 +1,2113 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../01_7_nfcore_run/">
+      
+      
+        <link rel="next" href="../01_9_nfcore_layer/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>1.8 Configuring nf-core - Nextflow on HPC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-TNWWV3HK57"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-TNWWV3HK57",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-TNWWV3HK57",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#18-configuring-nf-core" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Nextflow on HPC" class="md-header__button md-logo" aria-label="Nextflow on HPC" data-md-component="logo">
+      
+  <img src="../../assets/usyd-logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Nextflow on HPC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              1.8 Configuring nf-core
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Sydney-Informatics-Hub/nextlow-hpc-workshop
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Nextflow on HPC" class="md-nav__button md-logo" aria-label="Nextflow on HPC" data-md-component="logo">
+      
+  <img src="../../assets/usyd-logo.png" alt="logo">
+
+    </a>
+    Nextflow on HPC
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Sydney-Informatics-Hub/nextlow-hpc-workshop
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Set up
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 1
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 1
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_0_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.0 Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_1_hpc_for_workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 HPC for bioinformatics workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_2_hpc_software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 Software is different on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_3_hpc_architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 HPC architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_4_smarter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 Work smarter, not harder!
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_5_nf_hpc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 Running Nextflow on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_6_nfcore_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 Intro to nf-core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_7_nfcore_run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 Running nf-core on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 Configuring nf-core
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 Configuring nf-core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#181-executors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.1 Executors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#182-containers-in-nf-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.2 Containers in nf-core
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#183-configuring-hpc-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.3 Configuring HPC resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#184-nf-core-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.4 nf-core configs
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_9_nfcore_layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 Layering Nextflow configurations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_10_outro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.10 Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 2
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 2
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/20_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.0 Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/21_firstrun/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 Running a custom pipeline on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/22_reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Pipeline monitoring and reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/23_strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Optimising Nextflow for HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/24_resourcing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 Assigning process resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/25_parallelisation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Parallelisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/27_scale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Scale to multiple samples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/28_outro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#181-executors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.1 Executors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#182-containers-in-nf-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.2 Containers in nf-core
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#183-configuring-hpc-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.3 Configuring HPC resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#184-nf-core-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8.4 nf-core configs
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="18-configuring-nf-core">1.8 Configuring nf-core</h1>
+<div class="admonition info">
+<p class="admonition-title">Learning objectives</p>
+<ul>
+<li>Understand Nextflow executors</li>
+<li>Understand how Nextflow uses executor definitions to talk to the HPC schedulere</li>
+<li>Understand the singularity configuration scope</li>
+<li>Know how to dynamically define the queue based on required resources</li>
+</ul>
+</div>
+<h2 id="181-executors">1.8.1 Executors</h2>
+<p>Executors are the back-end that Nextflow talks to to run the tasks in your workflow. By default, Nextflow will assume that you want to run everything on the same computer that you ran the <code>nextflow run</code> command on. But, as we have learned, that is definitely <strong>not</strong> how we want to run things on a shared HPC system: we want each task to be submitted to the scheduler to run on a compute node with all the appropriate resources.</p>
+<p>We saw earlier today that there are a fair few parameters that need to be configured when submitting jobs to an HPC, and these differ between systems. Luckily, Nextflow includes native support for the two HPC schedulers that we are working with in this workshop: PBSPro and Slurm.</p>
+<p>To set up Nextflow to use an HPC executor, we simply define the <code>process.executor</code> configuration option in the Nextflow configuration. We can also configure a few other parameters to control how many jobs get submitted to the HPC and how frequently; this is useful with large pipelines to avoid overwhelming the system (and angering the admins!). To keep things clean, we will create a new, blank configuration file called either <code>gadi.config</code> or <code>setonix.config</code>, depending on your system, and specify it in our run command. As we will see, Nextflow lets you <strong>layer</strong> configurations on top of one another and combines them in a predictable way to allow fine control of how each process runs.</p>
+<div class="admonition example">
+<p class="admonition-title">Exercise: Define the HPC executor</p>
+<p>Start by creating a new blank file in the <code>config</code> directory called <code>hpc.config</code>. You can do this via the VSCode explorer window (right-click the <code>config</code> folder and select "New File...") or via the terminal:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Gadi (PBSpro)</label><label for="__tabbed_1_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>touch<span class="w"> </span>config/gadi.config
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>touch<span class="w"> </span>config/setonix.config
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>Open the new file in the VSCode editor and add a <code>process {}</code> scope:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="o">}</span>
+</code></pre></div>
+<p>Within the process scope, define the <code>executor</code> option and set it to the relevant executor for your system:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Gadi (PBSpro)</label><label for="__tabbed_2_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="hll"><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pbspro&#39;</span>
+</span><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="hll"><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+</span><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>We also want to set some limits to how many jobs can be submitted at once and how frequently they get submitted. These settings are important, because many large pipelines can create potentially hundreds of jobs that may overwhelm the system. Most HPCs will set a limit for how many jobs a user can submit at once, and your pipeline may fail if it tries to submit more than this limit.</p>
+<p>For our purposes, we will keep our queued job limit to 30, and limit the number of jobs we can submit at once to 20 per minute. We will also tell Nextflow to request for status updates on our jobs once every 15 seconds.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Gadi (PBSpro)</label><label for="__tabbed_3_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pbspro&#39;</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="o">}</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="hll"><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+</span><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="hll"><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+</span><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="hll"><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+</span><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="hll"><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+</span><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="hll"><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+</span><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="hll"><span class="o">}</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="o">}</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="hll"><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+</span><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="hll"><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+</span><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="hll"><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+</span><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="hll"><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+</span><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="hll"><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+</span><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="hll"><span class="o">}</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>Now we have defined our executor and some relevant settings for it, we will need to tell Nextflow to actually use this new configuration file; by default, Nextflow will only use the <code>nextflow.config</code> file in the project directory, and will only load other configuration files when explicitly told to do so.</p>
+<p>In the <code>run.sh</code> script, update the following highlighted lines by adding a <code>\</code> to the end of the old command and adding the new configuration file with the <code>-c</code> option:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Gadi (PBSpro)</label><label for="__tabbed_4_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">run.sh</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-7-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-7-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-7-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-7-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-7-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-7-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-7-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-7-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-7-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-7-10">10</a></span>
+<span class="normal"><a href="#__codelineno-7-11">11</a></span>
+<span class="normal"><a href="#__codelineno-7-12">12</a></span>
+<span class="normal"><a href="#__codelineno-7-13">13</a></span>
+<span class="normal"><a href="#__codelineno-7-14">14</a></span>
+<span class="normal"><a href="#__codelineno-7-15">15</a></span>
+<span class="normal"><a href="#__codelineno-7-16">16</a></span>
+<span class="normal"><a href="#__codelineno-7-17">17</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3"></a>module<span class="w"> </span>load<span class="w"> </span>nextflow/24.04.5
+<a id="__codelineno-7-4" name="__codelineno-7-4"></a>module<span class="w"> </span>load<span class="w"> </span>singularity
+<a id="__codelineno-7-5" name="__codelineno-7-5"></a>
+<a id="__codelineno-7-6" name="__codelineno-7-6"></a>nextflow<span class="w"> </span>run<span class="w"> </span>sarek/main.nf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7"></a><span class="w">    </span>--input<span class="w"> </span>../data/fqs/samplesheet.single.csv<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8"></a><span class="w">    </span>--fasta<span class="w"> </span>../data/ref/Hg38.subsetchr20-22.fasta<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9"></a><span class="w">    </span>--fasta_fai<span class="w"> </span>../data/ref/Hg38.subsetchr20-22.fasta.fai<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10"></a><span class="w">    </span>--dict<span class="w"> </span>../data/ref/Hg38.subsetchr20-22.dict<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11"></a><span class="w">    </span>--bwa<span class="w"> </span>../data/ref<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12"></a><span class="w">    </span>--step<span class="w"> </span>mapping<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13"></a><span class="w">    </span>--skip_tools<span class="w"> </span>markduplicates,baserecalibrator,mosdepth,samtools<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14"></a><span class="w">    </span>--outdir<span class="w"> </span>results<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15"></a><span class="w">    </span>--no_intervals<span class="w"> </span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16"></a><span class="hll"><span class="w">    </span>--igenomes_ignore<span class="w"> </span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+</span><a id="__codelineno-7-17" name="__codelineno-7-17"></a><span class="hll"><span class="w">    </span>-c<span class="w"> </span>config/gadi.config
+</span></code></pre></div></td></tr></table></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">run.sh</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-8-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-8-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-8-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-8-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-8-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-8-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-8-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-8-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-8-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-8-10">10</a></span>
+<span class="normal"><a href="#__codelineno-8-11">11</a></span>
+<span class="normal"><a href="#__codelineno-8-12">12</a></span>
+<span class="normal"><a href="#__codelineno-8-13">13</a></span>
+<span class="normal"><a href="#__codelineno-8-14">14</a></span>
+<span class="normal"><a href="#__codelineno-8-15">15</a></span>
+<span class="normal"><a href="#__codelineno-8-16">16</a></span>
+<span class="normal"><a href="#__codelineno-8-17">17</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3"></a>module<span class="w"> </span>load<span class="w"> </span>nextflow/24.10.0
+<a id="__codelineno-8-4" name="__codelineno-8-4"></a>module<span class="w"> </span>load<span class="w"> </span>singularity/4.1.0-slurm
+<a id="__codelineno-8-5" name="__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6"></a>nextflow<span class="w"> </span>run<span class="w"> </span>sarek/main.nf<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7"></a><span class="w">    </span>--input<span class="w"> </span>../data/fqs/samplesheet.single.csv<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8"></a><span class="w">    </span>--fasta<span class="w"> </span>../data/ref/Hg38.subsetchr20-22.fasta<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9"></a><span class="w">    </span>--fasta_fai<span class="w"> </span>../data/ref/Hg38.subsetchr20-22.fasta.fai<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10"></a><span class="w">    </span>--dict<span class="w"> </span>../data/ref/Hg38.subsetchr20-22.dict<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11"></a><span class="w">    </span>--bwa<span class="w"> </span>../data/ref<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12"></a><span class="w">    </span>--step<span class="w"> </span>mapping<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13"></a><span class="w">    </span>--skip_tools<span class="w"> </span>markduplicates,baserecalibrator,mosdepth,samtools<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14"></a><span class="w">    </span>--outdir<span class="w"> </span>results<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15"></a><span class="w">    </span>--no_intervals<span class="w"> </span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16"></a><span class="hll"><span class="w">    </span>--igenomes_ignore<span class="w"> </span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+</span><a id="__codelineno-8-17" name="__codelineno-8-17"></a><span class="hll"><span class="w">    </span>-c<span class="w"> </span>config/setonix.config
+</span></code></pre></div></td></tr></table></div>
+</div>
+</div>
+</div>
+<p>The new line adds the <code>-c &lt;config&gt;</code> option to the <code>nextflow run</code> command. We provide the path to our new configuration file which tells Nextflow to load it and merge it with the existing configuration set up by the <code>nextflow.config</code> file. Note that the settings in configuration files provided by the <code>-c</code> command will take precedence over those set in the <code>nextflow.config</code> file, so if any options are specified in both files, the setting in <code>config/gadi.config</code> or <code>config/setonix.config</code> will be used. We will explore layering configurations further in the next section of the workshop.</p>
+<p>Go ahead and try running the script:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>./run.sh
+</code></pre></div>
+<p>What happens?</p>
+<details class="question">
+<summary>Result...</summary>
+<p>The workflow will begin to run and submit several jobs to the executor:</p>
+<div class="highlight"><span class="filename">Initial output</span><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="go">N E X T F L O W   ~  version 24.04.5</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="go">Launching `sarek/main.nf` [exotic_cray] DSL2 - revision: 3954909713</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="go">...</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="go">executor &gt;  pbspro (1)</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:BWAMEM1_INDEX                                   -</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:BWAMEM2_INDEX                                   -</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:DRAGMAP_HASHTABLE                               -</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:GATK4_CREATESEQUENCEDICTIONARY                  -</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:MSISENSORPRO_SCAN                               -</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:SAMTOOLS_FAIDX                                  -</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_BCFTOOLS_ANNOTATIONS                      -</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_DBSNP                                     -</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_GERMLINE_RESOURCE                         -</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_KNOWN_SNPS                                -</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_KNOWN_INDELS                              -</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_PON                                       -</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_INTERVALS:TABIX_BGZIPTABIX_INTERVAL_COMBINED           [  0%] 0 of 1</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:SPRING_DECOMPRESS_TO_FQ_PAIR                             -</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:SPRING_DECOMPRESS_TO_R1_FQ                               -</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:SPRING_DECOMPRESS_TO_R2_FQ                               -</span>
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_VIEW_MAP_MAP                -</span>
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_VIEW_UNMAP_UNMAP            -</span>
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_VIEW_UNMAP_MAP              -</span>
+<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_VIEW_MAP_UNMAP              -</span>
+<a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_MERGE_UNMAP                 -</span>
+<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:COLLATE_FASTQ_UNMAP                  -</span>
+<a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:COLLATE_FASTQ_MAP                    -</span>
+<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:CAT_FASTQ                            -</span>
+<a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a><span class="go">[5f/63da05] process &gt; NFCORE_SAREK:SAREK:FASTQC (test_sample1-all)                                [  0%] 0 of 1</span>
+<a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTP                                                    [  0%] 0 of 1</span>
+<a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM     -</span>
+<a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM2_MEM     -</span>
+<a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:DRAGMAP_ALIGN   -</span>
+<a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:SENTIEON_BWAMEM -</span>
+<a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:MERGE_BAM                       -</span>
+<a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:INDEX_MERGE_BAM                 -</span>
+<a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:BAM_TO_CRAM_MAPPING                                      -</span>
+<a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_QC_NO_MD:SAMTOOLS_STATS                             -</span>
+<a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_QC_NO_MD:MOSDEPTH                                   -</span>
+<a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_TO_BAM                                              -</span>
+<a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_SAMPLEQC:BAM_NGSCHECKMATE:BCFTOOLS_MPILEUP          -</span>
+<a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_SAMPLEQC:BAM_NGSCHECKMATE:NGSCHECKMATE_NCM          -</span>
+<a id="__codelineno-10-46" name="__codelineno-10-46" href="#__codelineno-10-46"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:MULTIQC</span>
+</code></pre></div>
+<p>However, soon after the jobs start running on the compute nodes, they fail:</p>
+<div class="highlight"><span class="filename">Final output</span><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="go">-[nf-core/sarek] Pipeline completed with errors-</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="go">ERROR ~ Error executing process &gt; &#39;NFCORE_SAREK:SAREK:FASTP (test_sample1-all)&#39;</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="go">Caused by:</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="go">Process `NFCORE_SAREK:SAREK:FASTP (test_sample1-all)` terminated with an error exit status (127)</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="go">...</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="go">Command exit status:</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="go">127</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="go">Command output:</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="gp gp-VirtualEnv">(empty)</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="go">Command error:</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="go">.command.sh: line 11: fastp: command not found</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="go">Work dir:</span>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="go">/scratch/er01/PIPE-5866-NF4HPC/nextflow-on-hpc-materials/part1/work/92/74509fb605260a345f7c3f29419f1c</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="go">Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`</span>
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>
+<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="go">-- Check &#39;.nextflow.log&#39; file for details</span>
+<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="go">ERROR ~ Pipeline failed. Please refer to troubleshooting docs: https://nf-co.re/docs/usage/troubleshooting</span>
+<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>
+<a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a><span class="go">-- Check &#39;.nextflow.log&#39; file for details</span>
+</code></pre></div>
+<p>The above example shows exactly what went wrong: <code>fastp: command not found</code>. We haven't yet configured Nextflow to use Singularity, so it is assuming the software is installed on the compute node. In the next section, we will set up Nextflow to use Singularity to run each tool.</p>
+</details>
+</div>
+<h2 id="182-containers-in-nf-core">1.8.2 Containers in nf-core</h2>
+<p>To start using containers in Nextflow, we need to enable the <code>singularity</code> backend and define the cache directory. This is the directory where Singularity should store all downloaded containers so that it doesn't need to download them over and over again whenever the same tool is required. As part of the setup work we did earlier today, we have already created this cache directory within the parent folder, at <code>../singularity/</code>.</p>
+<div class="admonition example">
+<p class="admonition-title">Exercise: Define the singularity configuration</p>
+<p>At the bottom of our configuration file, we will now add a <code>singularity</code> scope and enable the containerisation software. At the same time, we will also define the Singularity cache directory.  We can define this in the <code>singularity</code> configuration scope by setting the <code>cacheDir</code> option. We will provide the full path to this directory, which is at <code>/scratch/&lt;PROJECT&gt;/&lt;USER&gt;/nextflow-on-hpc-materials/singularity</code>. The current project ID and username are both accessible as environment variables on both Gadi and Setonix; we access these with the groovy function <code>System.getenv()</code>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Gadi (PBSpro)</label><label for="__tabbed_5_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pbspro&#39;</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="o">}</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="o">}</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="hll">
+</span><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="hll"><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+</span><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="hll"><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="hll"><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+</span><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="hll"><span class="o">}</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="o">}</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="o">}</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="hll">
+</span><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="hll"><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+</span><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="hll"><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="hll"><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PAWSEY_PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+</span><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="hll"><span class="o">}</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>Enabling the use of Singularity will tell Nextflow to run our tasks using a <code>singularity exec</code> command, similar to what we used earlier today. However, you may remember that the <code>singularity</code> command isn't available to use by default on the HPC systems: we needed to run <code>module load</code> first. If we tried to run the workflow now, we would get an error that <code>singularity</code> couldn't be found. Luckily, Nextflow has us covered here once again: the <code>process.module</code> configuration option lets us define modules that we want to load when running a process. Go ahead and update the <code>process</code> scope to define the <code>singularity</code> module:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Gadi (PBSpro)</label><label for="__tabbed_6_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pbspro&#39;</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="hll"><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity&#39;</span>
+</span><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="o">}</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="o">}</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="hll"><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity/4.1.0-slurm&#39;</span>
+</span><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="o">}</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="o">}</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PAWSEY_PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<h2 id="183-configuring-hpc-resources">1.8.3 Configuring HPC resources</h2>
+<p>We now have a configuration file with both our executor defined and singularity enabled. There are just a few finishing touches we need to make, primarily around defining the HPC queue that we want to use and some additional options for how to handle files. These include:</p>
+<div class="highlight"><pre><span></span><code>- Specifically telling the HPC scheduler which HPC project we want to use
+- Defining the HPC queue that we want our jobs submitted to
+- Defining how files should be staged in the working directories
+- Defining how Nextflow should determine when to use the outputs of previous runs when using the `-resume` flag
+- Enabling the trace file so we can track our resource usage and optimise our jobs
+</code></pre></div>
+<div class="admonition example">
+<p class="admonition-title">Exercise: Finalise the config with resource requirements</p>
+<p>Let's start with defining the project we want to use. Most HPCs will assign each user a default project to use when submitting jobs, but it is good practice to be explicit about it, especially if you are part of several HPC projects and switch between the often. We can do this with the <code>process.clusterOptions</code> setting, which lets us pass arbitrary parameters to the scheduler:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Gadi (PBSpro)</label><label for="__tabbed_7_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>On Gadi, we set the project via the <code>-P</code> option. We will again use the groovy function <code>System.getenv()</code> to grab the value of the <code>$PROJECT</code> environment variable, which holds our default project ID, and pass that to the <code>-P</code> option:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pbspro&#39;</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity&#39;</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="hll"><span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-P ${System.getenv(&#39;PROJECT&#39;)}&quot;</span>
+</span><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="o">}</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="o">}</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="o">}</span>
+</code></pre></div>
+<p>On Gadi, we also need to explicitly tell the HPC to mount the scratch space for our project. Normally, we would do this with the <code>-l storage=scratch/&lt;PROJECT ID&gt;</code> option to the <code>qsub</code> command; in this case, we could use the <code>clusterOptions</code> setting to specify the scratch space parameter as well. However, the Nextflow version that is available on Gadi has a special configuration option built in that lets us simplify this a bit: instead, we can use the <code>storage</code> option within the <code>process</code> scope to specify the scratch space (and any other storage locations we might like to mount). <strong>Note</strong> that this is <strong>NOT</strong> a standard Nextflow feature, and is only <strong>specific to Gadi</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pbspro&#39;</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity&#39;</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-P ${System.getenv(&#39;PROJECT&#39;)}&quot;</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="hll"><span class="w">    </span><span class="n">storage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;scratch/${System.getenv(&#39;PROJECT&#39;)}&quot;</span>
+</span><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="o">}</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="o">}</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>On Setonix, we set the project via the <code>--account</code> option. We will again use the groovy function <code>System.getenv()</code> to grab the value of the <code>$PAWSEY_PROJECT</code> environment variable, which holds our default project ID, and pass that to the <code>--account</code> option. At the same time, we will also use the <code>clusterOptions</code> configuration to specify the <code>--reservation=NextflowHPC</code> flag and tell Nextflow to request this reserved node when submitting each process.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity/4.1.0-slurm&#39;</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="hll"><span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;--account=${System.getenv(&#39;PAWSEY_PROJECT&#39;)} --reservation=NextflowHPC&quot;</span>
+</span><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="o">}</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="o">}</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PAWSEY_PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The next thing that we will define is the HPC queue that we wish to submit our jobs to. For the purposes of our example today, we only need the basic queue on each system. However, it is good practice to <strong>dynamically specify</strong> the queue based on resource requirements; that way, large jobs won't fail or be rejected entirely by the HPC scheduler due to invalid resource requests.</p>
+<p>Nextflow lets us define the queue that we want via the <code>queue</code> option in the <code>process</code> scope. We can dynamically specify the queue by using curly braces to wrap around a conditional statement that tests how much memory each job needs:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Gadi (PBSpro)</label><label for="__tabbed_8_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>On Gadi, the <code>normalbw</code> queue supports tasks with up to 128GB of memory. If we need more than that, we want to use the <code>hugemembw</code> queue. We can achieve this using a short-hand if-else statement in groovy: <code>&lt;condition&gt; ? &lt;value if true&gt; : &lt;value if false&gt;</code>. We can ask whether the memory required by the current task (<code>task.memory</code>) is less than 128GB; if so, we set <code>queue</code> to <code>normalbw</code>, otherwise we set it to <code>hugemembw</code>. By wrapping the whole statement in curly braces, we ensure that it is evaluated when the task runs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pbspro&#39;</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity&#39;</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-P ${System.getenv(&#39;PROJECT&#39;)}&quot;</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">    </span><span class="n">storage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;scratch/${System.getenv(&#39;PROJECT&#39;)}&quot;</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="hll"><span class="w">    </span><span class="n">queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">task</span><span class="o">.</span><span class="na">memory</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">128</span><span class="o">.</span><span class="na">GB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">&#39;normalbw&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;hugemembw&#39;</span><span class="w"> </span><span class="o">}</span>
+</span><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="o">}</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="o">}</span>
+<a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>
+<a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a><span class="o">}</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Read the docs!</p>
+<p>Remember to check <a href="https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits">NCI's "Queue Limits" page</a> when configuring the <code>queue</code> for your pipelines on Gadi, as it contains important information about how and when to select each particular queue. We are using a fairly naive selection method today for simplicity, but more complex queue selection methods are possible and advisable for larger pipelines.</p>
+</div>
+</div>
+<div class="tabbed-block">
+<p>On Setonix, the <code>work</code> queue supports tasks with up to 230GB of memory. If we need more than that, we want to use the <code>highmem</code> queue. We can achieve this using a short-hand if-else statement in groovy: <code>&lt;condition&gt; ? &lt;value if true&gt; : &lt;value if false&gt;</code>. We can ask whether the memory required by the current task (<code>task.memory</code>) is less than 230GB; if so, we set <code>queue</code> to <code>work</code>, otherwise we set it to <code>highmem</code>. By wrapping the whole statement in curly braces, we ensure that it is evaluated when the task runs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity/4.1.0-slurm&#39;</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;--account=${System.getenv(&#39;PAWSEY_PROJECT&#39;)} --reservation=NextflowHPC&quot;</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="hll"><span class="w">    </span><span class="n">queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">task</span><span class="o">.</span><span class="na">memory</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">230</span><span class="o">.</span><span class="na">GB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">&#39;work&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;highmem&#39;</span><span class="w"> </span><span class="o">}</span>
+</span><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="o">}</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a><span class="o">}</span>
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PAWSEY_PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a><span class="o">}</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Read the docs!</p>
+<p>Remember to check <a href="https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix">Pawsey's "Running Jobs on Setonix" page</a> when configuring the <code>queue</code> for your pipelines on Setonix, as it contains important information about how and when to select each particular queue. We are using a fairly naive selection method today for simplicity, but more complex queue selection methods are possible and advisable for larger pipelines.</p>
+</div>
+</div>
+</div>
+</div>
+<p>We want to add just a couple of extra options to the process definition. The first option is the <code>stageInMode</code> option. We will explicitly tell Nextflow that we want to use <strong>symbolic links</strong>. These are essentially shortcuts that point to another file on the system, and let us refer to inputs within our working directory without physically copying them in, which would use up lots of additional storage space. To set this, we define <code>stageInMode = 'symlink'</code> in the <code>process</code> scope.</p>
+<p>The second option we want to set is the <code>cache</code> mode. Nextflow lets us use the outputs of previous runs when re-running a pipeline, by specifying the <code>-resume</code> flag on the command line. This is very useful for avoiding re-running jobs when we don't have to. By default, Nextflow uses various features of a file, including its timestamp, to determine if it has changed and whether a job needs to be re-run or not. However, the shared filesystem on HPCs can interfere with the timestamps and cause jobs to re-run when they don't need to. Nextflow provides a workaround for this, by letting us use a <code>lenient</code> mode that ignores the timestamp.</p>
+<p>Let's set these two options now:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:2"><input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio" /><input id="__tabbed_9_2" name="__tabbed_9" type="radio" /><div class="tabbed-labels"><label for="__tabbed_9_1">Gadi (PBSpro)</label><label for="__tabbed_9_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pbspro&#39;</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity&#39;</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-P ${System.getenv(&#39;PROJECT&#39;)}&quot;</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span><span class="n">storage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;scratch/${System.getenv(&#39;PROJECT&#39;)}&quot;</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span><span class="n">queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">task</span><span class="o">.</span><span class="na">memory</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">128</span><span class="o">.</span><span class="na">GB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">&#39;normalbw&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;hugemembw&#39;</span><span class="w"> </span><span class="o">}</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="hll"><span class="w">    </span><span class="n">stageInMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;symlink&#39;</span>
+</span><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="hll"><span class="w">    </span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;lenient&#39;</span>
+</span><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="o">}</span>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a>
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="o">}</span>
+<a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a>
+<a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-21-19" name="__codelineno-21-19" href="#__codelineno-21-19"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-21-20" name="__codelineno-21-20" href="#__codelineno-21-20"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-21-21" name="__codelineno-21-21" href="#__codelineno-21-21"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity/4.1.0-slurm&#39;</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;--account=${System.getenv(&#39;PAWSEY_PROJECT&#39;)} --reservation=NextflowHPC&quot;</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span><span class="n">queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">task</span><span class="o">.</span><span class="na">memory</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">230</span><span class="o">.</span><span class="na">GB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">&#39;work&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;highmem&#39;</span><span class="w"> </span><span class="o">}</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="hll"><span class="w">    </span><span class="n">stageInMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;symlink&#39;</span>
+</span><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="hll"><span class="w">    </span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;lenient&#39;</span>
+</span><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="o">}</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a><span class="o">}</span>
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PAWSEY_PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a><span class="o">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>We now have a fully-functioning HPC configuration file! We will, however, add just one more feature that will help us monitor the resources we are using and optimise our workflow. This is the <code>trace</code> file, and the next few lines that we add will enable it, set its file name (including a time stamp), and set the values that we want to keep track of:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="10:2"><input checked="checked" id="__tabbed_10_1" name="__tabbed_10" type="radio" /><input id="__tabbed_10_2" name="__tabbed_10" type="radio" /><div class="tabbed-labels"><label for="__tabbed_10_1">Gadi (PBSpro)</label><label for="__tabbed_10_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;pbspro&#39;</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity&#39;</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-P ${System.getenv(&#39;PROJECT&#39;)}&quot;</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span><span class="n">storage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;scratch/${System.getenv(&#39;PROJECT&#39;)}&quot;</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span><span class="n">queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">task</span><span class="o">.</span><span class="na">memory</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">128</span><span class="o">.</span><span class="na">GB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">&#39;normalbw&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;hugemembw&#39;</span><span class="w"> </span><span class="o">}</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span><span class="n">stageInMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;symlink&#39;</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">    </span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;lenient&#39;</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="o">}</span>
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a><span class="o">}</span>
+<a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a>
+<a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a><span class="o">}</span>
+<a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a><span class="hll">
+</span><a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a><span class="hll"><span class="n">params</span><span class="o">.</span><span class="na">trace_timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Date</span><span class="o">().</span><span class="na">format</span><span class="o">(</span><span class="s1">&#39;yyyy-MM-dd_HH-mm-ss&#39;</span><span class="o">)</span>
+</span><a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a><span class="hll">
+</span><a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a><span class="hll"><span class="n">trace</span><span class="w"> </span><span class="o">{</span>
+</span><a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a><span class="hll"><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a><span class="hll"><span class="w">    </span><span class="n">overwrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+</span><a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a><span class="hll"><span class="w">    </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./runInfo/trace-${params.trace_timestamp}.txt&quot;</span>
+</span><a id="__codelineno-23-29" name="__codelineno-23-29" href="#__codelineno-23-29"></a><span class="hll"><span class="w">    </span><span class="n">fields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss&#39;</span>
+</span><a id="__codelineno-23-30" name="__codelineno-23-30" href="#__codelineno-23-30"></a><span class="hll"><span class="o">}</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">    </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity/4.1.0-slurm&#39;</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;--account=${System.getenv(&#39;PAWSEY_PROJECT&#39;)} --reservation=NextflowHPC&quot;</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">    </span><span class="n">queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">task</span><span class="o">.</span><span class="na">memory</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">230</span><span class="o">.</span><span class="na">GB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">&#39;work&#39;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;highmem&#39;</span><span class="w"> </span><span class="o">}</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">    </span><span class="n">stageInMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;symlink&#39;</span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">    </span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;lenient&#39;</span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="o">}</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="n">executor</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="w">    </span><span class="n">queueSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a><span class="w">    </span><span class="n">submitRateLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;20 min&#39;</span>
+<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a><span class="w">    </span><span class="n">pollInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a><span class="w">    </span><span class="n">queueStatInterval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15 sec&#39;</span>
+<a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a><span class="o">}</span>
+<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a>
+<a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a><span class="n">singularity</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a><span class="w">    </span><span class="n">cacheDir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/scratch/${System.getenv(&#39;PAWSEY_PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;</span>
+<a id="__codelineno-24-20" name="__codelineno-24-20" href="#__codelineno-24-20"></a><span class="o">}</span>
+<a id="__codelineno-24-21" name="__codelineno-24-21" href="#__codelineno-24-21"></a><span class="hll">
+</span><a id="__codelineno-24-22" name="__codelineno-24-22" href="#__codelineno-24-22"></a><span class="hll"><span class="n">params</span><span class="o">.</span><span class="na">trace_timestamp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Date</span><span class="o">().</span><span class="na">format</span><span class="o">(</span><span class="s1">&#39;yyyy-MM-dd_HH-mm-ss&#39;</span><span class="o">)</span>
+</span><a id="__codelineno-24-23" name="__codelineno-24-23" href="#__codelineno-24-23"></a><span class="hll">
+</span><a id="__codelineno-24-24" name="__codelineno-24-24" href="#__codelineno-24-24"></a><span class="hll"><span class="n">trace</span><span class="w"> </span><span class="o">{</span>
+</span><a id="__codelineno-24-25" name="__codelineno-24-25" href="#__codelineno-24-25"></a><span class="hll"><span class="w">    </span><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><a id="__codelineno-24-26" name="__codelineno-24-26" href="#__codelineno-24-26"></a><span class="hll"><span class="w">    </span><span class="n">overwrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+</span><a id="__codelineno-24-27" name="__codelineno-24-27" href="#__codelineno-24-27"></a><span class="hll"><span class="w">    </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./runInfo/trace-${params.trace_timestamp}.txt&quot;</span>
+</span><a id="__codelineno-24-28" name="__codelineno-24-28" href="#__codelineno-24-28"></a><span class="hll"><span class="w">    </span><span class="n">fields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss&#39;</span>
+</span><a id="__codelineno-24-29" name="__codelineno-24-29" href="#__codelineno-24-29"></a><span class="hll"><span class="o">}</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>Let's quickly break down this new code:</p>
+<ul>
+<li><code>params.trace_timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')</code>: This sets a custom parameter called <code>trace_timestamp</code> and sets it to the current date and time. This will let us create a unique file for every run.</li>
+<li><code>trace { ... }</code>: This defines the trace file scope, and all options within are specific to defining that file.<ul>
+<li><code>enabled = true</code>: This simply enables the use of the trace file</li>
+<li><code>overwrite = false</code>: This prevents a trace file from being overwritten</li>
+<li><code>file = "./runInfo/trace-${params.trace_timestamp}.txt"</code>: This sets the file path for the trace file, using the <code>trace_timestamp</code> parameter we set just above</li>
+<li><code>fields = 'name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss'</code>: This defines the fields that we want to capture within the trace file, including the task name, its status, how long it ran for, and how efficiently it used the CPUs and memory provided to it.</li>
+</ul>
+</li>
+</ul>
+<p>And that's it! You are now ready to re-run the workflow and Nextflow will now know how to submit the jobs to your assigned HPC and how to use Singularity to run each job.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>./run.sh
+</code></pre></div>
+<details class="question">
+<summary>Result...</summary>
+<p>After a few moments as the pipeline starts up, you should notice the tasks getting submitted to the HPC:</p>
+<div class="highlight"><span class="filename">Output</span><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="go">N E X T F L O W   ~  version 24.04.5</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="go">Launching `sarek/main.nf` [exotic_cray] DSL2 - revision: 3954909713</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="go">...</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="go">executor &gt;  pbspro (1)</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:BWAMEM1_INDEX                                   -</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:BWAMEM2_INDEX                                   -</span>
+<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:DRAGMAP_HASHTABLE                               -</span>
+<a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:GATK4_CREATESEQUENCEDICTIONARY                  -</span>
+<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:MSISENSORPRO_SCAN                               -</span>
+<a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:SAMTOOLS_FAIDX                                  -</span>
+<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_BCFTOOLS_ANNOTATIONS                      -</span>
+<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_DBSNP                                     -</span>
+<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_GERMLINE_RESOURCE                         -</span>
+<a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_KNOWN_SNPS                                -</span>
+<a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_KNOWN_INDELS                              -</span>
+<a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_GENOME:TABIX_PON                                       -</span>
+<a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:PREPARE_INTERVALS:TABIX_BGZIPTABIX_INTERVAL_COMBINED           [  0%] 0 of 1</span>
+<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:SPRING_DECOMPRESS_TO_FQ_PAIR                             -</span>
+<a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:SPRING_DECOMPRESS_TO_R1_FQ                               -</span>
+<a id="__codelineno-26-23" name="__codelineno-26-23" href="#__codelineno-26-23"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:SPRING_DECOMPRESS_TO_R2_FQ                               -</span>
+<a id="__codelineno-26-24" name="__codelineno-26-24" href="#__codelineno-26-24"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_VIEW_MAP_MAP                -</span>
+<a id="__codelineno-26-25" name="__codelineno-26-25" href="#__codelineno-26-25"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_VIEW_UNMAP_UNMAP            -</span>
+<a id="__codelineno-26-26" name="__codelineno-26-26" href="#__codelineno-26-26"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_VIEW_UNMAP_MAP              -</span>
+<a id="__codelineno-26-27" name="__codelineno-26-27" href="#__codelineno-26-27"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_VIEW_MAP_UNMAP              -</span>
+<a id="__codelineno-26-28" name="__codelineno-26-28" href="#__codelineno-26-28"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:SAMTOOLS_MERGE_UNMAP                 -</span>
+<a id="__codelineno-26-29" name="__codelineno-26-29" href="#__codelineno-26-29"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:COLLATE_FASTQ_UNMAP                  -</span>
+<a id="__codelineno-26-30" name="__codelineno-26-30" href="#__codelineno-26-30"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:COLLATE_FASTQ_MAP                    -</span>
+<a id="__codelineno-26-31" name="__codelineno-26-31" href="#__codelineno-26-31"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CONVERT_FASTQ_INPUT:CAT_FASTQ                            -</span>
+<a id="__codelineno-26-32" name="__codelineno-26-32" href="#__codelineno-26-32"></a><span class="go">[5f/63da05] process &gt; NFCORE_SAREK:SAREK:FASTQC (test_sample1-all)                                [  0%] 0 of 1</span>
+<a id="__codelineno-26-33" name="__codelineno-26-33" href="#__codelineno-26-33"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTP                                                    [  0%] 0 of 1</span>
+<a id="__codelineno-26-34" name="__codelineno-26-34" href="#__codelineno-26-34"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM     -</span>
+<a id="__codelineno-26-35" name="__codelineno-26-35" href="#__codelineno-26-35"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM2_MEM     -</span>
+<a id="__codelineno-26-36" name="__codelineno-26-36" href="#__codelineno-26-36"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:DRAGMAP_ALIGN   -</span>
+<a id="__codelineno-26-37" name="__codelineno-26-37" href="#__codelineno-26-37"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:SENTIEON_BWAMEM -</span>
+<a id="__codelineno-26-38" name="__codelineno-26-38" href="#__codelineno-26-38"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:MERGE_BAM                       -</span>
+<a id="__codelineno-26-39" name="__codelineno-26-39" href="#__codelineno-26-39"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:INDEX_MERGE_BAM                 -</span>
+<a id="__codelineno-26-40" name="__codelineno-26-40" href="#__codelineno-26-40"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:BAM_TO_CRAM_MAPPING                                      -</span>
+<a id="__codelineno-26-41" name="__codelineno-26-41" href="#__codelineno-26-41"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_QC_NO_MD:SAMTOOLS_STATS                             -</span>
+<a id="__codelineno-26-42" name="__codelineno-26-42" href="#__codelineno-26-42"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_QC_NO_MD:MOSDEPTH                                   -</span>
+<a id="__codelineno-26-43" name="__codelineno-26-43" href="#__codelineno-26-43"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_TO_BAM                                              -</span>
+<a id="__codelineno-26-44" name="__codelineno-26-44" href="#__codelineno-26-44"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_SAMPLEQC:BAM_NGSCHECKMATE:BCFTOOLS_MPILEUP          -</span>
+<a id="__codelineno-26-45" name="__codelineno-26-45" href="#__codelineno-26-45"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:CRAM_SAMPLEQC:BAM_NGSCHECKMATE:NGSCHECKMATE_NCM          -</span>
+<a id="__codelineno-26-46" name="__codelineno-26-46" href="#__codelineno-26-46"></a><span class="go">[-        ] process &gt; NFCORE_SAREK:SAREK:MULTIQC</span>
+</code></pre></div>
+<p>You might notice that the jobs take a while to start. The reason for this is because we're using the <code>sarek</code> default resource requirements for each process. <code>sarek</code> has been designed around whole genome sequencing data, which is usually quite large and requires a lot of computing power to run. However, for our workshop today, we are working with a very small test dataset that only requires 1 CPU for each job and at most 5GB of memory. If your pipeline has finished, you can inspect the trace file within the <code>runInfo</code> folder and see that the CPU and memory percentage is quite low for many of the tasks:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Your trace file will have a unique name based on the time it was run</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>cat<span class="w"> </span>runInfo/trace-2025-11-18_13-14-15.txt
+</code></pre></div>
+<div class="highlight"><span class="filename">Output</span><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="go">name    status  exit    duration        realtime        cpus    %cpu    memory  %mem    peak_rss</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="go">NFCORE_SAREK:PREPARE_INTERVALS:TABIX_BGZIPTABIX_INTERVAL_COMBINED (no_intervals)        COMPLETED       0       12.9s   0ms     1       78.4%   1 GB    0.0%    2 MB</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="go">NFCORE_SAREK:SAREK:FASTQC (test_sample1-all)    COMPLETED       0       13.3s   2s      4       201.4%  4 GB    0.1%    328.9 MB</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="go">NFCORE_SAREK:SAREK:FASTP (test_sample1-all)     COMPLETED       0       16.3s   1s      12      85.9%   4 GB    0.0%    2 MB</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       9.6s    0ms     24      102.3%  30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       12.8s   1s      24      96.4%   30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       9.8s    0ms     24      105.9%  30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       11.5s   0ms     24      104.2%  30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       10.4s   0ms     24      27.1%   30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       13.4s   1s      24      44.5%   30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       12.5s   0ms     24      230.8%  30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       14.5s   0ms     24      275.7%  30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       11.5s   0ms     24      34.9%   30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       13.4s   0ms     24      106.8%  30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       15.4s   0ms     24      90.1%   30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-16" name="__codelineno-28-16" href="#__codelineno-28-16"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  COMPLETED       0       12.4s   1s      24      53.0%   30 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-17" name="__codelineno-28-17" href="#__codelineno-28-17"></a><span class="go">NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:MERGE_BAM (test_sample1)    COMPLETED       0       14.3s   0ms     2       78.0%   12 GB   0.0%    2 MB</span>
+<a id="__codelineno-28-18" name="__codelineno-28-18" href="#__codelineno-28-18"></a><span class="go">NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:INDEX_MERGE_BAM (test_sample1)      COMPLETED       0       9.9s    0ms     1       87.4%   1 GB    0.0%    4 MB</span>
+<a id="__codelineno-28-19" name="__codelineno-28-19" href="#__codelineno-28-19"></a><span class="go">NFCORE_SAREK:SAREK:BAM_TO_CRAM_MAPPING (test_sample1)   COMPLETED       0       14.9s   1s      2       65.0%   4 GB    0.0%    4 MB</span>
+<a id="__codelineno-28-20" name="__codelineno-28-20" href="#__codelineno-28-20"></a><span class="go">NFCORE_SAREK:SAREK:MULTIQC      COMPLETED       0       29.9s   20.3s   4       72.6%   12 GB   0.2%    661.9 MB</span>
+</code></pre></div>
+<p>The amount of memory each job requested is in the <code>mem</code> column of this file, while the actual amount used is in the final <code>peak_rss</code> column. Note how most jobs are requesting several GB of memory, but are actually only using a few MB:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Pull out just the task name, memory requested, and memory used columns</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>cut<span class="w"> </span>-f<span class="w"> </span><span class="m">1</span>,8,10<span class="w"> </span>runInfo/trace-2025-11-18_13-14-15.txt
+</code></pre></div>
+<div class="highlight"><span class="filename">Output</span><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="go">name    memory  peak_rss</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="go">NFCORE_SAREK:PREPARE_INTERVALS:TABIX_BGZIPTABIX_INTERVAL_COMBINED (no_intervals)        1 GB    2 MB</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="go">NFCORE_SAREK:SAREK:FASTQC (test_sample1-all)    4 GB    328.9 MB</span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="go">NFCORE_SAREK:SAREK:FASTP (test_sample1-all)     4 GB    2 MB</span>
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a><span class="go">NFCORE_SAREK:SAREK:FASTQ_ALIGN_BWAMEM_MEM2_DRAGMAP_SENTIEON:BWAMEM1_MEM (test_sample1)  30 GB   2 MB</span>
+<a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a><span class="go">NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:MERGE_BAM (test_sample1)    12 GB   2 MB</span>
+<a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a><span class="go">NFCORE_SAREK:SAREK:BAM_MERGE_INDEX_SAMTOOLS:INDEX_MERGE_BAM (test_sample1)      1 GB    4 MB</span>
+<a id="__codelineno-30-19" name="__codelineno-30-19" href="#__codelineno-30-19"></a><span class="go">NFCORE_SAREK:SAREK:BAM_TO_CRAM_MAPPING (test_sample1)   4 GB    4 MB</span>
+<a id="__codelineno-30-20" name="__codelineno-30-20" href="#__codelineno-30-20"></a><span class="go">NFCORE_SAREK:SAREK:MULTIQC      12 GB   661.9 MB</span>
+</code></pre></div>
+<p>Also note how many instances of <code>BWAMEM1_MEM</code> ran: 12. This is a scatter-gather pattern at work: the <code>FASTP</code> job breaks up the input FASTQs into multiple smaller files (12 in this case), each of which gets independently processed by <code>bwa mem</code>. The BAMs generated by <code>bwa mem</code> then get merged back together by the <code>MERGE_BAM</code> process. However, for our dataset, 12 parallel <code>bwa mem</code> processes is a bit overkill.</p>
+<p>These are signs that we could significantly optimise the pipeline for our dataset, which is what we will do in the next lesson.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If your pipeline hasn't finished after a few minutes, you can cancel the run with a <code>Ctrl + C</code> keyboard combination. In the final section for today, we will create another configuration file to layer on top of our exisitng configuration and fine-tune our tasks to run more efficiently.</p>
+</div>
+</details>
+</div>
+<div class="admonition question">
+<p class="admonition-title">How are you going?</p>
+<p>If you're following along so far, let us know by reacting on zoom with a <strong>"<span class="twemoji check"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span> Yes"</strong>.</p>
+<p>If you're running into any issues, please react with a <strong>"<span class="twemoji close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></span> No"</strong> and we can help out before we move on to the next section.</p>
+</div>
+<h2 id="184-nf-core-configs">1.8.4 nf-core configs</h2>
+<p>You might be wondering: since these HPCs are so widely used by many researchers, has anyone else created similar institutional configurations that we could use instead of building our own? And the answer is yes! In fact, nf-core host a wide variety of these community-built configurations <a href="https://nf-co.re/configs/">on their webstie</a>.</p>
+<p>In fact, the configs we have built in this lesson are slightly simplified versions of the published <a href="https://nf-co.re/configs/nci_gadi/">NCI Gadi</a> and <a href="https://nf-co.re/configs/pawsey_setonix/">Pawsey Setonix</a> configs on the nf-core website:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="11:2"><input checked="checked" id="__tabbed_11_1" name="__tabbed_11" type="radio" /><input id="__tabbed_11_2" name="__tabbed_11" type="radio" /><div class="tabbed-labels"><label for="__tabbed_11_1">Gadi (PBSpro)</label><label for="__tabbed_11_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">Our gadi.config file</span><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>process {
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>    executor = &#39;pbspro&#39;
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>    module = &#39;singularity&#39;
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>    clusterOptions = &quot;-P ${System.getenv(&#39;PROJECT&#39;)}&quot;
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>    storage = &quot;scratch/${System.getenv(&#39;PROJECT&#39;)}&quot;
+<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>    queue = { task.memory &lt; 128.GB ? &#39;normalbw&#39; : &#39;hugemembw&#39; }
+<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>    stageInMode = &#39;symlink&#39;
+<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a>    cache = &#39;lenient&#39;
+<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>}
+<a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a>
+<a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a>executor {
+<a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a>    queueSize = 30
+<a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a>    submitRateLimit = &#39;20 min&#39;
+<a id="__codelineno-31-14" name="__codelineno-31-14" href="#__codelineno-31-14"></a>    pollInterval = &#39;15 sec&#39;
+<a id="__codelineno-31-15" name="__codelineno-31-15" href="#__codelineno-31-15"></a>    queueStatInterval = &#39;15 sec&#39;
+<a id="__codelineno-31-16" name="__codelineno-31-16" href="#__codelineno-31-16"></a>}
+<a id="__codelineno-31-17" name="__codelineno-31-17" href="#__codelineno-31-17"></a>
+<a id="__codelineno-31-18" name="__codelineno-31-18" href="#__codelineno-31-18"></a>singularity {
+<a id="__codelineno-31-19" name="__codelineno-31-19" href="#__codelineno-31-19"></a>    enabled = true
+<a id="__codelineno-31-20" name="__codelineno-31-20" href="#__codelineno-31-20"></a>    cacheDir = &quot;/scratch/${System.getenv(&#39;PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;
+<a id="__codelineno-31-21" name="__codelineno-31-21" href="#__codelineno-31-21"></a>}
+<a id="__codelineno-31-22" name="__codelineno-31-22" href="#__codelineno-31-22"></a>
+<a id="__codelineno-31-23" name="__codelineno-31-23" href="#__codelineno-31-23"></a>params.trace_timestamp = new java.util.Date().format(&#39;yyyy-MM-dd_HH-mm-ss&#39;)
+<a id="__codelineno-31-24" name="__codelineno-31-24" href="#__codelineno-31-24"></a>
+<a id="__codelineno-31-25" name="__codelineno-31-25" href="#__codelineno-31-25"></a>trace {
+<a id="__codelineno-31-26" name="__codelineno-31-26" href="#__codelineno-31-26"></a>    enabled = true
+<a id="__codelineno-31-27" name="__codelineno-31-27" href="#__codelineno-31-27"></a>    overwrite = false
+<a id="__codelineno-31-28" name="__codelineno-31-28" href="#__codelineno-31-28"></a>    file = &quot;./runInfo/trace-${params.trace_timestamp}.txt&quot;
+<a id="__codelineno-31-29" name="__codelineno-31-29" href="#__codelineno-31-29"></a>    fields = &#39;name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss&#39;
+<a id="__codelineno-31-30" name="__codelineno-31-30" href="#__codelineno-31-30"></a>}
+</code></pre></div>
+<div class="highlight"><span class="filename">nf-core nci_gadi.config file</span><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>// NCI Gadi nf-core configuration profile
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>params {
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>    config_profile_description = &#39;NCI Gadi HPC profile provided by nf-core/configs&#39;
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>    config_profile_contact = &#39;Georgie Samaha (@georgiesamaha), Matthew Downton (@mattdton)&#39;
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>    config_profile_url = &#39;https://opus.nci.org.au/display/Help/Gadi+User+Guide&#39;
+<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>    project = System.getenv(&quot;PROJECT&quot;)
+<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>}
+<a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>
+<a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a>// Enable use of Singularity to run containers
+<a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a>singularity {
+<a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a>    enabled = true
+<a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a>    autoMounts = true
+<a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a>}
+<a id="__codelineno-32-14" name="__codelineno-32-14" href="#__codelineno-32-14"></a>
+<a id="__codelineno-32-15" name="__codelineno-32-15" href="#__codelineno-32-15"></a>// Submit up to 300 concurrent jobs (Gadi exec max)
+<a id="__codelineno-32-16" name="__codelineno-32-16" href="#__codelineno-32-16"></a>// pollInterval and queueStatInterval of every 5 minutes
+<a id="__codelineno-32-17" name="__codelineno-32-17" href="#__codelineno-32-17"></a>// submitRateLimit of 20 per minute
+<a id="__codelineno-32-18" name="__codelineno-32-18" href="#__codelineno-32-18"></a>executor {
+<a id="__codelineno-32-19" name="__codelineno-32-19" href="#__codelineno-32-19"></a>    queueSize = 300
+<a id="__codelineno-32-20" name="__codelineno-32-20" href="#__codelineno-32-20"></a>    pollInterval = &#39;5 min&#39;
+<a id="__codelineno-32-21" name="__codelineno-32-21" href="#__codelineno-32-21"></a>    queueStatInterval = &#39;5 min&#39;
+<a id="__codelineno-32-22" name="__codelineno-32-22" href="#__codelineno-32-22"></a>    submitRateLimit = &#39;20 min&#39;
+<a id="__codelineno-32-23" name="__codelineno-32-23" href="#__codelineno-32-23"></a>}
+<a id="__codelineno-32-24" name="__codelineno-32-24" href="#__codelineno-32-24"></a>
+<a id="__codelineno-32-25" name="__codelineno-32-25" href="#__codelineno-32-25"></a>// Define process resource limits
+<a id="__codelineno-32-26" name="__codelineno-32-26" href="#__codelineno-32-26"></a>process {
+<a id="__codelineno-32-27" name="__codelineno-32-27" href="#__codelineno-32-27"></a>    executor = &#39;pbspro&#39;
+<a id="__codelineno-32-28" name="__codelineno-32-28" href="#__codelineno-32-28"></a>    storage = &quot;scratch/${params.project}&quot;
+<a id="__codelineno-32-29" name="__codelineno-32-29" href="#__codelineno-32-29"></a>    module = &#39;singularity&#39;
+<a id="__codelineno-32-30" name="__codelineno-32-30" href="#__codelineno-32-30"></a>    cache = &#39;lenient&#39;
+<a id="__codelineno-32-31" name="__codelineno-32-31" href="#__codelineno-32-31"></a>    stageInMode = &#39;symlink&#39;
+<a id="__codelineno-32-32" name="__codelineno-32-32" href="#__codelineno-32-32"></a>    queue = { task.memory &lt; 128.GB ? &#39;normalbw&#39; : (task.memory &gt;= 128.GB &amp;&amp; task.memory &lt;= 190.GB ? &#39;normal&#39; : (task.memory &gt; 190.GB &amp;&amp; task.memory &lt;= 1020.GB ? &#39;hugemembw&#39; : &#39;&#39;)) }
+<a id="__codelineno-32-33" name="__codelineno-32-33" href="#__codelineno-32-33"></a>    beforeScript = &#39;module load singularity&#39;
+<a id="__codelineno-32-34" name="__codelineno-32-34" href="#__codelineno-32-34"></a>}
+<a id="__codelineno-32-35" name="__codelineno-32-35" href="#__codelineno-32-35"></a>
+<a id="__codelineno-32-36" name="__codelineno-32-36" href="#__codelineno-32-36"></a>// Write custom trace file with outputs required for SU calculation
+<a id="__codelineno-32-37" name="__codelineno-32-37" href="#__codelineno-32-37"></a>def trace_timestamp = new java.util.Date().format(&#39;yyyy-MM-dd_HH-mm-ss&#39;)
+<a id="__codelineno-32-38" name="__codelineno-32-38" href="#__codelineno-32-38"></a>trace {
+<a id="__codelineno-32-39" name="__codelineno-32-39" href="#__codelineno-32-39"></a>    enabled = true
+<a id="__codelineno-32-40" name="__codelineno-32-40" href="#__codelineno-32-40"></a>    overwrite = false
+<a id="__codelineno-32-41" name="__codelineno-32-41" href="#__codelineno-32-41"></a>    file = &quot;./gadi-nf-core-trace-${trace_timestamp}.txt&quot;
+<a id="__codelineno-32-42" name="__codelineno-32-42" href="#__codelineno-32-42"></a>    fields = &#39;name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,rss&#39;
+<a id="__codelineno-32-43" name="__codelineno-32-43" href="#__codelineno-32-43"></a>}
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">Our setonix.config file</span><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>process {
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>    executor = &#39;slurm&#39;
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>    module = &#39;singularity/4.1.0-slurm&#39;
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>    clusterOptions = &quot;--account=${System.getenv(&#39;PAWSEY_PROJECT&#39;)} --reservation=NextflowHPC&quot;
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>    queue = { task.memory &lt; 230.GB ? &#39;work&#39; : &#39;highmem&#39; }
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>    stageInMode = &#39;symlink&#39;
+<a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>    cache = &#39;lenient&#39;
+<a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>}
+<a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>
+<a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>executor {
+<a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a>    queueSize = 30
+<a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a>    submitRateLimit = &#39;20 min&#39;
+<a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a>    pollInterval = &#39;15 sec&#39;
+<a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a>    queueStatInterval = &#39;15 sec&#39;
+<a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a>}
+<a id="__codelineno-33-16" name="__codelineno-33-16" href="#__codelineno-33-16"></a>
+<a id="__codelineno-33-17" name="__codelineno-33-17" href="#__codelineno-33-17"></a>singularity {
+<a id="__codelineno-33-18" name="__codelineno-33-18" href="#__codelineno-33-18"></a>    enabled = true
+<a id="__codelineno-33-19" name="__codelineno-33-19" href="#__codelineno-33-19"></a>    cacheDir = &quot;/scratch/${System.getenv(&#39;PAWSEY_PROJECT&#39;)}/${System.getenv(&#39;USER&#39;)}/nextflow-on-hpc-materials/singularity&quot;
+<a id="__codelineno-33-20" name="__codelineno-33-20" href="#__codelineno-33-20"></a>}
+<a id="__codelineno-33-21" name="__codelineno-33-21" href="#__codelineno-33-21"></a>
+<a id="__codelineno-33-22" name="__codelineno-33-22" href="#__codelineno-33-22"></a>params.trace_timestamp = new java.util.Date().format(&#39;yyyy-MM-dd_HH-mm-ss&#39;)
+<a id="__codelineno-33-23" name="__codelineno-33-23" href="#__codelineno-33-23"></a>
+<a id="__codelineno-33-24" name="__codelineno-33-24" href="#__codelineno-33-24"></a>trace {
+<a id="__codelineno-33-25" name="__codelineno-33-25" href="#__codelineno-33-25"></a>    enabled = true
+<a id="__codelineno-33-26" name="__codelineno-33-26" href="#__codelineno-33-26"></a>    overwrite = false
+<a id="__codelineno-33-27" name="__codelineno-33-27" href="#__codelineno-33-27"></a>    file = &quot;./runInfo/trace-${params.trace_timestamp}.txt&quot;
+<a id="__codelineno-33-28" name="__codelineno-33-28" href="#__codelineno-33-28"></a>    fields = &#39;name,status,exit,duration,realtime,cpus,%cpu,memory,%mem,peak_rss&#39;
+<a id="__codelineno-33-29" name="__codelineno-33-29" href="#__codelineno-33-29"></a>}
+</code></pre></div>
+<div class="highlight"><span class="filename">nf-core pawsey_setonix.config file</span><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>// Pawsey Setonix nf-core configuration profile
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>params {
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>    config_profile_description = &#39;Pawsey Setonix HPC profile provided by nf-core/configs&#39;
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>    config_profile_contact     = &#39;Sarah Beecroft (@SarahBeecroft), Georgie Samaha (@georgiesamaha)&#39;
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>    config_profile_url         = &#39;https://support.pawsey.org.au/documentation/display/US/Setonix+User+Guide&#39;
+<a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>    max_cpus                   = 64
+<a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a>    max_memory                 = 230.GB
+<a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a>}
+<a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a>// Enable use of Singularity to run containers
+<a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a>singularity {
+<a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a>    enabled     = true
+<a id="__codelineno-34-12" name="__codelineno-34-12" href="#__codelineno-34-12"></a>    autoMounts  = true
+<a id="__codelineno-34-13" name="__codelineno-34-13" href="#__codelineno-34-13"></a>    autoCleanUp = true
+<a id="__codelineno-34-14" name="__codelineno-34-14" href="#__codelineno-34-14"></a>}
+<a id="__codelineno-34-15" name="__codelineno-34-15" href="#__codelineno-34-15"></a>// Submit up to 1024 concurrent jobs
+<a id="__codelineno-34-16" name="__codelineno-34-16" href="#__codelineno-34-16"></a>executor {
+<a id="__codelineno-34-17" name="__codelineno-34-17" href="#__codelineno-34-17"></a>    queueSize = 1024
+<a id="__codelineno-34-18" name="__codelineno-34-18" href="#__codelineno-34-18"></a>}
+<a id="__codelineno-34-19" name="__codelineno-34-19" href="#__codelineno-34-19"></a>// Define process resource limits
+<a id="__codelineno-34-20" name="__codelineno-34-20" href="#__codelineno-34-20"></a>// See: https://support.pawsey.org.au/documentation/pages/viewpage.action?pageId=121479736#RunningJobsonSetonix-Overview
+<a id="__codelineno-34-21" name="__codelineno-34-21" href="#__codelineno-34-21"></a>process {
+<a id="__codelineno-34-22" name="__codelineno-34-22" href="#__codelineno-34-22"></a>    resourceLimits = [
+<a id="__codelineno-34-23" name="__codelineno-34-23" href="#__codelineno-34-23"></a>        memory: 230.GB,
+<a id="__codelineno-34-24" name="__codelineno-34-24" href="#__codelineno-34-24"></a>        cpus: 64
+<a id="__codelineno-34-25" name="__codelineno-34-25" href="#__codelineno-34-25"></a>    ]
+<a id="__codelineno-34-26" name="__codelineno-34-26" href="#__codelineno-34-26"></a>    executor       = &#39;slurm&#39;
+<a id="__codelineno-34-27" name="__codelineno-34-27" href="#__codelineno-34-27"></a>    clusterOptions = &quot;--account=${System.getenv(&#39;PAWSEY_PROJECT&#39;)}&quot;
+<a id="__codelineno-34-28" name="__codelineno-34-28" href="#__codelineno-34-28"></a>    module         = &#39;singularity/4.1.0-slurm&#39;
+<a id="__codelineno-34-29" name="__codelineno-34-29" href="#__codelineno-34-29"></a>    cache          = &#39;lenient&#39;
+<a id="__codelineno-34-30" name="__codelineno-34-30" href="#__codelineno-34-30"></a>    stageInMode    = &#39;symlink&#39;
+<a id="__codelineno-34-31" name="__codelineno-34-31" href="#__codelineno-34-31"></a>    queue = { task.memory &lt;= 230.GB ? &#39;work&#39; : &#39;highmem&#39; }
+<a id="__codelineno-34-32" name="__codelineno-34-32" href="#__codelineno-34-32"></a>}
+</code></pre></div>
+<p>You can see that there are many similarities between our configuration and the nf-core version. The nf-core configs contain a few additional parameters and some more detailed queue selection logic, but ultimately they accomplish the same task. So, why didn't we introduce these earlier? Because by building one from scratch, you have now learned about how Nextflow is configured to use executors to communicate with HPC schedulers and request resources for your jobs.</p>
+<p>Also know that these community-built configurations are a good starting point, but may need to be slightly altered for your particular use case. In particular, depending on what you are running, you may desire a more complex queue selection logic that takes CPU usage into account as well as memory, and if you have a pipeline that uses GPUs, you will need to include logic to request a GPU queue.</p>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../01_7_nfcore_run/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 1.7 Running nf-core on HPC">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                1.7 Running nf-core on HPC
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../01_9_nfcore_layer/" class="md-footer__link md-footer__link--next" aria-label="Next: 1.9 Layering Nextflow configurations">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                1.9 Layering Nextflow configurations
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.footer", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>

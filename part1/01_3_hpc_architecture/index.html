@@ -1,0 +1,1737 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../01_2_hpc_software/">
+      
+      
+        <link rel="next" href="../01_4_smarter/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>1.3 HPC architecture - Nextflow on HPC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-TNWWV3HK57"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-TNWWV3HK57",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-TNWWV3HK57",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#13-hpc-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Nextflow on HPC" class="md-header__button md-logo" aria-label="Nextflow on HPC" data-md-component="logo">
+      
+  <img src="../../assets/usyd-logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Nextflow on HPC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              1.3 HPC architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Sydney-Informatics-Hub/nextlow-hpc-workshop
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Nextflow on HPC" class="md-nav__button md-logo" aria-label="Nextflow on HPC" data-md-component="logo">
+      
+  <img src="../../assets/usyd-logo.png" alt="logo">
+
+    </a>
+    Nextflow on HPC
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Sydney-Informatics-Hub/nextflow-hpc-workshop" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Sydney-Informatics-Hub/nextlow-hpc-workshop
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Set up
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 1
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 1
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_0_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.0 Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_1_hpc_for_workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1 HPC for bioinformatics workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_2_hpc_software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2 Software is different on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 HPC architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3 HPC architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#131-typical-hpc-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.1 Typical HPC architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3.1 Typical HPC architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#login-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compute-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Queues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Queues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#internet-access-on-compute-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Internet access on compute nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shared-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-job-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The job scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#132-submitting-scripts-to-the-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.2 Submitting scripts to the scheduler
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#133-cleaning-up-job-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.3 Cleaning up job submission
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_4_smarter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4 Work smarter, not harder!
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_5_nf_hpc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5 Running Nextflow on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_6_nfcore_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6 Intro to nf-core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_7_nfcore_run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7 Running nf-core on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_8_nfcore_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8 Configuring nf-core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_9_nfcore_layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9 Layering Nextflow configurations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_10_outro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.10 Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 2
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 2
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/20_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.0 Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/21_firstrun/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1 Running a custom pipeline on HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/22_reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2 Pipeline monitoring and reporting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/23_strategies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3 Optimising Nextflow for HPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/24_resourcing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4 Assigning process resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/25_parallelisation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5 Parallelisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/27_scale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6 Scale to multiple samples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/28_outro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7 Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#131-typical-hpc-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.1 Typical HPC architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3.1 Typical HPC architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#login-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compute-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#queues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Queues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Queues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#internet-access-on-compute-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Internet access on compute nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shared-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-job-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The job scheduler
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#132-submitting-scripts-to-the-scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.2 Submitting scripts to the scheduler
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#133-cleaning-up-job-submission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3.3 Cleaning up job submission
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="13-hpc-architecture">1.3 HPC architecture</h1>
+<div class="admonition info">
+<p class="admonition-title">Learning objectives</p>
+<ul>
+<li>Describe the HPC system components that workflows interact with</li>
+<li>Describe the roles of login nodes, compute nodes, and shared storage in HPC systems</li>
+<li>Distinguish between login nodes and compute nodes and know where workflows execute</li>
+<li>Explain how shared filesystems are accessed and managed safely in workflows</li>
+<li>Define job resource requirements (CPU, memory, walltime) and their impact on scheduling</li>
+</ul>
+</div>
+<h2 id="131-typical-hpc-architecture">1.3.1 Typical HPC architecture</h2>
+<p>While HPCs can look intimidating, their architecture follows a simple structure that supports large-scale computation through shared resources. From a workflow perspective, this architecture means there are a few important realities to accept: work is not run interactively, resources must be requested rather than assumed and everything is governed by shared access.</p>
+<p><img alt="" src="../figs/00_hpc_architecture.png" /></p>
+<h3 id="login-nodes">Login nodes</h3>
+<p>When a user connects to an HPC, they first land on a <strong>login node</strong>. This is a shared access point used to prepare work, not perform computations. From here, users submit jobs to the scheduler, monitor their progress and organise their project directories. The login node exists only to coordinate access to the system, and because it is shared by many people at once, it must not be overloaded with computational tasks.</p>
+<h3 id="compute-nodes">Compute nodes</h3>
+<p>The real work happens on the compute nodes. These are powerful machines with many CPU cores, large amounts of memory and fast access to storage. When you run a workflow, the scheduler assigns the individual tasks of the workflow to available compute nodes based on the resources requested. This separation between the login node and compute nodes allows users to interact with the system while computation is queued and executed elsewhere.</p>
+<h3 id="queues">Queues</h3>
+<p>HPC systems divide compute resources into queues (also called "partitions" in Slurm). Each queue represents a group of compute nodes with specific hardware characteristics, limits, and intended usage.</p>
+<p>Queues help balance the system between different types of work, for example, short interactive tasks, long-running simulations, or large parallel jobs. Each queue enforces policies on maximum runtime (walltime), maximum cores or memory per job, job priority and eligible users or projects.</p>
+<p>Because queues are mapped to distinct sets of compute nodes, requesting the right queue for your job is important for both performance and fairness.</p>
+<p>Queue names and limits differ across infrastructure providers but some common examples include:</p>
+<table>
+<thead>
+<tr>
+<th>Queue type</th>
+<th>Description</th>
+<th>Typical limits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Normal/work</td>
+<td>Default queue for most batch jobs</td>
+<td>Moderate walltime (e.g. 24–48 h), general-purpose CPUs</td>
+</tr>
+<tr>
+<td>Express/short</td>
+<td>Prioritised for rapid turnaround</td>
+<td>Small jobs, short walltime</td>
+</tr>
+<tr>
+<td>Large/high memory</td>
+<td>For jobs requiring many CPUs or nodes</td>
+<td>Long walltime, higher resource requests</td>
+</tr>
+<tr>
+<td>Copy</td>
+<td>For copying data to and from the system</td>
+<td>Low CPU and RAM availability, moderate walltime (10-48h)</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>Access to GPU-enabled nodes</td>
+<td>GPU-specific workloads only</td>
+</tr>
+</tbody>
+</table>
+<p>For details about queue limits and scheduling policies on systems used today, see:</p>
+<ul>
+<li><a href="https://pawsey.atlassian.net/wiki/spaces/US/pages/51929058/Running+Jobs+on+Setonix">Setonix (Slurm) – Running Jobs on Setonix (Pawsey)</a></li>
+<li><a href="https://opus.nci.org.au/spaces/Help/pages/236881198/Queue+Limits">Gadi (PBS Pro) – Queue Limits (NCI)</a></li>
+</ul>
+<h4 id="internet-access-on-compute-nodes">Internet access on compute nodes</h4>
+<p>Often, a workflow may need access to resources on the internet, such as Singularity container images and large reference databases. This can become an issue on HPCs, as some systems restrict internet access on the compute nodes. While on Setonix, all compute nodes are given internet access and can be used for downloading such resources, on Gadi, most of the compute nodes are kept offline; instead, only the compute nodes that make up the <code>copyq</code> queue are allowed to access the internet. Furthermore, this queue has a few important constraints, primarily that it only allows single CPU jobs and a maximum walltime of 10 hours. As such, when designing your workflows, you need to make sure you are working within these constraints.</p>
+<p>As a general rule of thumb, it is always best to have as much as possible of your workflow's input data pre-downloaded, as in any case, downloading data from the internet can be a major bottleneck. Where possible, running your workflow 'offline' is best practice.</p>
+<div class="admonition warning">
+<p class="admonition-title">Mind your Qs</p>
+<p>Make sure you are using the right queue for the right job! Requesting the wrong queue can lead to long wait times due to other jobs getting higher priority, or to failures or outright rejection from the scheduler due to invalid resource requests. Always <strong>consult the documentation</strong> specific to your system before designing, configuring, and running your workflow.</p>
+<p>Later on in this workshop, we will see some simple examples of how we can <strong>dynamically</strong> request the queue for Nextflow processes based on the resources they require.</p>
+</div>
+<p>Remember to <strong>always consult the documentation</strong> specific to your HPC before writing and running workflows!</p>
+<h3 id="shared-storage">Shared storage</h3>
+<p>All nodes are connected to a shared parallel filesystem. This is a large, high-speed storage system where input data, reference files and workflow outputs are kept. Because it is shared across all users, it enables collaborative research and scalable workflows. However, it also introduces constraints around file organisation and performance, which is why workflows must be careful about how they read and write data here.</p>
+<div class="admonition warning">
+<p class="admonition-title">Overwriting Files in Shared Filesystems</p>
+<p>Because the filesystem is shared, multiple jobs or users writing to the same file, especially if it has a common name, can accidentally overwrite each other’s data or cause <a href="https://en.wikipedia.org/wiki/Race_condition">race conditions</a>.</p>
+<p>Most tools and scripts write to files in a way that replaces the entire file. On shared systems like /scratch, where many users and jobs access the same space, this can lead to conflicts or data loss.</p>
+<p>It’s good practice to:</p>
+<ul>
+<li>Use unique filenames (e.g., include job ID or timestamp).</li>
+<li>Avoid simultaneous writes unless explicitly managed.</li>
+<li>Add file checks and error handling.</li>
+</ul>
+</div>
+<h3 id="the-job-scheduler">The job scheduler</h3>
+<p>At the centre of everything is the job scheduler. Rather than allowing users to run programs directly, HPCs rely on a scheduling system (e.g. Slurm or PBS Pro) to manage fair access to shared compute resources. When a job is submitted, it enters a queue where the scheduler decides when and where it will run. Jobs are matched to compute nodes based on requested resources like CPU, memory and runtime.</p>
+<p>Schedulers like PBS Pro and Slurm use queues to group jobs that share similar resource and policy constraints. When you submit a job, it’s placed in the appropriate queue, and the scheduler continuously evaluates all queued jobs to decide which can start next.</p>
+<p>Each job’s shape is determined by three key factors:</p>
+<ul>
+<li><strong>CPU</strong>: how many processor cores it needs</li>
+<li><strong>Memory</strong>: how much RAM it requires</li>
+<li><strong>Walltime</strong>: how long it is allowed to run</li>
+</ul>
+<p>Once submitted, your job enters a <strong>queue</strong>. Unlike a simple first-come-first-served queue, the scheduler constantly reshuffles and fits jobs together to maximise system usage.</p>
+<p>The order in which jobs run depends on several factors:</p>
+<ul>
+<li><strong>Job priority</strong>: determined by project, queue, and fair-share usage</li>
+<li><strong>Requested resources</strong>: smaller jobs can often “slot in” sooner</li>
+<li><strong>Queue limits</strong>: different queues prioritise short, long, or interactive jobs</li>
+</ul>
+<p>Getting the shape right matters. Underestimating the resources you job requires will cause it to fail. What is less immediately obvious is that overestimating your needs is also detrimental, as it makes your job harder to fit. Common outcomes from overestimating your job's requirements include:</p>
+<ul>
+<li><strong>Longer queue times</strong>: large, awkwardly-shaped jobs wait for space</li>
+<li><strong>Wasted capacity</strong>: unused cores or memory that could have run other jobs</li>
+<li><strong>Wasted money</strong>: HPC providers will charge you for the CPUs and memory you request. <strong>Wasted capacity = wasted energy!</strong></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Understanding Job Scheduling with Tetris</p>
+<p>Think of the scheduler like a giant game of Tetris, where every job you submit has its own unique “shape.”
+When you submit a batch job, you describe the resources it needs, this defines the shape of your job piece.
+The scheduler’s task is to fit all these different pieces together as efficiently as possible across the available compute nodes.</p>
+<p><img alt="" src="../figs/00_HPC_scheduler_tetris.png" /></p>
+<p>Just like in Tetris, the scheduler aims to fill every gap and keep the system running smoothly.
+Small, well-shaped jobs often fall neatly into open spaces, while larger ones wait for the perfect fit.</p>
+</div>
+<h2 id="132-submitting-scripts-to-the-scheduler">1.3.2 Submitting scripts to the scheduler</h2>
+<p>To familiarise ourselves with submitting jobs to the scheduler, we will once again use <code>fastqc</code> as an example. We have an example script for running <code>fastqc</code> in the <code>scripts/</code> directory:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Gadi (PBSpro)</label><label for="__tabbed_1_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">scripts/fastqc.pbs.sh</span><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>module<span class="w"> </span>load<span class="w"> </span>singularity
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nv">SAMPLE_ID</span><span class="o">=</span><span class="s2">&quot;NA12878_chr20-22&quot;</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nv">READS_1</span><span class="o">=</span><span class="s2">&quot;../data/fqs/</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">.R1.fq.gz&quot;</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nv">READS_2</span><span class="o">=</span><span class="s2">&quot;../data/fqs/</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">.R2.fq.gz&quot;</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;results/fastqc_</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">_logs&quot;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>singularity<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>fastqc<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span>--outdir<span class="w"> </span><span class="s2">&quot;results/fastqc_</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">_logs&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span>--format<span class="w"> </span>fastq<span class="w"> </span><span class="si">${</span><span class="nv">READS_1</span><span class="si">}</span><span class="w"> </span><span class="si">${</span><span class="nv">READS_2</span><span class="si">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">scripts/fastqc.slurm.sh</span><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>module<span class="w"> </span>load<span class="w"> </span>singularity/4.1.0-slurm
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nv">SAMPLE_ID</span><span class="o">=</span><span class="s2">&quot;NA12878_chr20-22&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nv">READS_1</span><span class="o">=</span><span class="s2">&quot;../data/fqs/</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">.R1.fq.gz&quot;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nv">READS_2</span><span class="o">=</span><span class="s2">&quot;../data/fqs/</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">.R2.fq.gz&quot;</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;results/fastqc_</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">_logs&quot;</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>singularity<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>fastqc<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span>--outdir<span class="w"> </span><span class="s2">&quot;results/fastqc_</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">_logs&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span>--format<span class="w"> </span>fastq<span class="w"> </span><span class="si">${</span><span class="nv">READS_1</span><span class="si">}</span><span class="w"> </span><span class="si">${</span><span class="nv">READS_2</span><span class="si">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The script does a few things:</p>
+<ol>
+<li>It loads the <code>singularity</code> module. We'll need this to run the <code>fastqc</code> command when the job gets submitted to the compute node</li>
+<li>It defines a few bash variables that point to the input FASTQ data</li>
+<li>It creates an output directory called <code>results/fastqc_${SAMPLE_ID}_logs/</code>, where <code>${SAMPLE_ID}</code> will get evaluated to <code>NA12878_chr20-22</code></li>
+<li>It runs the <code>fastqc</code> command within a singularity container by prefixing the command with <code>singularity exec ../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img</code>.</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Your container is ready to go!</p>
+</div>
+<p>For the sake of expediency, we have pre-downloaded the <code>fastqc</code> singularity container image for you at <code>../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img</code>.</p>
+<p>This is everything we need to run the job; we just have to submit the script to the HPC scheduler. In doing so, we will provide the following details to the scheduler:</p>
+<ul>
+<li>Project name: This is the HPC project that we want to run our job under, used to determine which filesystems we have access to and what project to bill to.</li>
+<li>Job name: A name to give our job, to help distinguish it from others we or other people may be running; we will call our job <code>fastqc</code></li>
+<li>Queue: Which compute queue to submit our job to. Different queues have different resource limits. We will use the standard node for our HPCs.</li>
+<li>Number of nodes and/or CPUs: A job can request differing numbers of nodes and CPUs it requires to run; we will just request 1 CPU on 1 node.</li>
+<li>Amount of memory: The amount of RAM that our job requires to run; we will request 1 gigabyte.</li>
+<li>Walltime: The time our job needs to complete; we will request 1 minute.</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">Exercise: Submitting the fastqc script to the HPC</p>
+<p>In the <strong>VSCode terminal</strong> (<code>Ctrl + J</code> (Windows/Linux) / <code>Cmd + J</code> (Mac)), type in the following code. <strong>Note the backslashes (<code>\</code>)</strong>: these indicate that you will continue the command on the next line. When you type a backslash and press <code>Enter</code>, you will get a <code>&gt;</code> character in your terminal prompt, indicating that you can continue writing your command here. <strong>Ensure you put a space before the backslashes</strong>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Gadi (PBSpro)</label><label for="__tabbed_2_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>qsub<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span>-P<span class="w"> </span><span class="nv">$PROJECT</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span>-N<span class="w"> </span>fastqc<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span>-q<span class="w"> </span>normalbw<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span>-l<span class="w"> </span><span class="nv">ncpus</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span>-l<span class="w"> </span><span class="nv">mem</span><span class="o">=</span>1GB<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span>-l<span class="w"> </span><span class="nv">walltime</span><span class="o">=</span><span class="m">00</span>:01:00<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span>-l<span class="w"> </span><span class="nv">storage</span><span class="o">=</span>scratch/<span class="nv">$PROJECT</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span>-l<span class="w"> </span>wd<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span>scripts/fastqc.pbs.sh
+</code></pre></div>
+<p>Let's deconstruct this command:</p>
+<ul>
+<li><code>-P $PROJECT</code>: This specifies the project using the environment variable <code>$PROJECT</code>, which is pre-defined with your default NCI project ID.</li>
+<li><code>-N fastqc</code>: This specifies the job name as <code>fastqc</code>.</li>
+<li><code>-q normalbw</code>: This specifies the queue as <code>normalbw</code>; this is a general queue on NCI for regular jobs that don't need any special resources.</li>
+<li><code>-l key=value</code>: The <code>-l</code> parameter lets us specify resources that we require in a <code>key=value</code> format:<ul>
+<li><code>-l ncpus=1</code>: This specifies that we want 1 CPU to run our job.</li>
+<li><code>-l mem=1GB</code>: Here we request 1 GB of memory.</li>
+<li><code>-l walltime=00:01:00</code>: This requests 1 minute of walltime; walltime is specified in the format <code>HH:MM:SS</code></li>
+<li><code>-l storage=scratch/$PROJECT</code>: This tells Gadi to mount the scratch space for our project; this is not done by default, so we always need to specify it.</li>
+<li><code>-l wd</code>: This tells Gadi to run the job in the current <strong>w</strong>orking <strong>d</strong>irectory.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>sbatch<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span>--account<span class="o">=</span><span class="nv">$PAWSEY_PROJECT</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span>--job-name<span class="o">=</span>fastqc<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span>--partition<span class="o">=</span>work<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span>--reservation<span class="o">=</span>NextflowHPC<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span>--nodes<span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span>--ntasks<span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span>--cpus-per-task<span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span>--mem<span class="o">=</span>1GB<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span>--time<span class="o">=</span><span class="m">00</span>:01:00<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span>scripts/fastqc.slurm.sh
+</code></pre></div>
+<p>Let's deconstruct this command:</p>
+<ul>
+<li><code>--account=$PAWSEY_PROJECT</code>: This specifies the project using the environment variable <code>$PAWSEY_PROJECT</code>, which is pre-defined with your default Pawsey project ID.</li>
+<li><code>--job-name=fastqc</code>: This specifies the job name as <code>fastqc</code>.</li>
+<li><code>--partition=work</code>: This specifies the queue (also called "partitions" on Setonix) as <code>work</code>; this is a general queue on Pawsey for regular jobs that don't need any special resources.</li>
+<li><code>--reservation=NextflowHPC</code>: This is specific to this workshop, letting us all work on a reserved compute node without competing for resources with other users.</li>
+<li><code>--nodes=1 --ntasks=1 --cpus-per-task=1</code>: This specifies that we want 1 CPU on 1 node to run our job.</li>
+<li><code>--mem=1GB</code>: Here we request 1 GB of memory.</li>
+<li><code>--time=00:01:00</code>: This requests 1 minute of walltime; walltime is specified in the format <code>HH:MM:SS</code></li>
+</ul>
+</div>
+</div>
+</div>
+<p>Once you have written out the command, ensure you have <strong>no final backslash</strong>, and press <code>Enter</code> to submit the script to the scheduler.</p>
+<p>Once submitted, you can monitor the progress of your job with the following command:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Gadi (PBSpro)</label><label for="__tabbed_3_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>qstat<span class="w"> </span>-u<span class="w"> </span><span class="si">${</span><span class="nv">USER</span><span class="si">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>squeue<span class="w"> </span>-u<span class="w"> </span><span class="si">${</span><span class="nv">USER</span><span class="si">}</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>This will output a list of all running jobs and their status:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Gadi (PBSpro)</label><label for="__tabbed_4_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">Output</span><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="go">gadi-pbs:</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="go">                                                                Req&#39;d  Req&#39;d   Elap</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="go">Job ID               Username Queue    Jobname    SessID NDS TSK Memory Time  S Time</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="go">-------------------- -------- -------- ---------- ------ --- --- ------ ----- - -----</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="go">123456789.gadi-pbs   usr123   normal   fastqc        --    1   1  1024m 00:10 Q   --</span>
+</code></pre></div>
+<p>The <code>S</code> column near the end shows the status of the job, with typical codes being <code>Q</code> for queued, <code>R</code> for running, and <code>E</code> for finished or ending jobs.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><span class="filename">Output</span><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="go">JOBID        USER ACCOUNT                   NAME   EXEC_HOST ST     REASON START_TIME       END_TIME  TIME_LEFT NODES   PRIORITY       QOS</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="go">12345678 username pawsey1234                fastqc       n/a PD       None N/A                   N/A      10:00     1      75423    normal</span>
+</code></pre></div>
+<p>The <code>ST</code> column near the middle shows the status of the job, with typical codes being <code>PD</code> for pending or queued, <code>R</code> for running, and <code>CG</code> for finished jobs.</p>
+</div>
+</div>
+</div>
+<p>Once complete, you should see a <code>results/</code> folder; inside, there should be a sub-folder called <code>fastqc_NA12878_chr20-22_logs</code> containing several <code>.zip</code> and <code>.html</code> files - the output results and reports from <code>fastqc</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>ls<span class="w"> </span>results/fastqc_NA12878_chr20-22_logs/
+</code></pre></div>
+<div class="highlight"><span class="filename">Output</span><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="go">NA12878_chr20-22.R1_fastqc.html NA12878_chr20-22.R2_fastqc.html</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="go">NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip</span>
+</code></pre></div>
+<p>Before moving on, delete the <code>results/</code> directory:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>rm<span class="w"> </span>-r<span class="w"> </span>results
+</code></pre></div>
+</div>
+<h2 id="133-cleaning-up-job-submission">1.3.3 Cleaning up job submission</h2>
+<p>The above command is quite long, and would be a pain to write out every time you want to submit a script, especially if you want to run the same script several times with different samples. Luckily, there is a better way of specifying the resources required by a script. Both PBS Pro and Slurm support using special comments at the top of the script file itself for specifying the resources it requires.</p>
+<div class="admonition example">
+<p class="admonition-title">Exercise: A cleaner job submission</p>
+<p>A good practice is to specify as many of the scheduler parameters within the header of the script itself as special comments. Note, however, that only static - i.e. unchanging - parameters can use this feature; if you need to dynamically assign resources to jobs, you will still need to use the commandline parameters.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Gadi (PBSpro)</label><label for="__tabbed_5_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Update the <code>scripts/fastqc.pbs.sh</code> script with the following header comments:</p>
+<div class="highlight"><span class="filename">scripts/fastqc.pbs.sh</span><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="hll"><span class="c1">#PBS -P vp91</span>
+</span><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="hll"><span class="c1">#PBS -N fastqc</span>
+</span><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="hll"><span class="c1">#PBS -q normalbw</span>
+</span><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="hll"><span class="c1">#PBS -l ncpus=1</span>
+</span><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="hll"><span class="c1">#PBS -l mem=1GB</span>
+</span><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="hll"><span class="c1">#PBS -l walltime=00:01:00</span>
+</span><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="hll"><span class="c1">#PBS -l storage=scratch/vp91</span>
+</span><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="hll"><span class="c1">#PBS -l wd</span>
+</span><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>module<span class="w"> </span>load<span class="w"> </span>singularity
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="nv">SAMPLE_ID</span><span class="o">=</span><span class="s2">&quot;NA12878_chr20-22&quot;</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="nv">READS_1</span><span class="o">=</span><span class="s2">&quot;../data/fqs/</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">.R1.fq.gz&quot;</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="nv">READS_2</span><span class="o">=</span><span class="s2">&quot;../data/fqs/</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">.R2.fq.gz&quot;</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;results/fastqc_</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">_logs&quot;</span>
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>singularity<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>fastqc<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="w">    </span>--outdir<span class="w"> </span><span class="s2">&quot;results/fastqc_</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">_logs&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="w">    </span>--format<span class="w"> </span>fastq<span class="w"> </span><span class="si">${</span><span class="nv">READS_1</span><span class="si">}</span><span class="w"> </span><span class="si">${</span><span class="nv">READS_2</span><span class="si">}</span>
+</code></pre></div>
+<p>Note how we need to explicitly state the project name for both the <code>-P</code> and <code>-l storage</code> parameters.</p>
+</div>
+<div class="tabbed-block">
+<p>Update the <code>scripts/fastqc.slurm.sh</code> script with the following header comments:</p>
+<div class="highlight"><span class="filename">scripts/fastqc.slurm.sh</span><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="ch">#!/bin/bash</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="hll"><span class="c1">#SBATCH --account=courses01</span>
+</span><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="hll"><span class="c1">#SBATCH --job-name=fastqc</span>
+</span><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="hll"><span class="c1">#SBATCH --partition=work</span>
+</span><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="hll"><span class="c1">#SBATCH --reservation=NextflowHPC</span>
+</span><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="hll"><span class="c1">#SBATCH --nodes=1</span>
+</span><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="hll"><span class="c1">#SBATCH --ntasks=1</span>
+</span><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="hll"><span class="c1">#SBATCH --cpus-per-task=1</span>
+</span><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="hll"><span class="c1">#SBATCH --mem=1GB</span>
+</span><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="hll"><span class="c1">#SBATCH --time=00:01:00</span>
+</span><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>module<span class="w"> </span>load<span class="w"> </span>singularity/4.1.0-slurm
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="nv">SAMPLE_ID</span><span class="o">=</span><span class="s2">&quot;NA12878_chr20-22&quot;</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="nv">READS_1</span><span class="o">=</span><span class="s2">&quot;../data/fqs/</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">.R1.fq.gz&quot;</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="nv">READS_2</span><span class="o">=</span><span class="s2">&quot;../data/fqs/</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">.R2.fq.gz&quot;</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;results/fastqc_</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">_logs&quot;</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>singularity<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>../singularity/quay.io-biocontainers-fastqc-0.12.1--hdfd78af_0.img<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>fastqc<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="w">    </span>--outdir<span class="w"> </span><span class="s2">&quot;results/fastqc_</span><span class="si">${</span><span class="nv">SAMPLE_ID</span><span class="si">}</span><span class="s2">_logs&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="w">    </span>--format<span class="w"> </span>fastq<span class="w"> </span><span class="si">${</span><span class="nv">READS_1</span><span class="si">}</span><span class="w"> </span><span class="si">${</span><span class="nv">READS_2</span><span class="si">}</span>
+</code></pre></div>
+<p>Note how we need to explicity state the project name for the <code>--account</code> parameter.</p>
+</div>
+</div>
+</div>
+<p>With the script updated, you can simply run your HPC submission command without any of the previously supplied parameters. We will also redirect the output of the submission command (which prints a message containing the job ID) to a file called <code>run_id.txt</code> for use in the next lesson.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Gadi (PBSpro)</label><label for="__tabbed_6_2">Setonix (Slurm)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>qsub<span class="w"> </span>scripts/fastqc.pbs.sh<span class="w"> </span>&gt;<span class="w"> </span>run_id.txt
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>sbatch<span class="w"> </span>scripts/fastqc.slurm.sh<span class="w"> </span>&gt;<span class="w"> </span>run_id.txt
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The job can be monitored the same way as before, and once complete, should produce the exact same output:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ls<span class="w"> </span>results/fastqc_NA12878_chr20-22_logs/
+</code></pre></div>
+<div class="highlight"><span class="filename">Output</span><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="go">NA12878_chr20-22.R1_fastqc.html NA12878_chr20-22.R2_fastqc.html</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="go">NA12878_chr20-22.R1_fastqc.zip  NA12878_chr20-22.R2_fastqc.zip</span>
+</code></pre></div>
+</div>
+<div class="admonition question">
+<p class="admonition-title">How are you going?</p>
+<p>If you're following along so far, let us know by reacting on zoom with a <strong>"<span class="twemoji check"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span> Yes"</strong>.</p>
+<p>If you're running into any issues, please react with a <strong>"<span class="twemoji close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></span> No"</strong> and we can help out before we move on to the next section.</p>
+</div>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../01_2_hpc_software/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 1.2 Software is different on HPC">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                1.2 Software is different on HPC
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../01_4_smarter/" class="md-footer__link md-footer__link--next" aria-label="Next: 1.4 Work smarter, not harder!">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                1.4 Work smarter, not harder!
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.footer", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
