@@ -26,7 +26,7 @@ Both `-with-report` and `-with-timeline` allow us to specify a custom file name,
     
     1. Copy the following code and paste at the end of your `custom.config`:
 
-    === "Gadi (PBS pro)"
+    === "Gadi (PBS Pro)"
 
         ```groovy title='config/custom.config'
         // Name the reports according to when they were run

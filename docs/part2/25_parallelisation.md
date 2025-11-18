@@ -171,7 +171,7 @@ As configuration generally does not trigger the re-run of processes, we need to 
 
     ??? abstract "Output"
 
-        === "Gadi (PBS pro)"
+        === "Gadi (PBS Pro)"
 
             | name                       | status    | exit | realtime | cpus     | %cpu   | memory     | %mem | rss      |
             | -------------------------- | --------- | ---- | -------- | -------- | ------ | ---------- | ---- | -------- |
@@ -319,6 +319,10 @@ As configuration generally does not trigger the re-run of processes, we need to 
 ## 2.5.2 Scatter-gathering alignment
 
 ![](figs/00_Scatter_gather_fig.png)
+
+
+
+ Taking a "wide and tall" job like sequence alignment and applying scatter-gather parallelism to mould it into many "small and short" jobs can take advantage of this "gap filling" tendency of the scheduler. 
 
 One of the core benefits of running bioinformatics workflows on HPC is access to increased processing power and hardware. For jobs that can be conducted indepdenently of each other, if configured correctly, we can run many jobs simultaneously and reduce the overall walltime required to run the workflow. One strategy to implement this is by:
 
