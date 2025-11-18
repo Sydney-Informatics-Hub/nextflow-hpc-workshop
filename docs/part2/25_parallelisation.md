@@ -64,7 +64,7 @@ As responsible users of shared systems, we will select the option that maintains
             - `custom.config` to ensure it fits the `work` partition.
             - 4 CPUs with 7-8 GB memory
 
-!!! example "Exercise"
+!!! example "Exercise: Reassigning resources for `ALIGN`"
 
     In `conf/custom.config`, update the `process` scope:
 
@@ -159,7 +159,7 @@ Launching `main.nf` [mighty_carson] DSL2 - revision: e34a5e5f9d
 
 As configuration generally does not trigger the re-run of processes, we need to run the workflow from the beginning.
 
-!!! example "Exercise"
+!!! example "Exercise: Run from scratch!"
 
     Remove the `-resume` flag from your `run.sh` and run
 
@@ -334,7 +334,7 @@ One of the core benefits of running bioinformatics workflows on HPC is access to
 
 We will scatter-gather the alignment step. This is a widely approach for mapping reads, as whole genome data is large, can be time-consuming, and mapping can be conducted independently of each other. To do so, we will leverage Nextflow's built-in [`splitFastq`](https://www.nextflow.io/docs/latest/reference/operator.html#splitfastq) operator.
 
-!!! example "Exercise"
+!!! example "Exercise: Adding `.splitFastq` to the workflow"
 
     Copy the following lines, and paste in `main.nf` after `FASTQC(reads)` and before `ALIGN(reads, bwa_index)`:
 
@@ -352,7 +352,7 @@ We will scatter-gather the alignment step. This is a widely approach for mapping
 
 Next, we need to update the inputs to `ALIGN`, so it takes the split `.fastq` files.
 
-!!! example "Exercise"
+!!! example "Exercise: Updating the `ALIGN` input"
 
     In `main.nf`, in the `workflow` scope, replace the input argument to `ALIGN` from `ALIGN(reads, bwa_index)` to `ALIGN(split_fqs, bwa_index)`.
 
@@ -474,7 +474,7 @@ Let's troubleshoot by inspecting the output of the `GENOTYPE` process
 
 We will resolve this by conducting updating our channels to include the chunk id, and rename how the bam files are output, ensuring they are uniquely identified.
 
-!!! example "Exercise"
+!!! example "Exercise: Adding the `chunk_id` to the tuple"
 
     - Update the workflow script to include the `chunk_id`. This will be used to identify the reads to avoid the file name collision error previously. Add `.view()` to see how the `split_fqs` channel and the output for `ALIGN` has changed.
 
@@ -648,7 +648,7 @@ Now that we have sucessfully split our reads and uniquely identified the output 
 
     Where you choose to re‑gather your data will depend on where your bottlenecks are and at which points you need to process the dataset as a whole again.
 
-!!! example "Exercise"
+!!! example "Exercise: Adding `MERGE_BAMS`"
 
     Import the `MERGE_BAMS` module in your `main.nf` file.
 
@@ -682,7 +682,7 @@ Now that we have sucessfully split our reads and uniquely identified the output 
 
 Now, let's re-inspect that the merge worked as intended.
 
-!!! example "Exercise"
+!!! example "Exercise: Inspecting the `MERGE_BAM` task directory"
 
     Locate the work directory for the `MERGE_BAM` process using the trace file, if you have the `workdir` field, or use the nextflow log.
 

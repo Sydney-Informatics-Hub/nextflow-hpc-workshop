@@ -99,7 +99,7 @@ Let's find the effective usable memory per CPU for the `normalbw` queue on Gadi,
 
 Note: Some queues and partitions may have different nodes with different hardware specifications, such as nodes with more or less memory. Using the effective memory per cpu to fit the smaller node has the benefit of running on both, whereas the larger node may take longer, but provides extra resources.
 
-!!! example "Exercise"
+!!! example "Exercise: Finding the effective memory per core"
 
     Refering to the HPC queue/partition documentation, how much memory
     should you allocate given a process that requires `cpus = 2`?
@@ -186,7 +186,7 @@ Let's record these in our configs.
     
     We add them to the config file, and not the modules. This keeps the workflow logic and system-specific configuration separate.
 
-!!! example "Exercise"
+!!! example "Exercise: Adding process resources"
 
     Update the `process{}` scopes of your `custom.configs`:
 
@@ -317,7 +317,7 @@ Note in the highlighted line `fastqc -t 1`, we are asking `fastqc` to use only a
 
 We will next make our `FASTQC` take in the number of cores we provide it **dynamically**. This means whatever `cpus` we provide will tell the process to always use that many threads (`-t`). 
 
-!!! example "Exercises"
+!!! example "Exercises: Dynamically assigning cores to modules/fastqc.nf"
 
     1. Open your `modules/fastqc.nf` file. Replace `-t 1` with `-t ${task.cpus}`.
 

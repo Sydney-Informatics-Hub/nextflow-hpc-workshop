@@ -6,7 +6,7 @@ Optimising Nextflow pipelines on HPC involves more than just making it "run". It
 
 Each HPC has unique hardware, limits, charging models, and ways to work. Before you run anything:
 
-- Familiarse yourself with the user documentation
+- Familiarise yourself with the user documentation
 - Know where to run jobs (not on the login node!)
 - Check for network access, especially if pulling containers or pipelines on-the-go
 - Attend your HPCs next training event
