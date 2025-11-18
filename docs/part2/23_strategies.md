@@ -5,23 +5,28 @@
     - Identify the key factors that impact workflow performance on HPC systems
     - Describe common workflow optimisation strategies in the context of Nextflow
 
-## Overview
 
-Our workflow is now functional, it runs successfully with scheduler-specific settings and outputs useful trace files showing resource usage. Recall the principles covered in [Lesson 1.4](../part1/01_4_smarter.md), we will apply them to our custom workflow.
 
-From here, we will explore ways of optimising our workflow for more efficient execution on the HPC. 
+Our workflow is now functional: it runs successfully with scheduler-specific settings on HPC and outputs useful trace files showing resource usage. In [Lesson 1.4](../part1/01_4_smarter.md), we learnt about the importance of appropriate resource requests on HPC and the value of running an efficient and optimised workflow. We will now begin to apply these principles to our custom workflow. 
 
-!!! note "Why do we care about optimisation?"
 
-    Bioinformatics data processing on HPCs has a significant carbon footprint due to the energy required to run our computations. We optimise our workflows to not only reduce their runtime but also adopt more sustaintable computing practices. 
-
-    *[This short editorial](https://www.nature.com/articles/s43588-023-00506-2) from Nature Computational Science highlights the challenges research computing faces in the context of the climate crisis*
-
-Workflow optimisation involves fine-tuning your pipeline to make it more efficient. It can be used to reduce runtime, idling hardware, and cost (e.g. when on a system that charges use based on service units). 
 
 ## 2.3.1 Why optimise?
 
-A small workflow run a handful of times might not benefit dramatically from optimisation. Many Nextflow workflows that employ good practices (e.g. nf-core) will run with default configuration, but defaults might not always fit your data and therefore the behaviour of your processes, or the constraints of your cluster. Think back to Part 1 and the configuration customisations we implemented for our nf-core workflow. 
+Workflow optimisation involves fine-tuning your workflow to make it more efficient. It can be used to reduce runtime, facilitate higher throughput and larger more powerful studies, avoid idle hardware that could be freed up for other researchers, and decrease computing cost. Many HPCs charge use per core hour, yet even for those where the cost is not billed to the researcher, the cost of the resources must be covered by someone, and this may be the Faculty/School, institution, funding body, or federal budget. Demonstrating efficient use of compute funds can be important in grant success for projects requiring substantial compute. 
+
+Another important reason optimisation is worthwhile is the impact on the environment. Bioinformatics data processing on HPCs has a significant carbon footprint due to the energy required to run our computations. Making our workflows complete in a faster time using less hardware contributes to sustaintable computing practices. 
+
+*[This short editorial](https://www.nature.com/articles/s43588-023-00506-2) from Nature Computational Science highlights the challenges research computing faces in the context of the climate crisis*.
+
+Today we will apply workflow optimisation from two perspectives:
+
+* Resource efficiency: benchmarking and adjusting resources for efficient process execution on HPC
+* Speed-up: introducing code changes to make the workflow run faster without costing more compute hours
+
+## 2.3.2 When to optimise 
+
+A small workflow run a handful of times might not benefit dramatically from optimisation. Many Nextflow workflows that employ good practices (e.g. nf-core) will often run "out of the box" on HPC with default resources, but defaults might not always fit your data and therefore the behaviour of your processes, or the constraints of your cluster. Think back to Part 1 and the configuration customisations we implemented for our nf-core workflow. 
 
 Optimising workflows on HPC becomes especially important when:
 
@@ -30,11 +35,19 @@ Optimising workflows on HPC becomes especially important when:
 - You are operating on a system that uses a service unit or time-limited allocation model
 - Your processes have data-dependent resource usage 
 
-By optimising, you are making your workflow resilient and scalable. 
+The ideal time to optimise a workflow is while it is being developed. This is often more simple to achieve than back-tracking and adding improvements to an existing and potentially large codebase, and will also ensure that the benefits of an efficient workflow are enjoyed as early as possible. Notably, this may add development time to producing a finished workflow, but the efforts are rewarded with a resilient and scalable workflow that will reduce the time interval between data acquisition and final results.
 
-## 2.3.2 What affects performance?
+If you have an existing workflow that is reliable but inefficient, there is always value in taking the time to optimise your regularly used workflow. This endeavour also provides the opportunity to update tool versions and introduce other enhancements such as the use of Singularity containers.
 
-Efficiency of any workflow on HPC dependens on the interaction of three factors: 
+When optimising a workflow, resource efficiency should always be considered. Optimisation through parallelisation however is not always possible or recommended. It is vital to always consider what components of work can be parallelised or split up in a ***biologically valid*** way. If you are unsure, one means of testing is to run the analysis with and without parallelism on a subset of data to observe any impact on results. Due to heuristics of tool algorithms, in many cases a small amount of difference in the final result is valid and tolerated. In other cases, it may be expected that a tool produces identical results irrespective of multi-threading or parallelisation. It is important to check the tool documentation, consider the nature of the data and underlying biology, test the effects of parallelisation, and only apply parallelisation when it makes biological sense to do so. 
+
+Consider the example of sequenced DNA fragments in whole genome sequencing. Each fragment is completely independent on every other fragment in the library, so it can be aligned to the reference sequence independently without affecting the mapping results. This is a perfect case of "embarrassingly parallel" processing, i.e. running the same analysis numerous times on slightly different input data. In reality, we would not align one read at a time as the overhead of submitting millions of tiny jobs and loading the same tools and reference over and over would overload the scheduler, impact performance, and would also likely result in stern reproach from the HPC system administrators! So in this case, we have biological validity to apply scatter-gather parallelism, but we need to also apply sound HPC practices to ensure the level of parallelism is compatible with the HPC and produces an actual speed-up. 
+
+Now consider another example of identifying large-scale changes to an organism's genome. These are known as *structural variants* and can include millions of nucleotides and span multiple chromosomes. Do you think it is biologically valid to split this up into chunks for parallel processing? The answer is no, because the tool needs to "see" all of the reads and all of the reference genome at once to be able to describe such a variant. In cases like this, the best level of parallelism we can achieve is **parallel by sample**. Parallel by sample is logical for numerous common bioinforamtics processing tasks, and is typically only invalid when all samples must be analysed together for example when collating final results.  
+
+## 2.3.3 What affects performance?
+
+Efficiency of any workflow on HPC depends on the interaction of three factors: 
 
 ### 1. Your HPC system 
 
@@ -45,9 +58,9 @@ Good optimisation respects the boundaries of the system you're working on. When 
 | HPC characteristic | What it means | Why it matters for optimisation                     |
 | --------- | ---------------------- | ------------- |
 | **Default scheduler behaviour**         | Policies set by administrators: fair-share, job priorities, backfill rules, default limits  | Affects queue wait time, job placement efficiency, and how many tasks can run in parallel                            |
-| **Queue limits**                        | Maximum walltime, CPU count, and memory allowed per queue or partition                      | Determines which queues you can use, how large each job can be, and whether your workflow gets delayed               |
+| **Queue limits**                        | Maximum walltime, cores, and memory allowed per queue or partition                      | Determines which queues you can use, how large each job can be, and whether your workflow gets delayed               |
 | **Node architecture**                   | Hardware layout: cores per node, memory per node, CPU type (Intel/AMD), GPUs, local scratch | Ensures you request resources that “fit” the node, avoid resource fragmentation, and maximise throughput             |
-| **Charging model** | How HPC usage is accounted (CPU proportion, memory proportion, or the maximum of both)      | Guides you to request only what you need over requesting directly increases SU consumption without improving runtime |
+| **Charging model** | How HPC usage is accounted (CPU proportion, memory proportion, or the maximum of both)      | Guides you to request only what you need: over requesting directly increases SU consumption without improving runtime |
 
 ### 2. The characteristics of your data 
 
@@ -71,21 +84,18 @@ Even with the same tools and data, two workflows can behave differently dependin
 * Number of processes 
 * Order of dependencies 
 * Opportunities for parallelism
-* Whether steps are CPU-bound, memory-bound, or I/O boind 
+* Whether steps are CPU-bound, memory-bound, or I/O bound 
 * Incorporated tool's ability to multithread 
 
-## 2.3.3 What will we optimise?
+## 2.3.4 What will we optimise today?
 
-For the remainder of Part 2 we will apply the strategies introduced from Part 1 to optimise our custom workflow. In particular, we will:
+For the remainder of Part 2 we will apply the strategies introduced from Part 1 to optimise then scale our custom workflow. 
 
-1. Assign appropriate resources for each per process
-    - Use trace files to fine-tune `cpus`, `memory`, and `time`
-    - Tune these to fit with the architecutre of your HPC
+In the next section, we will **assign appropriate resources for each process** by using trace files to fine-tune `cpus`, `memory`, and `time` and align these to the resources on the compute nodes of our HPCs. 
 
-2. Enable multi-threading for BWA MEM
-    - Increase speed of alignment by using multiple threads
+In Lesson 2.5, we will introduce **parallel processing** firstly by enabling **multi-threading** in a thread-aware tool (BWA), and then by coding **scatter-gather parallelism** into the workflow. 
 
-3. Parallelise alignment using scatter-gather
-    - Split our FASTQ files, align "simultaneously", and combine again
+In today's example workflow, we will be applying scatter-gather to run alignment with BWA. Note that the `GENOTYPE` process can also be parallelised in a biologically valid way using a parallisation strategy known as "interval chunking", but for simplicity we will not be optimising that process today. 
 
-These same principles can be applied to any HPC environment, but in this workshop, we’ll focus on NCI Gadi and Pawsey Setonix as practical examples.
+Finally, in Lesson 2.6, we will **scale to multiple samples**. This will consolidate all of the resource optimsiations and parallelisation strategies (multi-threading; scatter-gather; parallel by sample) that we have built up today into one efficient, end-to-end run optimised for our respective HPCs. 
+
